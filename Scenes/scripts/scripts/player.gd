@@ -1,5 +1,4 @@
 
-
 extends CharacterBody3D
 
 @export var move_speed: float = 7.0
@@ -8,18 +7,28 @@ extends CharacterBody3D
 var gravity: float = 20.0
 
 @onready var camera = $Camera3D
+@onready var weapon = $Camera3D/Weapon
+@onready var raycast = $Camera3D/RayCast3D
 
 func _ready():
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _unhandled_input(event):
-    if event is InputEventMouseMotion:
+    if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
         rotate_y(-event.relative.x * mouse_sensitivity)
         camera.rotate_x(-event.relative.y * mouse_sensitivity)
         camera.rotation.x = clamp(camera.rotation.x, -1.5, 1.5)
 
-    if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-        Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+    if event is InputEventKey and event.pressed:
+        if event.keycode == KEY_ESCAPE:
+            Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+        if event.keycode == KEY_R:
+            weapon.reload()
+
+    if event is InputEventMouseButton and event.pressed:
+        if event.button_index == MOUSE_BUTTON_LEFT:
+            weapon.fire(raycast)
 
 func _physics_process(delta):
     var input_dir = Vector2(
@@ -38,3 +47,4 @@ func _physics_process(delta):
         velocity.y = 0
 
     move_and_slide()
+
