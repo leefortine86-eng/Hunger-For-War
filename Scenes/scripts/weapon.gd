@@ -13,18 +13,29 @@ var reloading: bool = false
 func _ready():
     ammo_in_magazine = magazine_size
 
-func fire():
+func fire(raycast: RayCast3D):
     if not can_fire or reloading:
         return
 
     if ammo_in_magazine <= 0:
-        print("Magazine empty!")
+        print("Magazine empty! Press R to reload.")
         return
 
     ammo_in_magazine -= 1
     can_fire = false
 
-    print("Rifle fired! Ammo: ", ammo_in_magazine, "/", reserve_ammo)
+    raycast.force_raycast_update()
+
+    if raycast.is_colliding():
+        var target = raycast.get_collider()
+        print("Hit: ", target.name)
+
+        if target.has_method("take_damage"):
+            target.take_damage(damage)
+    else:
+        print("Shot fired!")
+
+    print("Ammo: ", ammo_in_magazine, "/", reserve_ammo)
 
     await get_tree().create_timer(fire_rate).timeout
     can_fire = true
