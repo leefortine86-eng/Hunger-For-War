@@ -3,8 +3,8 @@ extends CharacterBody3D
 @export var move_speed: float = 7.0
 @export var mouse_sensitivity: float = 0.002
 @export var touch_sensitivity: float = 0.004
-
 @export var max_health: float = 100.0
+
 var health: float = 100.0
 var gravity: float = 20.0
 var mobile_move := Vector2.ZERO
@@ -20,21 +20,29 @@ var joystick_radius: float = 58.0
 var touch_overlay: Control
 var joystick_base: Panel
 var joystick_knob: Panel
+var health_label: Label
+var ammo_label: Label
+var fire_button: Button
+var reload_button: Button
+var fire_button_rect := Rect2()
+var reload_button_rect := Rect2()
 
 func _ready():
     add_to_group("player")
     health = max_health
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     _create_mobile_controls()
+    _create_hud()
 
 func _create_mobile_controls():
+    var canvas := CanvasLayer.new()
+    canvas.name = "MobileControlsLayer"
+    add_child(canvas)
+
     touch_overlay = Control.new()
     touch_overlay.name = "MobileControls"
     touch_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     touch_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    var canvas := CanvasLayer.new()
-    canvas.name = "MobileControlsLayer"
-    add_child(canvas)
     canvas.add_child(touch_overlay)
 
     var screen_size := get_viewport().get_visible_rect().size
@@ -46,10 +54,7 @@ func _create_mobile_controls():
     var base_style := StyleBoxFlat.new()
     base_style.bg_color = Color(0.12, 0.16, 0.20, 0.48)
     base_style.set_corner_radius_all(72)
-    base_style.border_width_left = 2
-    base_style.border_width_top = 2
-    base_style.border_width_right = 2
-    base_style.border_width_bottom = 2
+    base_style.set_border_width_all(2)
     base_style.border_color = Color(0.85, 0.9, 0.95, 0.65)
     joystick_base.add_theme_stylebox_override("panel", base_style)
     touch_overlay.add_child(joystick_base)
@@ -66,9 +71,58 @@ func _create_mobile_controls():
     joystick_knob.add_theme_stylebox_override("panel", knob_style)
     touch_overlay.add_child(joystick_knob)
 
+func _create_hud():
+    var canvas := get_node("MobileControlsLayer")
+    var screen_size := get_viewport().get_visible_rect().size
+
+    health_label = Label.new()
+    health_label.name = "HealthLabel"
+    health_label.position = Vector2(24, 20)
+    health_label.add_theme_font_size_override("font_size", 25)
+    health_label.add_theme_color_override("font_color", Color(0.85, 1.0, 0.85))
+    canvas.add_child(health_label)
+
+    ammo_label = Label.new()
+    ammo_label.name = "AmmoLabel"
+    ammo_label.position = Vector2(24, 54)
+    ammo_label.add_theme_font_size_override("font_size", 23)
+    ammo_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.65))
+    canvas.add_child(ammo_label)
+
+    fire_button = Button.new()
+    fire_button.name = "FireButton"
+    fire_button.text = "FIRE"
+    fire_button.position = Vector2(screen_size.x - 142, screen_size.y - 190)
+    fire_button.size = Vector2(112, 76)
+    fire_button.add_theme_font_size_override("font_size", 22)
+    fire_button.modulate = Color(1.0, 0.72, 0.62, 0.95)
+    fire_button.pressed.connect(_on_fire_pressed)
+    canvas.add_child(fire_button)
+
+    reload_button = Button.new()
+    reload_button.name = "ReloadButton"
+    reload_button.text = "RELOAD"
+    reload_button.position = Vector2(screen_size.x - 142, screen_size.y - 98)
+    reload_button.size = Vector2(112, 58)
+    reload_button.add_theme_font_size_override("font_size", 17)
+    reload_button.pressed.connect(_on_reload_pressed)
+    canvas.add_child(reload_button)
+
+    fire_button_rect = Rect2(fire_button.position, fire_button.size)
+    reload_button_rect = Rect2(reload_button.position, reload_button.size)
+
+func _on_fire_pressed():
+    weapon.fire(raycast)
+
+func _on_reload_pressed():
+    weapon.reload()
+
 func _input(event):
     if event is InputEventScreenTouch:
         if event.pressed:
+            if fire_button_rect.has_point(event.position) or reload_button_rect.has_point(event.position):
+                return
+
             var screen_width := get_viewport().get_visible_rect().size.x
             if event.position.x < screen_width * 0.5 and joystick_touch_id == -1:
                 if event.position.distance_to(joystick_center) <= 115.0:
@@ -116,14 +170,22 @@ func _unhandled_input(event):
         if event.button_index == MOUSE_BUTTON_LEFT:
             weapon.fire(raycast)
 
+func _process(_delta):
+    if is_instance_valid(health_label):
+        health_label.text = "HEALTH: %d" % int(health)
+    if is_instance_valid(ammo_label) and is_instance_valid(weapon):
+        ammo_label.text = "AMMO: %d / %d" % [weapon.ammo_in_magazine, weapon.reserve_ammo]
+    if is_instance_valid(fire_button):
+        fire_button.disabled = weapon.reloading
+    if is_instance_valid(reload_button):
+        reload_button.disabled = weapon.reloading or weapon.ammo_in_magazine == weapon.magazine_size or weapon.reserve_ammo <= 0
+
 func _physics_process(delta):
     var keyboard_input = Vector2(
         Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
         Input.get_action_strength("move_back") - Input.get_action_strength("move_forward")
     )
-    var input_dir: Vector2 = keyboard_input + mobile_move
-    input_dir = input_dir.limit_length(1.0)
-
+    var input_dir: Vector2 = (keyboard_input + mobile_move).limit_length(1.0)
     var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
     velocity.x = direction.x * move_speed
     velocity.z = direction.z * move_speed
@@ -131,10 +193,9 @@ func _physics_process(delta):
     if not is_on_floor():
         velocity.y -= gravity * delta
     else:
-        velocity.y = 0
+        velocity.y = 0.0
 
     move_and_slide()
-
 
 func take_damage(amount: float):
     health = max(health - amount, 0.0)
