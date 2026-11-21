@@ -21,3 +21,12 @@ Recommended Android profile: Mobile renderer, reduced shadow atlas and shadow re
 
 ## Validation still required
 Run the Godot 4.7.2 project on desktop and Android. Verify parser/import errors, capsule clearance during stance transitions, camera eye height, touch input, weapon behavior, shadow quality, shader maps, and frame time. Do not claim visual validation from CI alone.
+
+
+## Tactical controller additions
+- Acceleration and deceleration are independently tunable; movement eases into and out of velocity instead of snapping.
+- Separate tactical walk, sprint, crouch, and prone speeds.
+- Stamina drains during sprint and active movement, recovers after a delay, and fatigue increases weapon aim sway.
+- Camera rig applies procedural weapon positional lag from look input and movement bob from horizontal speed.
+- Tune values on target hardware and test whether the chosen speeds fit existing level scale and AI pacing.
+- Current stamina values are gameplay tuning defaults, not measured realism values. Add HUD stamina visualization and playtest balancing before release.
