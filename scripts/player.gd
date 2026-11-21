@@ -42,6 +42,9 @@ var weapon_label: Label
 var weapon_prev_button: Button
 var weapon_next_button: Button
 var weapon_select: OptionButton
+var attachment_toggle: Button
+var attachment_panel: PanelContainer
+var attachment_selectors: Dictionary = {}
 
 func _ready():
     add_to_group("player")
@@ -209,6 +212,33 @@ func _create_hud():
     weapon.weapon_changed.connect(_on_weapon_changed)
     weapon_select.select(weapon.current_index)
 
+    attachment_toggle = Button.new()
+    attachment_toggle.name = "AttachmentToggle"
+    attachment_toggle.text = "ATTACHMENTS"
+    attachment_toggle.position = Vector2(screen_size.x - 300, 140)
+    attachment_toggle.size = Vector2(280, 38)
+    attachment_toggle.pressed.connect(_toggle_attachment_panel)
+    canvas.add_child(attachment_toggle)
+
+    attachment_panel = PanelContainer.new()
+    attachment_panel.name = "AttachmentPanel"
+    attachment_panel.position = Vector2(screen_size.x - 300, 184)
+    attachment_panel.size = Vector2(280, 226)
+    attachment_panel.visible = false
+    canvas.add_child(attachment_panel)
+    var attachment_column := VBoxContainer.new()
+    attachment_column.add_theme_constant_override("separation", 4)
+    attachment_panel.add_child(attachment_column)
+    for slot in ["optic", "muzzle", "underbarrel", "utility", "magazine"]:
+        var selector := OptionButton.new()
+        selector.name = "Attachment_" + slot
+        selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+        selector.add_theme_font_size_override("font_size", 14)
+        selector.item_selected.connect(_on_attachment_selected.bind(slot))
+        attachment_column.add_child(selector)
+        attachment_selectors[slot] = selector
+    _refresh_attachment_selectors()
+
     crosshair_label = Label.new()
     crosshair_label.name = "Crosshair"
     crosshair_label.text = "+"
@@ -217,6 +247,33 @@ func _create_hud():
     crosshair_label.add_theme_font_size_override("font_size", 30)
     crosshair_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
     canvas.add_child(crosshair_label)
+
+func _toggle_attachment_panel():
+    attachment_panel.visible = not attachment_panel.visible
+    if attachment_panel.visible:
+        _refresh_attachment_selectors()
+
+func _refresh_attachment_selectors():
+    if not is_instance_valid(weapon):
+        return
+    for slot in attachment_selectors.keys():
+        var selector: OptionButton = attachment_selectors[slot]
+        selector.clear()
+        var options: Array = weapon.get_attachment_options(str(slot))
+        var selected_index := 0
+        for i in range(options.size()):
+            var option: Dictionary = options[i]
+            selector.add_item(str(option.get("name", "Default")))
+            selector.set_item_metadata(i, str(option.get("id", "none")))
+            if str(option.get("id", "")) == str(weapon.attachments.get(slot, "none")):
+                selected_index = i
+        if selector.item_count > 0:
+            selector.select(selected_index)
+
+func _on_attachment_selected(index: int, slot: String):
+    var selector: OptionButton = attachment_selectors[slot]
+    weapon.set_attachment(slot, str(selector.get_item_metadata(index)))
+    _refresh_attachment_selectors()
 
 func _on_sprint_toggled(enabled: bool):
     mobile_sprint = enabled
@@ -250,6 +307,7 @@ func _on_weapon_selected(index: int):
 func _on_weapon_changed(_weapon_name: String, _weapon_class: String):
     if is_instance_valid(weapon_select):
         weapon_select.select(weapon.current_index)
+    _refresh_attachment_selectors()
 
 func _on_reload_pressed():
     weapon.reload()
@@ -285,7 +343,7 @@ func _input(event):
             _rotate_camera(event.relative, touch_sensitivity)
 
 func _is_touch_ui(position: Vector2) -> bool:
-    var controls = [fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select]
+    var controls = [fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select, attachment_toggle, attachment_panel]
     for control in controls:
         if is_instance_valid(control) and Rect2(control.position, control.size).has_point(position):
             return true
