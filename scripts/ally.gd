@@ -1,9 +1,11 @@
 extends CharacterBody3D
 
-# Friendly infantry AI: hold position, identify hostiles, use cover/LOS,
-# and deliver measured rifle support fire without changing player controls.
+# Friendly infantry maneuver, seek cover/angles, and provide supporting fire.
+# The player remains in control; allies behave as independent battlefield AI.
 
-@export var engagement_range: float = 34.0
+@export var engagement_range: float = 38.0
+@export var preferred_range: float = 19.0
+@export var move_speed: float = 2.8
 @export var damage_per_shot: float = 11.0
 @export var shot_interval: float = 1.05
 @export var aim_height: float = 1.05
@@ -15,9 +17,14 @@ var muzzle_flash_timer: float = 0.0
 var muzzle_light: OmniLight3D
 var soldier_animator: Node
 var weapon_mount: Node3D
+var gravity: float = 20.0
+var squad_slot: int = 0
+var maneuver_timer: float = 0.0
+var maneuver_target: Vector3 = Vector3.ZERO
 
 func _ready() -> void:
     add_to_group("allies")
+    squad_slot = get_tree().get_nodes_in_group("allies").size() - 1
     _build_character()
     _build_rifle()
     _build_muzzle_light()
@@ -90,7 +97,6 @@ func _build_rifle() -> void:
     var polymer := StandardMaterial3D.new()
     polymer.albedo_color = Color(0.12, 0.14, 0.12)
     polymer.roughness = 0.86
-
     _rifle_part(weapon_mount, "RifleReceiver", Vector3(0.085, 0.085, 0.72), Vector3(0.0, 1.10, -0.48), finish)
     _rifle_part(weapon_mount, "RifleStock", Vector3(0.12, 0.12, 0.24), Vector3(0.0, 1.10, -0.10), polymer)
     _rifle_part(weapon_mount, "RifleMagazine", Vector3(0.11, 0.25, 0.14), Vector3(0.0, 0.92, -0.40), finish)
@@ -129,6 +135,20 @@ func _has_line_of_sight(enemy: CharacterBody3D) -> bool:
     var hit := get_world_3d().direct_space_state.intersect_ray(query)
     return not hit.is_empty() and hit.get("collider") == enemy
 
+func _choose_maneuver_position() -> void:
+    if not is_instance_valid(target):
+        return
+    var away_from_target := global_position - target.global_position
+    away_from_target.y = 0.0
+    if away_from_target.length() < 0.1:
+        away_from_target = Vector3.FORWARD
+    var radial := away_from_target.normalized()
+    var lateral := Vector3(-radial.z, 0.0, radial.x)
+    var side := -1.0 if squad_slot % 2 == 0 else 1.0
+    var spacing := 2.6 + float(squad_slot / 2) * 1.1
+    maneuver_target = target.global_position + radial * preferred_range + lateral * side * spacing
+    maneuver_timer = 3.5 + randf_range(0.0, 1.2)
+
 func _fire_at_target() -> void:
     if not is_instance_valid(target):
         return
@@ -145,25 +165,45 @@ func _fire_at_target() -> void:
 func _physics_process(delta: float) -> void:
     shot_timer = maxf(shot_timer - delta, 0.0)
     shot_pose_remaining = maxf(shot_pose_remaining - delta, 0.0)
+    maneuver_timer = maxf(maneuver_timer - delta, 0.0)
     if muzzle_flash_timer > 0.0:
         muzzle_flash_timer -= delta
         if muzzle_flash_timer <= 0.0 and is_instance_valid(muzzle_light):
             muzzle_light.light_energy = 0.0
 
-    velocity = Vector3.ZERO
+    if not is_on_floor():
+        velocity.y -= gravity * delta
+    else:
+        velocity.y = 0.0
+
     if not is_instance_valid(target) or target.get("is_eliminated") == true:
         target = _find_target()
-    if not is_instance_valid(target):
-        if is_instance_valid(soldier_animator):
-            soldier_animator.set_combat_pose("ready")
-        return
+        maneuver_timer = 0.0
 
-    var distance := global_position.distance_to(target.global_position)
-    if distance > engagement_range:
-        target = null
-        return
-    look_at(Vector3(target.global_position.x, global_position.y, target.global_position.z), Vector3.UP)
-    if is_instance_valid(soldier_animator) and shot_pose_remaining <= 0.0:
-        soldier_animator.set_combat_pose("aim")
-    if shot_timer <= 0.0 and _has_line_of_sight(target):
-        _fire_at_target()
+    velocity.x = move_toward(velocity.x, 0.0, move_speed * delta * 4.0)
+    velocity.z = move_toward(velocity.z, 0.0, move_speed * delta * 4.0)
+
+    if is_instance_valid(target):
+        var to_target := target.global_position - global_position
+        to_target.y = 0.0
+        var distance := to_target.length()
+        if distance <= engagement_range:
+            look_at(Vector3(target.global_position.x, global_position.y, target.global_position.z), Vector3.UP)
+            if maneuver_timer <= 0.0:
+                _choose_maneuver_position()
+            var to_maneuver := maneuver_target - global_position
+            to_maneuver.y = 0.0
+            if to_maneuver.length() > 1.4:
+                var direction := to_maneuver.normalized()
+                velocity.x = direction.x * move_speed
+                velocity.z = direction.z * move_speed
+            if is_instance_valid(soldier_animator) and shot_pose_remaining <= 0.0:
+                soldier_animator.set_combat_pose("aim")
+            if distance <= engagement_range and shot_timer <= 0.0 and _has_line_of_sight(target):
+                _fire_at_target()
+        else:
+            target = null
+    elif is_instance_valid(soldier_animator):
+        soldier_animator.set_combat_pose("ready")
+
+    move_and_slide()
