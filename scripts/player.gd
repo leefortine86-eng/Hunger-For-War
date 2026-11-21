@@ -4,6 +4,8 @@ extends CharacterBody3D
 @export var mouse_sensitivity: float = 0.002
 @export var touch_sensitivity: float = 0.004
 
+@export var max_health: float = 100.0
+var health: float = 100.0
 var gravity: float = 20.0
 var mobile_move := Vector2.ZERO
 var joystick_touch_id := -1
@@ -20,6 +22,8 @@ var joystick_base: Panel
 var joystick_knob: Panel
 
 func _ready():
+    add_to_group("player")
+    health = max_health
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     _create_mobile_controls()
 
@@ -130,3 +134,16 @@ func _physics_process(delta):
         velocity.y = 0
 
     move_and_slide()
+
+
+func take_damage(amount: float):
+    health = max(health - amount, 0.0)
+    print("Player health: ", health, "/", max_health)
+    if health <= 0.0:
+        _die()
+
+func _die():
+    print("You have been eliminated!")
+    set_physics_process(false)
+    set_process_input(false)
+    set_process_unhandled_input(false)
