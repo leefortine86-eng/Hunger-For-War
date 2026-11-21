@@ -25,6 +25,8 @@ func _ready():
     _create_battlefield_environment()
     _create_terrain_features()
     _dress_building_interiors()
+    _create_defensive_positions()
+    _create_wreck_atmosphere()
     _create_capture_objective()
     _create_second_objective()
     _create_mission_hud()
@@ -210,6 +212,10 @@ func _create_lighting():
     environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
     environment.ambient_light_color = Color(0.48, 0.51, 0.46)
     environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+    environment.fog_enabled = true
+    environment.fog_light_color = Color(0.53, 0.57, 0.51)
+    environment.fog_density = 0.0035
+    environment.fog_sky_affect = 0.12
     world.environment = environment
     add_child(world)
 
@@ -600,6 +606,86 @@ func _dress_building_interiors():
         _make_environment_box(outpost, "RuinedWorkTable", Vector3(1.8, 0.18, 0.85), Vector3(-2.5, 0.82, -2.1), timber, false)
         _make_environment_box(outpost, "OutpostCrateA", Vector3(0.85, 0.85, 0.85), Vector3(2.8, 0.92, -2.5), timber)
         _make_environment_box(outpost, "OutpostCrateB", Vector3(0.75, 0.7, 0.75), Vector3(2.5, 1.65, -2.5), timber, false)
+
+
+func _create_defensive_positions():
+    var tower_material := StandardMaterial3D.new()
+    tower_material.albedo_color = Color(0.26, 0.28, 0.25)
+    tower_material.metallic = 0.18
+    tower_material.roughness = 0.9
+    var sandbag_color := Color(0.42, 0.39, 0.29)
+
+    # Two compact observation towers watch the settlement approaches.
+    for tower_index in range(2):
+        var side := -1.0 if tower_index == 0 else 1.0
+        var tower := Node3D.new()
+        tower.name = "ObservationTowerWest" if tower_index == 0 else "ObservationTowerEast"
+        tower.position = Vector3(side * 29.0, 0, -23.0)
+        add_child(tower)
+        for x_side in [-1.0, 1.0]:
+            for z_side in [-1.0, 1.0]:
+                _make_environment_box(tower, "TowerLeg", Vector3(0.22, 5.0, 0.22), Vector3(x_side * 1.35, 2.5, z_side * 1.35), tower_material)
+        _make_environment_box(tower, "TowerPlatform", Vector3(3.2, 0.28, 3.2), Vector3(0, 4.35, 0), tower_material)
+        _make_environment_box(tower, "TowerRoof", Vector3(3.6, 0.18, 3.6), Vector3(0, 6.2, 0), tower_material)
+        for edge in [-1.0, 1.0]:
+            _make_environment_box(tower, "TowerRailingSide", Vector3(0.12, 0.9, 3.0), Vector3(edge * 1.48, 4.95, 0), tower_material)
+            _make_environment_box(tower, "TowerRailingFront", Vector3(3.0, 0.9, 0.12), Vector3(0, 4.95, edge * 1.48), tower_material)
+        _make_environment_box(tower, "TowerLadderSide", Vector3(0.12, 4.0, 0.12), Vector3(-1.65, 2.0, 0.0), tower_material, false)
+        for rung in range(8):
+            _make_environment_box(tower, "TowerLadderRung", Vector3(0.8, 0.08, 0.1), Vector3(-1.28, 0.35 + float(rung) * 0.48, 0.0), tower_material, false)
+
+    # Angled sandbag bays create useful cover at the two approaches.
+    _make_cover("WestApproachFiringBay", Vector3(4.5, 0.85, 0.75), Vector3(-14.5, 0.43, -31.5), sandbag_color)
+    _make_cover("EastApproachFiringBay", Vector3(4.5, 0.85, 0.75), Vector3(14.5, 0.43, -31.5), sandbag_color)
+    _make_cover("SouthRoadsideFiringBay", Vector3(5.0, 0.85, 0.75), Vector3(10.0, 0.43, 21.0), sandbag_color)
+
+    # A low checkpoint canopy gives the southern approach a recognizable silhouette.
+    var canopy := Node3D.new()
+    canopy.name = "CheckpointCanopy"
+    canopy.position = Vector3(-12.0, 0, 13.0)
+    add_child(canopy)
+    for x_side in [-1.0, 1.0]:
+        _make_environment_box(canopy, "CanopyPost", Vector3(0.16, 3.0, 0.16), Vector3(x_side * 2.3, 1.5, 0), tower_material)
+    _make_environment_box(canopy, "CanopyRoof", Vector3(5.0, 0.2, 3.2), Vector3(0, 3.05, 0), tower_material)
+
+
+func _create_wreck_atmosphere():
+    var ember_material := StandardMaterial3D.new()
+    ember_material.albedo_color = Color(0.95, 0.22, 0.035)
+    ember_material.emission_enabled = true
+    ember_material.emission = Color(0.9, 0.12, 0.015)
+    ember_material.emission_energy_multiplier = 1.4
+    var smoke_material := StandardMaterial3D.new()
+    smoke_material.albedo_color = Color(0.17, 0.18, 0.17, 0.38)
+    smoke_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    smoke_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+
+    # Small static ember shapes and layered smoke provide a lightweight wreck effect.
+    for i in range(4):
+        var ember := MeshInstance3D.new()
+        var ember_mesh := SphereMesh.new()
+        ember_mesh.radius = 0.12 + float(i % 2) * 0.06
+        ember_mesh.height = ember_mesh.radius * 1.8
+        ember.mesh = ember_mesh
+        ember.position = Vector3(8.5 + randf_range(-0.7, 0.7), 1.25 + randf_range(-0.1, 0.35), -18.0 + randf_range(-0.8, 0.8))
+        ember.material_override = ember_material
+        add_child(ember)
+    for i in range(5):
+        var smoke := MeshInstance3D.new()
+        var smoke_mesh := SphereMesh.new()
+        smoke_mesh.radius = 0.65 + float(i) * 0.16
+        smoke_mesh.height = smoke_mesh.radius * 1.5
+        smoke.mesh = smoke_mesh
+        smoke.position = Vector3(8.5 + sin(float(i) * 1.4) * 0.35, 2.0 + float(i) * 0.78, -18.0)
+        smoke.material_override = smoke_material
+        add_child(smoke)
+
+    var fire_glow := OmniLight3D.new()
+    fire_glow.position = Vector3(8.5, 1.2, -18.0)
+    fire_glow.light_color = Color(1.0, 0.32, 0.08)
+    fire_glow.light_energy = 0.65
+    fire_glow.omni_range = 7.0
+    add_child(fire_glow)
 
 func _spawn_enemies():
     var spawn_points := [
