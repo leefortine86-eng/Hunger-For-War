@@ -39,7 +39,7 @@ static func get_weapons() -> Array:
         {"id":"mp43","name":"MP43","class":"Shotgun","caliber":"12 Gauge","damage":80,"rpm":90,"mag":2,"reserve":24,"reload":2.8,"range":45,"mode":"PUMP / BREAK","profile":"shotgun","sources":"WARDOGS"},
         {"id":"m500","name":"M500","class":"Shotgun","caliber":"12 Gauge","damage":78,"rpm":75,"mag":6,"reserve":36,"reload":3.0,"range":55,"mode":"PUMP","profile":"shotgun","sources":"WARDOGS"},
         {"id":"mgl40","name":"MGL-40","class":"Grenade Launcher","caliber":"40mm","damage":100,"rpm":60,"mag":6,"reserve":18,"reload":3.8,"range":300,"mode":"REVOLVER","profile":"launcher","sources":"WARDOGS"},
-        {"id":"rpg7","name":"RPG-7","class":"Rocket Launcher","caliber":"PG-7 rocket","damage":180,"rpm":20,"mag":1,"reserve":4,"reload":3.5,"range":350,"mode":"SINGLE","profile":"launcher","sources":"WARDOGS / ARMA"},
+        {"id":"rpg7","name":"RPG-7 / RPG-7V1","class":"Rocket Launcher","caliber":"PG-7 rocket","damage":180,"rpm":20,"mag":1,"reserve":4,"reload":3.5,"range":350,"mode":"SINGLE","profile":"launcher","sources":"WARDOGS / ARMA"},
         {"id":"maaws","name":"MAAWS","class":"Rocket Launcher","caliber":"84mm","damage":190,"rpm":18,"mag":1,"reserve":3,"reload":3.8,"range":500,"mode":"SINGLE","profile":"launcher","sources":"WARDOGS"},
         {"id":"verba","name":"9K333 Verba","class":"Anti-Air Launcher","caliber":"Missile","damage":200,"rpm":10,"mag":1,"reserve":2,"reload":4.0,"range":900,"mode":"LOCK-ON","profile":"launcher","sources":"WARDOGS"},
         {"id":"bow","name":"Compound Bow","class":"Bow","caliber":"Arrow","damage":70,"rpm":70,"mag":1,"reserve":12,"reload":1.2,"range":60,"mode":"SINGLE","profile":"bow","sources":"WARDOGS"},
