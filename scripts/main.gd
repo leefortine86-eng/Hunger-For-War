@@ -23,6 +23,7 @@ func _ready():
     _create_lighting()
     _create_battlefield_cover()
     _create_battlefield_environment()
+    _create_terrain_features()
     _create_capture_objective()
     _create_second_objective()
     _create_mission_hud()
@@ -433,6 +434,116 @@ func _create_battlefield_environment():
         shrub_material.roughness = 1.0
         shrub.material_override = shrub_material
         add_child(shrub)
+
+
+func _make_tree(tree_name: String, position: Vector3, scale_factor: float = 1.0):
+    var tree := Node3D.new()
+    tree.name = tree_name
+    tree.position = position
+    add_child(tree)
+
+    var trunk_body := StaticBody3D.new()
+    trunk_body.name = "TrunkCollision"
+    tree.add_child(trunk_body)
+    var trunk_shape := CollisionShape3D.new()
+    var trunk_cylinder := CylinderShape3D.new()
+    trunk_cylinder.radius = 0.24 * scale_factor
+    trunk_cylinder.height = 3.0 * scale_factor
+    trunk_shape.shape = trunk_cylinder
+    trunk_shape.position.y = 1.5 * scale_factor
+    trunk_body.add_child(trunk_shape)
+    trunk_body.add_to_group("battlefield_cover")
+
+    var trunk := MeshInstance3D.new()
+    var trunk_mesh := CylinderMesh.new()
+    trunk_mesh.top_radius = 0.16 * scale_factor
+    trunk_mesh.bottom_radius = 0.29 * scale_factor
+    trunk_mesh.height = 3.0 * scale_factor
+    trunk.mesh = trunk_mesh
+    trunk.position.y = 1.5 * scale_factor
+    var bark := StandardMaterial3D.new()
+    bark.albedo_color = Color(0.22, 0.17, 0.12)
+    bark.roughness = 1.0
+    trunk.material_override = bark
+    tree.add_child(trunk)
+
+    var foliage := StandardMaterial3D.new()
+    foliage.albedo_color = Color(0.10, 0.17, 0.11)
+    foliage.roughness = 1.0
+    for layer in range(3):
+        var crown := MeshInstance3D.new()
+        var crown_mesh := ConeMesh.new()
+        crown_mesh.top_radius = 0.05 * scale_factor
+        crown_mesh.bottom_radius = (1.75 - float(layer) * 0.28) * scale_factor
+        crown_mesh.height = 2.25 * scale_factor
+        crown.mesh = crown_mesh
+        crown.position.y = (3.0 + float(layer) * 0.82) * scale_factor
+        crown.material_override = foliage
+        tree.add_child(crown)
+
+
+func _create_terrain_features():
+    var earth_material := StandardMaterial3D.new()
+    earth_material.albedo_color = Color(0.28, 0.27, 0.21)
+    earth_material.roughness = 1.0
+    var rock_material := StandardMaterial3D.new()
+    rock_material.albedo_color = Color(0.31, 0.32, 0.29)
+    rock_material.roughness = 1.0
+    var road_paint := StandardMaterial3D.new()
+    road_paint.albedo_color = Color(0.62, 0.59, 0.48)
+    road_paint.roughness = 1.0
+
+    # Broken center markings and faded edge lines make the service road readable.
+    for z in range(-48, 45, 12):
+        _make_environment_box(self, "RoadCenterMark%d" % z, Vector3(0.12, 0.018, 4.0), Vector3(0, 0.56, float(z)), road_paint, false)
+    _make_environment_box(self, "RoadEdgeLineLeft", Vector3(0.09, 0.018, 92.0), Vector3(-3.65, 0.56, -4), road_paint, false)
+    _make_environment_box(self, "RoadEdgeLineRight", Vector3(0.09, 0.018, 92.0), Vector3(3.65, 0.56, -4), road_paint, false)
+
+    # Raised earth shoulders and shallow drainage banks shape the approaches.
+    for side in [-1.0, 1.0]:
+        for index in range(5):
+            var z_pos := -38.0 + float(index) * 18.0
+            var bank := _make_environment_box(self, "DrainageBank_%d_%d" % [int(side), index], Vector3(3.8, 0.7, 5.5), Vector3(side * 31.5, 0.28, z_pos), earth_material)
+            bank.rotation.y = deg_to_rad(side * 8.0)
+    _make_cover("SouthApproachEarthwork", Vector3(20.0, 0.8, 2.5), Vector3(0, 0.4, 39), earth_material.albedo_color)
+
+    # Rock clusters and low scrub provide intermediate cover without blocking the main road.
+    for i in range(14):
+        var rock := MeshInstance3D.new()
+        var rock_mesh := SphereMesh.new()
+        var radius := randf_range(0.45, 1.15)
+        rock_mesh.radius = radius
+        rock_mesh.height = radius * 1.25
+        rock.mesh = rock_mesh
+        var side := -1.0 if i % 2 == 0 else 1.0
+        rock.position = Vector3(side * randf_range(25.0, 43.0), radius * 0.42, randf_range(-42.0, 42.0))
+        rock.scale = Vector3(randf_range(1.0, 1.8), 0.7, randf_range(0.9, 1.5))
+        rock.material_override = rock_material
+        add_child(rock)
+
+    # Tree lines frame the settlement and create concealed flanking routes.
+    var tree_index := 0
+    for side in [-1.0, 1.0]:
+        for z_pos in [-39.0, -27.0, -14.0, 2.0, 20.0, 35.0, 43.0]:
+            var x_pos := side * (37.0 + randf_range(-2.0, 2.0))
+            _make_tree("PerimeterPine%d" % tree_index, Vector3(x_pos, 0.5, z_pos), randf_range(0.82, 1.18))
+            tree_index += 1
+    for x_pos in [-27.0, -12.0, 12.0, 27.0]:
+        _make_tree("NorthTree%d" % int(x_pos), Vector3(x_pos, 0.5, -43.0), randf_range(0.8, 1.05))
+        _make_tree("SouthTree%d" % int(x_pos), Vector3(x_pos, 0.5, 43.0), randf_range(0.8, 1.05))
+
+    # A few practical props make the compounds feel occupied.
+    var crate_material := StandardMaterial3D.new()
+    crate_material.albedo_color = Color(0.25, 0.22, 0.16)
+    crate_material.roughness = 1.0
+    var metal_material := StandardMaterial3D.new()
+    metal_material.albedo_color = Color(0.18, 0.21, 0.19)
+    metal_material.metallic = 0.35
+    metal_material.roughness = 0.82
+    _make_environment_box(self, "CommandSupplyCrates", Vector3(1.2, 0.9, 0.9), Vector3(-17.0, 0.95, -16.0), crate_material)
+    _make_environment_box(self, "BarracksStorageCrates", Vector3(1.0, 0.8, 1.0), Vector3(17.0, 0.9, -25.0), crate_material)
+    _make_environment_box(self, "CheckpointGenerator", Vector3(1.2, 0.9, 0.8), Vector3(-15.0, 0.95, 15.0), metal_material)
+    _make_environment_box(self, "OutpostFuelDrums", Vector3(0.65, 1.0, 0.65), Vector3(17.0, 1.0, 13.0), rust_material if false else crate_material)
 
 func _spawn_enemies():
     var spawn_points := [
