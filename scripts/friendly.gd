@@ -346,7 +346,7 @@ func _physics_process(delta):
 func _animate_soldier(delta: float):
     var speed := Vector2(velocity.x, velocity.z).length()
     if speed > 0.15:
-        walk_cycle += delta * speed * 2.7
+        walk_cycle += delta * speed * 2.6
     else:
         walk_cycle = lerpf(walk_cycle, 0.0, minf(delta * 3.0, 1.0))
     var amount := minf(speed / maxf(move_speed, 0.01), 1.0)
