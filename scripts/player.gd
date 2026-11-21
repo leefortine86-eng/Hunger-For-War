@@ -41,6 +41,7 @@ var crosshair_label: Label
 var weapon_label: Label
 var weapon_prev_button: Button
 var weapon_next_button: Button
+var weapon_select: OptionButton
 
 func _ready():
     add_to_group("player")
@@ -195,6 +196,19 @@ func _create_hud():
     weapon_next_button.pressed.connect(_on_next_weapon)
     canvas.add_child(weapon_next_button)
 
+    weapon_select = OptionButton.new()
+    weapon_select.name = "WeaponArsenal"
+    weapon_select.position = Vector2(screen_size.x - 300, 88)
+    weapon_select.size = Vector2(280, 44)
+    weapon_select.add_theme_font_size_override("font_size", 15)
+    for item in weapon.weapon_list:
+        weapon_select.add_item("%s  |  %s" % [item.get("name", "Weapon"), item.get("class", "Class")])
+        weapon_select.set_item_metadata(weapon_select.item_count - 1, item.get("id", ""))
+    weapon_select.item_selected.connect(_on_weapon_selected)
+    canvas.add_child(weapon_select)
+    weapon.weapon_changed.connect(_on_weapon_changed)
+    weapon_select.select(weapon.current_index)
+
     crosshair_label = Label.new()
     crosshair_label.name = "Crosshair"
     crosshair_label.text = "+"
@@ -228,6 +242,14 @@ func _on_previous_weapon():
 
 func _on_next_weapon():
     weapon.cycle_weapon(1)
+
+func _on_weapon_selected(index: int):
+    var selected_id = weapon_select.get_item_metadata(index)
+    weapon.equip_weapon_by_id(str(selected_id))
+
+func _on_weapon_changed(_weapon_name: String, _weapon_class: String):
+    if is_instance_valid(weapon_select):
+        weapon_select.select(weapon.current_index)
 
 func _on_reload_pressed():
     weapon.reload()
@@ -263,7 +285,7 @@ func _input(event):
             _rotate_camera(event.relative, touch_sensitivity)
 
 func _is_touch_ui(position: Vector2) -> bool:
-    var controls = [fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button]
+    var controls = [fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select]
     for control in controls:
         if is_instance_valid(control) and Rect2(control.position, control.size).has_point(position):
             return true
