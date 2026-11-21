@@ -7,7 +7,7 @@ extends CharacterBody3D
 
 var health: float = 100.0
 var gravity: float = 20.0
-@onready var movement: PlayerMovement = $Movement
+@onready var controller: TacticalPlayerController = $Controller
 var mobile_move := Vector2.ZERO
 var joystick_touch_id := -1
 var look_touch_id := -1
@@ -526,10 +526,7 @@ func _physics_process(delta: float) -> void:
     jump_key_was_down = jump_key_down
     mobile_jump_requested = false
 
-    camera.set_stance(prone, crouching)
-    movement.physics_step(delta, input_dir, sprinting, crouching, prone, jump_requested)
-    var horizontal_speed := Vector2(velocity.x, velocity.z).length()
-    camera.set_motion_state(horizontal_speed, movement.get_fatigue_ratio())
+    controller.physics_step(delta, input_dir, sprinting, crouching, prone, jump_requested)
 
     if is_instance_valid(sprint_button):
         sprint_button.text = "SPRINT ON" if mobile_sprint else "SPRINT"
