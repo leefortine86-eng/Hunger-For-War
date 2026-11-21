@@ -406,4 +406,4 @@ func _launch_explosive_projectile(raycast: RayCast3D) -> void:
     var projectile := Node3D.new()
     projectile.set_script(EXPLOSIVE_PROJECTILE)
     world.add_child(projectile)
-    projectile.configure(origin, direction, speed, gravity_value, fuse, radius, projectile_damage, kind, shooter, world)
+    projectile.call("configure", origin, direction, speed, gravity_value, fuse, radius, projectile_damage, kind, shooter, world)
