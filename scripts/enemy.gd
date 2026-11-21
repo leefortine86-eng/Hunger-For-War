@@ -162,8 +162,15 @@ func _build_soldier_appearance():
         forearm.rotation.x = -0.82
         forearm.rotation.z = side * 0.24
         animated_forearms.append(forearm)
-        var hand = _add_capsule_part("GlovedHand", 0.085, 0.18, Vector3(side * 0.10, 1.02, -0.68), dark_gear)
+        var hand_z := -0.70 if side < 0.0 else -0.39
+        var hand = _add_capsule_part("GlovedHand", 0.085, 0.18, Vector3(side * 0.10, 1.02, hand_z), dark_gear)
         animated_hands.append(hand)
+        for finger_index in range(4):
+            var finger_z := hand_z - 0.075
+            var finger_y := 0.99 - float(finger_index) * 0.012
+            var finger_x := side * 0.10 + (float(finger_index) - 1.5) * 0.035
+            _add_box_part("GloveFinger", Vector3(0.027, 0.045, 0.105), Vector3(finger_x, finger_y, finger_z), dark_gear)
+        _add_box_part("GloveThumb", Vector3(0.045, 0.055, 0.12), Vector3(side * 0.18, 1.03, hand_z + 0.025), dark_gear)
         var thigh = _add_capsule_part("Thigh", 0.155, 0.68, Vector3(side * 0.20, 0.39, 0), uniform)
         animated_legs.append(thigh)
         _add_capsule_part("LowerLeg", 0.125, 0.48, Vector3(side * 0.20, 0.16, 0.015), uniform)
