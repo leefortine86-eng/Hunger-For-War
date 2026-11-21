@@ -336,6 +336,8 @@ func _physics_process(delta):
         _set_soldier_pose("aim")
     elif Vector2(velocity.x, velocity.z).length() > 0.2:
         _set_soldier_pose("move")
+    else:
+        _set_soldier_pose("ready")
 
     if has_cover_target and cover_hold_timer > 0.0:
         var to_cover := cover_target - global_position
@@ -446,7 +448,7 @@ func die():
     if is_instance_valid(muzzle_light):
         muzzle_light.light_energy = 0.0
     if is_instance_valid(pose_rig):
-        _set_soldier_pose("hit")
+        _set_soldier_pose("death")
     var fall_tween := create_tween()
     fall_tween.set_parallel(true)
     fall_tween.tween_property(self, "rotation:z", rotation.z + deg_to_rad(82.0), 0.42).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
