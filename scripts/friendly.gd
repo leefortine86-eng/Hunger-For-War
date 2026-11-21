@@ -144,17 +144,28 @@ func _build_soldier():
         _part("UniformCamoPanel", camo_patch, Vector3(randf_range(-0.23, 0.23), randf_range(0.78, 1.42), -0.225), camo_color)
     for side in [-1.0, 1.0]:
         var limb := CapsuleMesh.new()
-        limb.radius = 0.13
-        limb.height = 0.68
-        var arm_part = _part("Arm", limb, Vector3(side * 0.43, 1.0, -0.12), green)
+        limb.radius = 0.125
+        limb.height = 0.52
+        var arm_part = _part("UpperArm", limb, Vector3(side * 0.34, 1.34, -0.14), green)
+        arm_part.rotation.x = -0.72
+        arm_part.rotation.z = side * 0.32
         arm_part.material_override = _camouflage_material(green, Color(0.07, 0.13, 0.08), Color(0.30, 0.31, 0.20))
         animated_arms.append(arm_part)
+        var forearm_mesh := CapsuleMesh.new()
+        forearm_mesh.radius = 0.105
+        forearm_mesh.height = 0.48
+        var forearm_part = _part("Forearm", forearm_mesh, Vector3(side * 0.16, 1.12, -0.47), green)
+        forearm_part.rotation.x = -0.82
+        forearm_part.rotation.z = side * 0.24
+        var hand_mesh := BoxMesh.new()
+        hand_mesh.size = Vector3(0.15, 0.13, 0.18)
+        _part("WeaponGripHand", hand_mesh, Vector3(side * 0.10, 1.02, -0.68), dark)
         var band_mesh := BoxMesh.new()
         band_mesh.size = Vector3(0.29, 0.13, 0.34)
-        _part("FriendlyBlueArmBand", band_mesh, Vector3(side * 0.43, 1.23, -0.12), friendly_blue)
+        _part("FriendlyBlueArmBand", band_mesh, Vector3(side * 0.40, 1.36, -0.16), friendly_blue)
         var sleeve_patch := BoxMesh.new()
         sleeve_patch.size = Vector3(0.20, 0.22, 0.28)
-        _part("SleeveCamoPanel", sleeve_patch, Vector3(side * 0.43, 1.08, 0.02), Color(0.27, 0.29, 0.18))
+        _part("SleeveCamoPanel", sleeve_patch, Vector3(side * 0.39, 1.29, -0.05), Color(0.27, 0.29, 0.18))
         var leg := CapsuleMesh.new()
         leg.radius = 0.15
         leg.height = 0.68
@@ -304,7 +315,7 @@ func _animate_soldier(delta: float):
     for i in range(animated_arms.size()):
         var arm = animated_arms[i]
         var leg = animated_legs[i]
-        arm.rotation.x = lerpf(arm.rotation.x, swing if i == 0 else -swing, minf(delta * 9.0, 1.0))
+        # Keep upper arms steady around the rifle; animate the legs independently.
         leg.rotation.x = lerpf(leg.rotation.x, -swing if i == 0 else swing, minf(delta * 9.0, 1.0))
 
 func take_damage(amount: float):
