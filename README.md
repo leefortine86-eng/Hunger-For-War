@@ -103,3 +103,10 @@ The visual-development pass now moves beyond single flat material colors: friend
 - Added short simulated magazine cycles so soldiers visibly lower and manipulate their rifles during reload transitions before resuming fire.
 - Pose profiles include different reach/balance offsets for rifle, SMG, LMG, pistol and launcher families; current AI soldiers use the rifle profile.
 - This is an articulated procedural bridge using the existing mesh parts, not yet a weighted Skeleton3D rig with authored finger animation clips. Hand contact and trigger-finger alignment remain approximate, and the result has not been opened or tested in Godot. A true skeletal rig, weapon-specific hand meshes and authored animation clips remain a later quality step.
+
+
+## Skeleton3D soldier rig milestone
+- Added a procedural Skeleton3D hierarchy for pelvis, spine, neck, head, upper arms, forearms, hands and thighs.
+- Existing procedural body, head, limb and rifle meshes are attached to skeleton bones through BoneAttachment3D nodes; the skeleton blends aiming, hip-fire, crouched-fire, movement and reload poses.
+- Locomotion phase is passed into the skeleton controller for leg swing, while pose changes are blended rather than snapped.
+- This is an intermediate articulated rig using attached primitive meshes, not yet a weighted skinned character mesh or a full AnimationTree/AnimationPlayer clip library. The new rig has not been executed in Godot in this environment, so editor/runtime compatibility and attachment alignment still need validation.
