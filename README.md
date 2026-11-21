@@ -30,7 +30,8 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [ ] Improved soldier models, materials, and animations
 - [x] Ranged enemy attacks with line-of-sight checks and distance keeping
 - [x] Friendly three-person fireteam that follows the player and engages visible enemies
-- [x] Enemies seek nearby defensive cover after taking damage\n- [ ] Broader enemy awareness, flanking, and squad tactics
+- [x] Enemies seek nearby defensive cover after taking damage
+- [ ] Broader enemy awareness, flanking, and squad tactics
 - [ ] Enemy return fire and squad behavior
 
 ### Battlefield and presentation
