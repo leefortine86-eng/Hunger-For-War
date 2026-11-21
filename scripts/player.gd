@@ -29,6 +29,7 @@ var fire_button_rect := Rect2()
 var reload_button_rect := Rect2()
 var mobile_sprint: bool = false
 var mobile_aiming: bool = false
+var mouse_aiming: bool = false
 var controller_firing: bool = false
 var last_gamepad_connected: bool = false
 var controller_hint_label: Label
@@ -407,8 +408,7 @@ func _unhandled_input(event):
             else:
                 weapon.stop_firing()
         elif event.button_index == MOUSE_BUTTON_RIGHT:
-            aiming = event.pressed
-            weapon.set_aiming(aiming)
+            mouse_aiming = event.pressed
 
 func _process(delta):
     var gamepad_connected := Input.get_connected_joypads().size() > 0
@@ -420,7 +420,7 @@ func _process(delta):
     )
     if look_input.length() > 0.16:
         _rotate_camera(look_input * controller_look_speed * (0.55 if aiming else 1.0) * delta, 1.0)
-    var wants_aim := mobile_aiming or Input.is_action_pressed("aim")
+    var wants_aim := mobile_aiming or mouse_aiming or Input.is_action_pressed("aim")
     if wants_aim != aiming:
         aiming = wants_aim
         weapon.set_aiming(aiming)
