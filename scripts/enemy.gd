@@ -17,6 +17,9 @@ var muzzle_flash_time: float = 0.0
 var cover_target := Vector3.ZERO
 var has_cover_target: bool = false
 var cover_hold_timer: float = 0.0
+var walk_cycle: float = 0.0
+var animated_arms: Array = []
+var animated_legs: Array = []
 
 func _ready():
     health = max_health
@@ -71,9 +74,11 @@ func _build_soldier_appearance():
     _add_box_part("HelmetBrim", Vector3(0.56, 0.07, 0.48), Vector3(0, 1.99, -0.02), dark_gear)
 
     for side in [-1.0, 1.0]:
-        _add_capsule_part("UpperArm", 0.14, 0.62, Vector3(side * 0.48, 1.12, 0), uniform)
+        var upper_arm = _add_capsule_part("UpperArm", 0.14, 0.62, Vector3(side * 0.48, 1.12, 0), uniform)
+        animated_arms.append(upper_arm)
         _add_capsule_part("Forearm", 0.12, 0.55, Vector3(side * 0.48, 0.72, -0.04), armor)
-        _add_capsule_part("Thigh", 0.19, 0.72, Vector3(side * 0.20, 0.38, 0), uniform)
+        var thigh = _add_capsule_part("Thigh", 0.19, 0.72, Vector3(side * 0.20, 0.38, 0), uniform)
+        animated_legs.append(thigh)
         _add_capsule_part("Boot", 0.13, 0.30, Vector3(side * 0.20, 0.08, -0.08), dark_gear)
         _add_box_part("ShoulderPad", Vector3(0.32, 0.20, 0.34), Vector3(side * 0.46, 1.42, 0), armor)
 
@@ -181,6 +186,7 @@ func _physics_process(delta):
         velocity.x = 0.0
         velocity.z = 0.0
         move_and_slide()
+        _animate_soldier(delta)
         return
 
     var to_player = player.global_position - global_position
@@ -205,6 +211,7 @@ func _physics_process(delta):
             _fire_at_player()
             attack_timer = attack_cooldown
         move_and_slide()
+        _animate_soldier(delta)
         if cover_hold_timer <= 0.0:
             has_cover_target = false
         return
@@ -226,6 +233,20 @@ func _physics_process(delta):
         attack_timer = attack_cooldown
 
     move_and_slide()
+    _animate_soldier(delta)
+
+func _animate_soldier(delta: float):
+    var speed := Vector2(velocity.x, velocity.z).length()
+    if speed > 0.15:
+        walk_cycle += delta * speed * 2.6
+    else:
+        walk_cycle = lerpf(walk_cycle, 0.0, minf(delta * 3.0, 1.0))
+    var swing := sin(walk_cycle) * minf(speed / move_speed, 1.0) * 0.38
+    for i in range(animated_arms.size()):
+        var arm = animated_arms[i]
+        var leg = animated_legs[i]
+        arm.rotation.x = lerpf(arm.rotation.x, swing if i == 0 else -swing, minf(delta * 8.0, 1.0))
+        leg.rotation.x = lerpf(leg.rotation.x, -swing if i == 0 else swing, minf(delta * 8.0, 1.0))
 
 func take_damage(amount: float):
     health -= amount
