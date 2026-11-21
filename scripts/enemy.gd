@@ -17,6 +17,9 @@ var muzzle_flash_time: float = 0.0
 var cover_target := Vector3.ZERO
 var has_cover_target: bool = false
 var cover_hold_timer: float = 0.0
+var flank_target := Vector3.ZERO
+var flank_refresh_timer: float = 0.0
+var squad_slot: int = 0
 var walk_cycle: float = 0.0
 var animated_arms: Array = []
 var animated_legs: Array = []
@@ -24,6 +27,7 @@ var animated_legs: Array = []
 func _ready():
     health = max_health
     player = get_tree().get_first_node_in_group("player") as CharacterBody3D
+    squad_slot = get_tree().get_nodes_in_group("enemies").size()
     _build_soldier_appearance()
     _build_enemy_rifle()
 
@@ -245,14 +249,37 @@ func _physics_process(delta):
             has_cover_target = false
         return
 
+    var squad_size := get_tree().get_nodes_in_group("enemies").size()
+    flank_refresh_timer = maxf(flank_refresh_timer - delta, 0.0)
+    if squad_size > 1 and flank_refresh_timer <= 0.0:
+        var lateral := Vector3(-to_player.z, 0.0, to_player.x).normalized()
+        var flank_side := -1.0 if squad_slot % 2 == 0 else 1.0
+        flank_target = player.global_position + lateral * flank_side * 7.0 + to_player.normalized() * 4.0
+        flank_refresh_timer = 4.0 + randf_range(0.0, 1.5)
+
     if distance > preferred_range + 2.0:
-        var direction = to_player.normalized()
+        var movement_target := player.global_position
+        if squad_size > 1:
+            movement_target = flank_target
+        var to_target := movement_target - global_position
+        to_target.y = 0.0
+        var direction := to_target.normalized() if to_target.length() > 0.1 else to_player.normalized()
         velocity.x = direction.x * move_speed
         velocity.z = direction.z * move_speed
     elif distance < preferred_range - 3.0:
         var retreat = -to_player.normalized()
         velocity.x = retreat.x * move_speed * 0.65
         velocity.z = retreat.z * move_speed * 0.65
+    elif squad_size > 1 and distance > 7.0:
+        var to_flank := flank_target - global_position
+        to_flank.y = 0.0
+        if to_flank.length() > 2.5:
+            var flank_direction := to_flank.normalized()
+            velocity.x = flank_direction.x * move_speed * 0.8
+            velocity.z = flank_direction.z * move_speed * 0.8
+        else:
+            velocity.x = move_toward(velocity.x, 0.0, move_speed * delta * 4.0)
+            velocity.z = move_toward(velocity.z, 0.0, move_speed * delta * 4.0)
     else:
         velocity.x = move_toward(velocity.x, 0.0, move_speed * delta * 4.0)
         velocity.z = move_toward(velocity.z, 0.0, move_speed * delta * 4.0)
