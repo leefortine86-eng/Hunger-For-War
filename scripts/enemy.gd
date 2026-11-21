@@ -319,7 +319,7 @@ func _physics_process(delta):
             velocity.x = move_toward(velocity.x, 0.0, move_speed * delta * 5.0)
             velocity.z = move_toward(velocity.z, 0.0, move_speed * delta * 5.0)
             cover_hold_timer -= delta
-        if distance <= fire_range and attack_timer <= 0.0:
+        if distance <= fire_range and attack_timer <= 0.0 and reload_pose_timer <= 0.0 and simulated_magazine > 0:
             _fire_at_player()
             attack_timer = attack_cooldown
         move_and_slide()
@@ -384,8 +384,9 @@ func _animate_soldier(delta: float):
     for i in range(animated_arms.size()):
         var arm = animated_arms[i]
         var leg = animated_legs[i]
-        # Keep the upper arms in a stable shoulder-ready weapon hold while legs animate.
-        leg.rotation.x = lerpf(leg.rotation.x, -swing if i == 0 else swing, minf(delta * 8.0, 1.0))
+        # The pose rig owns the legs while crouched; otherwise preserve the walk cycle.
+        if pose_rig.pose != "crouch_fire":
+            leg.rotation.x = lerpf(leg.rotation.x, -swing if i == 0 else swing, minf(delta * 8.0, 1.0))
 
 func take_damage(amount: float):
     health -= amount
