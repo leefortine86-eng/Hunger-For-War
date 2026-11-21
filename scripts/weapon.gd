@@ -304,9 +304,9 @@ func _fire_once(raycast: RayCast3D):
         can_fire = true
         return
 
-    var profile := str(current_weapon.get("profile", "rifle"))
+    var spread_profile := str(current_weapon.get("profile", "rifle"))
     var spread := 0.003
-    match profile:
+    match spread_profile:
         "pistol":
             spread = 0.006
         "smg":
