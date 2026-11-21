@@ -57,10 +57,13 @@ func _add_capsule_part(part_name: String, radius: float, height: float, part_pos
     return part
 
 func _build_soldier_appearance():
-    var uniform := Color(0.20, 0.25, 0.16)
-    var dark_gear := Color(0.10, 0.13, 0.11)
-    var armor := Color(0.27, 0.31, 0.23)
+    # Hostile faction: dusty tan/grey combat clothing with unmistakable red ID bands.
+    var uniform := Color(0.43, 0.40, 0.33)
+    var dark_gear := Color(0.12, 0.13, 0.13)
+    var armor := Color(0.25, 0.26, 0.24)
     var skin := Color(0.48, 0.35, 0.25)
+    var hostile_red := Color(0.62, 0.075, 0.045)
+    var helmet_tan := Color(0.36, 0.34, 0.27)
 
     $Body.mesh = CapsuleMesh.new()
     $Body.material_override = _material(uniform)
@@ -70,7 +73,11 @@ func _build_soldier_appearance():
     _add_box_part("TacticalVest", Vector3(0.72, 0.62, 0.34), Vector3(0, 1.02, -0.04), armor)
     _add_box_part("ChestPlate", Vector3(0.48, 0.32, 0.12), Vector3(0, 1.12, -0.235), dark_gear)
     _add_box_part("Backpack", Vector3(0.48, 0.62, 0.24), Vector3(0, 1.18, 0.30), dark_gear)
-    _add_capsule_part("Helmet", 0.29, 0.28, Vector3(0, 2.08, 0), Color(0.18, 0.22, 0.15))
+    _add_capsule_part("Helmet", 0.29, 0.28, Vector3(0, 2.08, 0), helmet_tan)
+    _add_box_part("HostileChestMark", Vector3(0.22, 0.24, 0.035), Vector3(0.0, 1.18, -0.305), hostile_red)
+    _add_box_part("HostileArmBandLeft", Vector3(0.31, 0.13, 0.34), Vector3(-0.48, 1.25, -0.01), hostile_red)
+    _add_box_part("HostileArmBandRight", Vector3(0.31, 0.13, 0.34), Vector3(0.48, 1.25, -0.01), hostile_red)
+    _add_box_part("HostileShoulderPatch", Vector3(0.20, 0.18, 0.045), Vector3(0.0, 1.48, -0.20), hostile_red)
     _add_box_part("HelmetBrim", Vector3(0.56, 0.07, 0.48), Vector3(0, 1.99, -0.02), dark_gear)
 
     for side in [-1.0, 1.0]:
