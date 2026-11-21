@@ -38,6 +38,9 @@ var jump_button: Button
 var aim_button: Button
 var aiming: bool = false
 var crosshair_label: Label
+var weapon_label: Label
+var weapon_prev_button: Button
+var weapon_next_button: Button
 
 func _ready():
     add_to_group("player")
@@ -110,7 +113,8 @@ func _create_hud():
     fire_button.size = Vector2(112, 76)
     fire_button.add_theme_font_size_override("font_size", 22)
     fire_button.modulate = Color(1.0, 0.72, 0.62, 0.95)
-    fire_button.pressed.connect(_on_fire_pressed)
+    fire_button.button_down.connect(_on_fire_pressed)
+    fire_button.button_up.connect(_on_fire_released)
     canvas.add_child(fire_button)
 
     reload_button = Button.new()
@@ -164,6 +168,33 @@ func _create_hud():
     aim_button.toggled.connect(_on_aim_toggled)
     canvas.add_child(aim_button)
 
+    weapon_label = Label.new()
+    weapon_label.name = "WeaponLabel"
+    weapon_label.position = Vector2(screen_size.x - 300, 24)
+    weapon_label.size = Vector2(280, 56)
+    weapon_label.add_theme_font_size_override("font_size", 17)
+    weapon_label.add_theme_color_override("font_color", Color(0.92, 0.92, 0.82))
+    weapon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+    canvas.add_child(weapon_label)
+
+    weapon_prev_button = Button.new()
+    weapon_prev_button.name = "WeaponPrevious"
+    weapon_prev_button.text = "PREV"
+    weapon_prev_button.position = Vector2(screen_size.x - 400, screen_size.y - 72)
+    weapon_prev_button.size = Vector2(82, 50)
+    weapon_prev_button.add_theme_font_size_override("font_size", 15)
+    weapon_prev_button.pressed.connect(_on_previous_weapon)
+    canvas.add_child(weapon_prev_button)
+
+    weapon_next_button = Button.new()
+    weapon_next_button.name = "WeaponNext"
+    weapon_next_button.text = "NEXT"
+    weapon_next_button.position = Vector2(screen_size.x - 308, screen_size.y - 72)
+    weapon_next_button.size = Vector2(82, 50)
+    weapon_next_button.add_theme_font_size_override("font_size", 15)
+    weapon_next_button.pressed.connect(_on_next_weapon)
+    canvas.add_child(weapon_next_button)
+
     crosshair_label = Label.new()
     crosshair_label.name = "Crosshair"
     crosshair_label.text = "+"
@@ -187,7 +218,16 @@ func _on_aim_toggled(enabled: bool):
     weapon.set_aiming(aiming)
 
 func _on_fire_pressed():
-    weapon.fire(raycast)
+    weapon.start_firing()
+
+func _on_fire_released():
+    weapon.stop_firing()
+
+func _on_previous_weapon():
+    weapon.cycle_weapon(-1)
+
+func _on_next_weapon():
+    weapon.cycle_weapon(1)
 
 func _on_reload_pressed():
     weapon.reload()
@@ -223,7 +263,7 @@ func _input(event):
             _rotate_camera(event.relative, touch_sensitivity)
 
 func _is_touch_ui(position: Vector2) -> bool:
-    var controls = [fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button]
+    var controls = [fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button]
     for control in controls:
         if is_instance_valid(control) and Rect2(control.position, control.size).has_point(position):
             return true
@@ -250,10 +290,17 @@ func _unhandled_input(event):
             Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
         if event.keycode == KEY_R:
             weapon.reload()
+        if event.keycode == KEY_Q:
+            weapon.cycle_weapon(-1)
+        if event.keycode == KEY_E:
+            weapon.cycle_weapon(1)
 
     if event is InputEventMouseButton:
-        if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-            weapon.fire(raycast)
+        if event.button_index == MOUSE_BUTTON_LEFT:
+            if event.pressed:
+                weapon.start_firing()
+            else:
+                weapon.stop_firing()
         elif event.button_index == MOUSE_BUTTON_RIGHT:
             aiming = event.pressed
             weapon.set_aiming(aiming)
@@ -263,6 +310,8 @@ func _process(_delta):
         health_label.text = "HEALTH: %d" % int(health)
     if is_instance_valid(ammo_label) and is_instance_valid(weapon):
         ammo_label.text = "AMMO: %d / %d" % [weapon.ammo_in_magazine, weapon.reserve_ammo]
+    if is_instance_valid(weapon_label) and is_instance_valid(weapon):
+        weapon_label.text = "%s\\n%s | %s" % [weapon.current_weapon_name, weapon.caliber, weapon.fire_mode]
     if is_instance_valid(fire_button):
         fire_button.disabled = weapon.reloading
     if is_instance_valid(reload_button):
