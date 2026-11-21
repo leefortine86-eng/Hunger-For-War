@@ -28,6 +28,9 @@ var reload_button: Button
 var fire_button_rect := Rect2()
 var reload_button_rect := Rect2()
 var mobile_sprint: bool = false
+var mobile_aiming: bool = false
+var controller_firing: bool = false
+@export var controller_look_speed: float = 2.4
 var mobile_crouch: bool = false
 var mobile_jump_requested: bool = false
 var jump_key_was_down: bool = false
@@ -45,10 +48,6 @@ var weapon_select: OptionButton
 var attachment_toggle: Button
 var attachment_panel: PanelContainer
 var attachment_selectors: Dictionary = {}
-var squad_order_label: Label
-var squad_follow_button: Button
-var squad_hold_button: Button
-var squad_advance_button: Button
 
 func _ready():
     add_to_group("player")
@@ -113,41 +112,6 @@ func _create_hud():
     ammo_label.add_theme_font_size_override("font_size", 23)
     ammo_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.65))
     canvas.add_child(ammo_label)
-
-    squad_order_label = Label.new()
-    squad_order_label.name = "SquadOrderLabel"
-    squad_order_label.position = Vector2(24, 91)
-    squad_order_label.text = "FIRETEAM: FOLLOW"
-    squad_order_label.add_theme_font_size_override("font_size", 16)
-    squad_order_label.add_theme_color_override("font_color", Color(0.72, 0.88, 1.0))
-    canvas.add_child(squad_order_label)
-
-    squad_follow_button = Button.new()
-    squad_follow_button.name = "SquadFollow"
-    squad_follow_button.text = "FOLLOW"
-    squad_follow_button.position = Vector2(24, 119)
-    squad_follow_button.size = Vector2(88, 42)
-    squad_follow_button.add_theme_font_size_override("font_size", 13)
-    squad_follow_button.pressed.connect(_on_squad_follow)
-    canvas.add_child(squad_follow_button)
-
-    squad_hold_button = Button.new()
-    squad_hold_button.name = "SquadHold"
-    squad_hold_button.text = "HOLD"
-    squad_hold_button.position = Vector2(118, 119)
-    squad_hold_button.size = Vector2(88, 42)
-    squad_hold_button.add_theme_font_size_override("font_size", 13)
-    squad_hold_button.pressed.connect(_on_squad_hold)
-    canvas.add_child(squad_hold_button)
-
-    squad_advance_button = Button.new()
-    squad_advance_button.name = "SquadAdvance"
-    squad_advance_button.text = "ADVANCE"
-    squad_advance_button.position = Vector2(212, 119)
-    squad_advance_button.size = Vector2(94, 42)
-    squad_advance_button.add_theme_font_size_override("font_size", 13)
-    squad_advance_button.pressed.connect(_on_squad_advance)
-    canvas.add_child(squad_advance_button)
 
     fire_button = Button.new()
     fire_button.name = "FireButton"
@@ -314,31 +278,6 @@ func _on_attachment_selected(index: int, slot: String):
     weapon.set_attachment(slot, str(selector.get_item_metadata(index)))
     _refresh_attachment_selectors()
 
-func _on_squad_follow():
-    _issue_squad_order("follow")
-
-func _on_squad_hold():
-    _issue_squad_order("hold")
-
-func _on_squad_advance():
-    var forward := -global_basis.z
-    forward.y = 0.0
-    _issue_squad_order("advance", global_position + forward.normalized() * 14.0)
-
-func _issue_squad_order(order: String, target_position: Vector3 = Vector3.ZERO):
-    var friendlies := get_tree().get_nodes_in_group("friendlies")
-    for soldier in friendlies:
-        if is_instance_valid(soldier) and soldier.has_method("set_squad_order"):
-            soldier.call("set_squad_order", order, target_position)
-    if is_instance_valid(squad_order_label):
-        squad_order_label.text = "FIRETEAM: " + order.to_upper()
-    if is_instance_valid(squad_follow_button):
-        squad_follow_button.disabled = order == "follow"
-    if is_instance_valid(squad_hold_button):
-        squad_hold_button.disabled = order == "hold"
-    if is_instance_valid(squad_advance_button):
-        squad_advance_button.disabled = order == "advance"
-
 func _on_sprint_toggled(enabled: bool):
     mobile_sprint = enabled
 
@@ -349,8 +288,7 @@ func _on_jump_pressed():
     mobile_jump_requested = true
 
 func _on_aim_toggled(enabled: bool):
-    aiming = enabled
-    weapon.set_aiming(aiming)
+    mobile_aiming = enabled
 
 func _on_fire_pressed():
     weapon.start_firing()
@@ -407,7 +345,7 @@ func _input(event):
             _rotate_camera(event.relative, touch_sensitivity)
 
 func _is_touch_ui(position: Vector2) -> bool:
-    var controls = [fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select, attachment_toggle, attachment_panel, squad_follow_button, squad_hold_button, squad_advance_button]
+    var controls = [fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select, attachment_toggle, attachment_panel]
     for control in controls:
         if is_instance_valid(control) and Rect2(control.position, control.size).has_point(position):
             return true
@@ -438,12 +376,6 @@ func _unhandled_input(event):
             weapon.cycle_weapon(-1)
         if event.keycode == KEY_E:
             weapon.cycle_weapon(1)
-        if event.keycode == KEY_F:
-            _on_squad_follow()
-        if event.keycode == KEY_H:
-            _on_squad_hold()
-        if event.keycode == KEY_G:
-            _on_squad_advance()
 
     if event is InputEventMouseButton:
         if event.button_index == MOUSE_BUTTON_LEFT:
@@ -455,7 +387,33 @@ func _unhandled_input(event):
             aiming = event.pressed
             weapon.set_aiming(aiming)
 
-func _process(_delta):
+func _process(delta):
+    var look_input := Vector2(
+        Input.get_action_strength("look_right") - Input.get_action_strength("look_left"),
+        Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
+    )
+    if look_input.length() > 0.16:
+        _rotate_camera(look_input * controller_look_speed * delta, 1.0)
+    var wants_aim := mobile_aiming or Input.is_action_pressed("aim")
+    if wants_aim != aiming:
+        aiming = wants_aim
+        weapon.set_aiming(aiming)
+    var wants_fire := Input.is_action_pressed("fire")
+    if wants_fire != controller_firing:
+        controller_firing = wants_fire
+        if controller_firing:
+            weapon.start_firing()
+        else:
+            weapon.stop_firing()
+    if Input.is_action_just_pressed("reload"):
+        weapon.reload()
+    if Input.is_action_just_pressed("weapon_previous"):
+        weapon.cycle_weapon(-1)
+    if Input.is_action_just_pressed("weapon_next"):
+        weapon.cycle_weapon(1)
+    if Input.is_action_just_pressed("jump") and is_on_floor():
+        mobile_jump_requested = true
+
     if is_instance_valid(health_label):
         health_label.text = "HEALTH: %d" % int(health)
     if is_instance_valid(ammo_label) and is_instance_valid(weapon):
@@ -473,15 +431,11 @@ func _process(_delta):
         crosshair_label.visible = not aiming
 
 func _physics_process(delta):
-    var keyboard_input = Vector2(
-        Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
-        Input.get_action_strength("move_back") - Input.get_action_strength("move_forward")
-    )
-    var input_dir: Vector2 = (keyboard_input + mobile_move).limit_length(1.0)
+    var input_dir: Vector2 = (Input.get_vector("move_left", "move_right", "move_forward", "move_back") + mobile_move).limit_length(1.0)
     var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
-    var sprinting := Input.is_key_pressed(KEY_SHIFT) or mobile_sprint
-    var crouching := Input.is_key_pressed(KEY_CTRL) or mobile_crouch
+    var sprinting := Input.is_key_pressed(KEY_SHIFT) or Input.is_action_pressed("sprint") or mobile_sprint
+    var crouching := Input.is_key_pressed(KEY_CTRL) or Input.is_action_pressed("crouch") or mobile_crouch
     var current_speed := move_speed
     if crouching:
         current_speed = move_speed * 0.45
@@ -491,7 +445,7 @@ func _physics_process(delta):
     velocity.x = direction.x * current_speed
     velocity.z = direction.z * current_speed
 
-    var jump_key_down := Input.is_key_pressed(KEY_SPACE)
+    var jump_key_down := Input.is_key_pressed(KEY_SPACE) or Input.is_action_pressed("jump")
     if jump_key_down and not jump_key_was_down and is_on_floor() and not crouching:
         velocity.y = 6.0
     jump_key_was_down = jump_key_down
