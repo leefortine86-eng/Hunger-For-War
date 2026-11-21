@@ -50,10 +50,6 @@ aim={
 "events": [Object(InputEventJoypadMotion,"axis":4,"axis_value":1.0)]
 }
 
-fire={
-"deadzone": 0.2,
-"events": [Object(InputEventJoypadMotion,"axis":5,"axis_value":1.0)]
-}
 
 reload={
 "deadzone": 0.2,
