@@ -33,7 +33,9 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Basic enemy soldier prototype
 - [x] Basic procedural walk-cycle animation for friendly and enemy soldiers
 - [x] First-pass distinct faction uniforms: woodland-green allies with blue ID markings and tan-grey hostiles with red ID markings
-- [ ] Higher-detail soldier models, camouflage patterns, and animation blending
+- [x] First-pass modern soldier equipment: helmet rails/NVG mounts, eye protection, headsets, plate-carrier pouches, radios, knee pads, gloves, boots, and class-neutral rifle accessories
+- [x] Subdued woodland camouflage panels on friendly uniforms and distinct hostile tan/grey kit
+- [ ] Higher-detail character meshes, texture-based camouflage, and animation blending
 - [x] Ranged enemy attacks with line-of-sight checks and distance keeping
 - [x] Friendly three-person fireteam that follows the player and engages visible enemies
 - [x] Enemies seek nearby defensive cover after taking damage
@@ -45,7 +47,7 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] First-pass settlement environment with four enterable buildings, window openings, flat rooftops, a service road, checkpoint barriers, a burned-out transport wreck, utility poles, berms, scrub, perimeter pine trees, rock clusters, drainage banks, road markings, and supply props
 - [x] Sequential Alpha and Bravo capture objectives with contested-zone logic and mission completion
 - [x] First-pass original building interiors with a command planning table, communications console, barracks bunks, lockers, checkpoint desk, and outpost storage
-- [x] First-pass defensive observation towers, firing bays, checkpoint canopy, radio mast, building service equipment, and compound floodlights
+- [x] First-pass defensive observation towers, firing bays, checkpoint canopy, radio mast, building service equipment, compound floodlights, modular blast walls, jersey barriers, equipment shade, and field generator
 - [x] Building roof-access ladder props and rooftop ventilation details (visual-only; climbing is not implemented)
 - [x] Subtle distance fog and a lightweight burned-wreck ember / smoke presentation
 - [ ] Material variety, true terrain elevation, and destructible-looking set dressing
@@ -68,3 +70,6 @@ The settlement battlefield now has defensive observation towers, extra firing ba
 
 
 Faction visuals now distinguish friendly and hostile soldiers at a glance: friendly fireteam members wear woodland-green kit with blue identification panels and arm bands; hostile soldiers wear dusty tan/grey kit with red identification markings. The settlement compounds also gained external air-conditioning units, power cabinets, cable ducts, a command radio mast, and low-intensity floodlights. These are procedural prototype details and have not yet been performance-tested on Android.
+
+
+The latest realism pass adds first-pass modern infantry kit to both factions: helmet accessory rails and NVG mounts, eye protection, headsets, plate-carrier magazine/utility pouches, radio antennas, knee protection, gloves, boots, and more complete rifle silhouettes. Friendly uniforms include muted woodland camouflage panels; hostile uniforms retain a separate dusty tan/grey palette and red faction identifiers. The settlement now also includes modular blast-wall and jersey-barrier positions, a camouflaged equipment staging shade, a field generator, and a tactical communications mast. These remain procedural low-poly prototypes; detailed scanned assets, texture maps, animation blending, and Android performance validation are still future work.
