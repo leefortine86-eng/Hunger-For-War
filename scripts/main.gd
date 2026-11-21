@@ -191,6 +191,7 @@ func _create_lighting():
 func _make_cover(name: String, size: Vector3, position: Vector3, color: Color):
     var cover := StaticBody3D.new()
     cover.name = name
+    cover.add_to_group("battlefield_cover")
     cover.position = position
     add_child(cover)
 
