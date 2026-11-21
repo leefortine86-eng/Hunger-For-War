@@ -120,6 +120,20 @@ func _add_box(part_name: String, size: Vector3, pos: Vector3, color: Color):
     weapon_model.add_child(part)
     return part
 
+func _add_cylinder(part_name: String, radius: float, height: float, pos: Vector3, color: Color) -> MeshInstance3D:
+    var part := MeshInstance3D.new()
+    part.name = part_name
+    var mesh := CylinderMesh.new()
+    mesh.top_radius = radius
+    mesh.bottom_radius = radius
+    mesh.height = height
+    part.mesh = mesh
+    part.position = pos
+    part.rotation.x = PI * 0.5
+    part.material_override = _material(color, 0.35)
+    weapon_model.add_child(part)
+    return part
+
 func _build_weapon_model():
     if is_instance_valid(weapon_model):
         weapon_model.queue_free()
@@ -199,7 +213,18 @@ func _build_weapon_model():
         if profile == "lmg":
             _add_box("AmmoBox", Vector3(0.18, 0.19, 0.22), Vector3(0, -0.20, 0.05), polymer)
 
-    _add_box("Barrel", Vector3(0.045, 0.045, barrel_length), Vector3(0, 0, -0.62), metal)
+    _add_cylinder("Barrel", 0.027, barrel_length, Vector3(0, 0, -0.62), metal)
+    var muzzle_z := -0.62 - barrel_length * 0.5
+    _add_cylinder("MuzzleDevice", 0.038, 0.10, Vector3(0, 0, muzzle_z - 0.035), dark)
+    if profile not in ["pistol", "launcher", "bow"]:
+        # Small receiver controls, reinforced stock pad, and side accessory rails.
+        _add_box("EjectionPort", Vector3(0.012, 0.055, 0.15), Vector3(body_width * 0.52, 0.015, -0.04), dark)
+        _add_box("ChargingHandle", Vector3(0.10, 0.035, 0.045), Vector3(0, 0.095, 0.20), metal)
+        _add_box("StockButtpad", Vector3(0.12, 0.14, 0.045), Vector3(0, -0.01, 0.47), dark)
+        _add_box("LeftHandguardRail", Vector3(0.035, 0.045, barrel_length * 0.78), Vector3(-body_width * 0.55, -0.005, -0.34), metal)
+        _add_box("RightHandguardRail", Vector3(0.035, 0.045, barrel_length * 0.78), Vector3(body_width * 0.55, -0.005, -0.34), metal)
+        _add_box("TriggerGuardFront", Vector3(0.025, 0.10, 0.025), Vector3(0, -0.16, 0.06), metal)
+        _add_box("TriggerGuardBase", Vector3(0.025, 0.025, 0.13), Vector3(0, -0.205, 0.0), metal)
     _build_attachment_visuals(profile, dark, metal, polymer)
     muzzle_light = OmniLight3D.new()
     muzzle_light.name = "MuzzleFlash"
