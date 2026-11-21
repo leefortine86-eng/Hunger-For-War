@@ -25,6 +25,10 @@ These are candidate sources, not assets already imported into the game:
 
 Free libraries may not contain a suitable realistic modern soldier or weapon. Do not force a stylized or mismatched asset into the game just because it is free. If no suitable licensed model is available, leave that slot clearly marked as pending and plan an original asset made with free tools.
 
+## Reviewed candidates
+
+See [`ASSET_CANDIDATES.md`](ASSET_CANDIDATES.md) for the first license and quality review. The rigged Male Soldier 03 is only a provisional test candidate; the reviewed rifle and Arctic Station pack are not approved as final game assets. No candidate has been integrated into gameplay.
+
 ## Repository layout
 
 Place accepted files in these locations:
