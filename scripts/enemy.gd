@@ -31,6 +31,40 @@ func _ready():
     _build_soldier_appearance()
     _build_enemy_rifle()
 
+func _camouflage_material(base: Color, dark_patch: Color, light_patch: Color) -> ShaderMaterial:
+    var shader := Shader.new()
+    shader.code = """
+shader_type spatial;
+render_mode diffuse_burley, specular_schlick_ggx;
+uniform vec4 base_color : source_color;
+uniform vec4 dark_color : source_color;
+uniform vec4 light_color : source_color;
+float hash_cell(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+void fragment() {
+    vec2 cell = floor(UV * vec2(24.0, 18.0));
+    vec2 local_uv = fract(UV * vec2(24.0, 18.0));
+    float seed = hash_cell(cell);
+    float shape = smoothstep(0.18, 0.72, length((local_uv - vec2(0.5)) * vec2(0.85, 1.15)));
+    vec3 fabric = base_color.rgb;
+    if (seed > 0.60 && shape < 0.78) {
+        fabric = dark_color.rgb;
+    } else if (seed < 0.22 && shape < 0.70) {
+        fabric = light_color.rgb;
+    }
+    float weave = 0.965 + 0.035 * sin(UV.x * 850.0) * sin(UV.y * 760.0);
+    ALBEDO = fabric * weave;
+    ROUGHNESS = 0.96;
+}
+"""
+    var material := ShaderMaterial.new()
+    material.shader = shader
+    material.set_shader_parameter("base_color", base)
+    material.set_shader_parameter("dark_color", dark_patch)
+    material.set_shader_parameter("light_color", light_patch)
+    return material
+
 func _material(color: Color) -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
     material.albedo_color = color
@@ -70,7 +104,7 @@ func _build_soldier_appearance():
     var helmet_tan := Color(0.36, 0.34, 0.27)
 
     $Body.mesh = CapsuleMesh.new()
-    $Body.material_override = _material(uniform)
+    $Body.material_override = _camouflage_material(uniform, Color(0.25, 0.25, 0.21), Color(0.53, 0.48, 0.38))
     $Head.mesh = SphereMesh.new()
     $Head.material_override = _material(skin)
 
@@ -99,7 +133,8 @@ func _build_soldier_appearance():
     _add_box_part("TourniquetPouch", Vector3(0.17, 0.18, 0.14), Vector3(-0.36, 1.38, -0.10), hostile_red)
 
     for side in [-1.0, 1.0]:
-        var upper_arm = _add_capsule_part("UpperArm", 0.14, 0.62, Vector3(side * 0.48, 1.12, 0), uniform)
+        var upper_arm = _add_capsule_part("UpperArm", 0.135, 0.58, Vector3(side * 0.48, 1.12, 0), uniform)
+        upper_arm.material_override = _camouflage_material(uniform, Color(0.25, 0.25, 0.21), Color(0.53, 0.48, 0.38))
         animated_arms.append(upper_arm)
         _add_capsule_part("Forearm", 0.12, 0.55, Vector3(side * 0.48, 0.72, -0.04), armor)
         var thigh = _add_capsule_part("Thigh", 0.19, 0.72, Vector3(side * 0.20, 0.38, 0), uniform)
