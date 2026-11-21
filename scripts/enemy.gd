@@ -26,6 +26,7 @@ var animated_forearms: Array = []
 var animated_hands: Array = []
 var animated_legs: Array = []
 var pose_rig: Node
+var glb_animator: Node
 var rifle: MeshInstance3D
 var simulated_magazine: int = 8
 var reload_pose_timer: float = 0.0
@@ -198,6 +199,7 @@ func _build_soldier_appearance():
         animator.name = "GLBSoldierAnimator"
         animator.set_script(load("res://scripts/glb_soldier_animator.gd"))
         soldier_model.add_child(animator)
+        glb_animator = animator
 
 
 func _build_enemy_rifle():
@@ -320,20 +322,20 @@ func _physics_process(delta):
 
     if hit_reaction_timer > 0.0:
         hit_reaction_timer = maxf(hit_reaction_timer - delta, 0.0)
-        pose_rig.set_pose("hit")
+        _set_soldier_pose("hit")
     elif reload_pose_timer > 0.0:
         reload_pose_timer = maxf(reload_pose_timer - delta, 0.0)
-        pose_rig.set_pose("reload")
+        _set_soldier_pose("reload")
         if reload_pose_timer <= 0.0:
             simulated_magazine = 8
     elif has_cover_target and distance <= fire_range:
-        pose_rig.set_pose("crouch_fire")
+        _set_soldier_pose("crouch_fire")
     elif distance < 9.0:
-        pose_rig.set_pose("hip_fire")
+        _set_soldier_pose("hip_fire")
     elif distance <= fire_range:
-        pose_rig.set_pose("aim")
+        _set_soldier_pose("aim")
     elif Vector2(velocity.x, velocity.z).length() > 0.2:
-        pose_rig.set_pose("move")
+        _set_soldier_pose("move")
 
     if has_cover_target and cover_hold_timer > 0.0:
         var to_cover := cover_target - global_position
@@ -393,13 +395,20 @@ func _physics_process(delta):
     if distance <= fire_range and attack_timer <= 0.0 and reload_pose_timer <= 0.0:
         if simulated_magazine <= 0:
             reload_pose_timer = 2.1
-            pose_rig.set_pose("reload")
+            _set_soldier_pose("reload")
         else:
             _fire_at_player()
         attack_timer = attack_cooldown
 
     move_and_slide()
     _animate_soldier(delta)
+
+
+func _set_soldier_pose(next_pose: String) -> void:
+    if is_instance_valid(pose_rig):
+        pose_rig.set_pose(next_pose)
+    if is_instance_valid(glb_animator) and glb_animator.has_method("set_combat_pose"):
+        glb_animator.set_combat_pose(next_pose)
 
 func _animate_soldier(delta: float):
     var speed := Vector2(velocity.x, velocity.z).length()
@@ -420,7 +429,7 @@ func take_damage(amount: float) -> bool:
         return true
     hit_reaction_timer = 0.24
     if is_instance_valid(pose_rig):
-        pose_rig.set_pose("hit")
+        _set_soldier_pose("hit")
     _find_cover_position()
     return false
 
@@ -437,7 +446,7 @@ func die():
     if is_instance_valid(muzzle_light):
         muzzle_light.light_energy = 0.0
     if is_instance_valid(pose_rig):
-        pose_rig.set_pose("hit")
+        _set_soldier_pose("hit")
     var fall_tween := create_tween()
     fall_tween.set_parallel(true)
     fall_tween.tween_property(self, "rotation:z", rotation.z + deg_to_rad(82.0), 0.42).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
