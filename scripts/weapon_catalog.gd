@@ -15,7 +15,7 @@ static func get_weapons() -> Array:
         {"id":"amp9","name":"AMP-9","class":"SMG","caliber":"9x19mm","damage":21,"rpm":900,"mag":30,"reserve":150,"reload":1.8,"range":100,"mode":"AUTO","profile":"smg","sources":"WARDOGS"},
         {"id":"mp5","name":"MP5","class":"SMG","caliber":"9x19mm","damage":22,"rpm":800,"mag":30,"reserve":150,"reload":1.9,"range":140,"mode":"AUTO","profile":"smg","sources":"WARDOGS"},
         {"id":"pp19","name":"PP-19 Vityaz","class":"SMG","caliber":"9x19mm","damage":21,"rpm":700,"mag":30,"reserve":150,"reload":2.0,"range":130,"mode":"AUTO","profile":"smg","sources":"WARDOGS"},
-        {"id":"super45","name":"Super-45","class":"SMG","caliber":".45 ACP","damage":31,"rpm":1100,"mag":25,"reserve":100,"reload":2.0,"range":90,"mode":"AUTO","profile":"smg"},
+        {"id":"super45","name":"Super-45","class":"SMG","caliber":".45 ACP","damage":31,"rpm":1100,"mag":25,"reserve":100,"reload":2.0,"range":90,"mode":"AUTO","profile":"smg","sources":"WARDOGS"},
         {"id":"evo3","name":"Evo-3 Ultra","class":"SMG","caliber":"9x19mm","damage":21,"rpm":850,"mag":30,"reserve":150,"reload":1.9,"range":130,"mode":"AUTO","profile":"smg","sources":"WARDOGS"},
         {"id":"bmr308","name":"BMR-308","class":"Marksman Rifle","caliber":".308 Win","damage":54,"rpm":300,"mag":20,"reserve":80,"reload":2.7,"range":600,"mode":"SEMI","profile":"dmr","sources":"WARDOGS"},
         {"id":"sks","name":"SKS","class":"Marksman Rifle","caliber":"7.62x39mm","damage":43,"rpm":300,"mag":10,"reserve":80,"reload":2.6,"range":400,"mode":"SEMI","profile":"dmr","sources":"WARDOGS"},
