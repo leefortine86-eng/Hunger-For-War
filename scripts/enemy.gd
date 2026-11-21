@@ -200,6 +200,34 @@ func _build_soldier_appearance():
         animator.set_script(load("res://scripts/glb_soldier_animator.gd"))
         soldier_model.add_child(animator)
         glb_animator = animator
+        _apply_hostile_faction_look(soldier_model)
+
+func _apply_hostile_faction_look(model: Node3D) -> void:
+    # Keep the imported fabric textures while shifting the overall tone toward
+    # a darker opposing woodland palette. Blue identifiers are reserved for allies.
+    for item in model.find_children("*", "MeshInstance3D", true, false):
+        var mesh_instance := item as MeshInstance3D
+        if mesh_instance.mesh == null:
+            continue
+        for surface in range(mesh_instance.mesh.get_surface_count()):
+            var source := mesh_instance.get_active_material(surface)
+            if source is StandardMaterial3D:
+                var material := source.duplicate() as StandardMaterial3D
+                material.albedo_color = material.albedo_color * Color(0.92, 0.84, 0.70, 1.0)
+                mesh_instance.set_surface_override_material(surface, material)
+
+    var hostile_mark := StandardMaterial3D.new()
+    hostile_mark.albedo_color = Color(0.58, 0.075, 0.035)
+    hostile_mark.roughness = 0.92
+    for side in [-1.0, 1.0]:
+        var marker := MeshInstance3D.new()
+        marker.name = "HostileRedArmIdentifier"
+        var panel := BoxMesh.new()
+        panel.size = Vector3(0.20, 0.12, 0.045)
+        marker.mesh = panel
+        marker.position = Vector3(side * 0.36, 1.36, -0.18)
+        marker.material_override = hostile_mark
+        model.add_child(marker)
 
 
 func _build_enemy_rifle():
