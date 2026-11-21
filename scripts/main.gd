@@ -358,7 +358,7 @@ func _make_building(building_name: String, center: Vector3, footprint: Vector2, 
 
     # Side walls include narrow firing / observation windows.
     for side in [-1.0, 1.0]:
-        var x := side * half_w
+        var x: float = float(side) * half_w
         var segment_depth := (depth - window_width) * 0.5
         _make_environment_box(building, "SideWallFront", Vector3(wall, wall_height, segment_depth), Vector3(x, wall_height * 0.5 + 0.28, (window_width + segment_depth) * 0.5), wall_material)
         _make_environment_box(building, "SideWallRear", Vector3(wall, wall_height, segment_depth), Vector3(x, wall_height * 0.5 + 0.28, -(window_width + segment_depth) * 0.5), wall_material)
@@ -536,7 +536,7 @@ func _make_tree(tree_name: String, position: Vector3, scale_factor: float = 1.0)
     foliage.roughness = 1.0
     for layer in range(3):
         var crown := MeshInstance3D.new()
-        var crown_mesh := ConeMesh.new()
+        var crown_mesh := CylinderMesh.new()
         crown_mesh.top_radius = 0.05 * scale_factor
         crown_mesh.bottom_radius = (1.75 - float(layer) * 0.28) * scale_factor
         crown_mesh.height = 2.25 * scale_factor
@@ -589,7 +589,7 @@ func _create_terrain_features():
     var tree_index := 0
     for side in [-1.0, 1.0]:
         for z_pos in [-39.0, -27.0, -14.0, 2.0, 20.0, 35.0, 43.0]:
-            var x_pos := side * (37.0 + randf_range(-2.0, 2.0))
+            var x_pos: float = float(side) * (37.0 + randf_range(-2.0, 2.0))
             _make_tree("PerimeterPine%d" % tree_index, Vector3(x_pos, 0.5, z_pos), randf_range(0.82, 1.18))
             tree_index += 1
     for x_pos in [-27.0, -12.0, 12.0, 27.0]:
