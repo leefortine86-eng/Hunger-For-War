@@ -142,3 +142,10 @@ The visual-development pass now moves beyond single flat material colors: hostil
 
 ## Current direction clarification
 The playable experience is a direct first-person military shooter. There are no friendly fireteam followers, squad-command orders, or player squad-management systems in the current design. Hostile AI may coordinate its own movement and attacks, but the player experience remains focused on individual first-person combat.
+
+
+## Free 3D asset production milestone
+- Established a zero-cost asset policy: no paid asset packs, subscriptions, plugins, or paid tools may be required.
+- Added `assets/ASSET_PIPELINE.md` with candidate free sources, license checks, Godot GLB import rules, asset folder structure, mobile performance considerations, and the first character/weapon replacement milestone.
+- Poly Haven CC0 materials/models and Mixamo's free game-use character/animation offering are candidate sources; no external asset is claimed to be integrated yet.
+- Existing procedural soldier and weapon models remain in place until replacement assets are imported and verified in a separate Godot test scene.
