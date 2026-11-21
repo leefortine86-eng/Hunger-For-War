@@ -11,6 +11,7 @@ var mobile_move := Vector2.ZERO
 var joystick_touch_id := -1
 var look_touch_id := -1
 var joystick_center := Vector2.ZERO
+var joystick_home_center := Vector2.ZERO
 var joystick_radius: float = 58.0
 
 @onready var camera = $Camera3D
@@ -60,6 +61,7 @@ func _create_mobile_controls():
     touch_overlay.add_child(joystick_base)
 
     joystick_center = joystick_base.position + joystick_base.size / 2.0
+    joystick_home_center = joystick_center
     joystick_knob = Panel.new()
     joystick_knob.name = "JoystickKnob"
     joystick_knob.position = joystick_center - Vector2(29, 29)
@@ -123,17 +125,20 @@ func _input(event):
             if fire_button_rect.has_point(event.position) or reload_button_rect.has_point(event.position):
                 return
 
-            var screen_width := get_viewport().get_visible_rect().size.x
-            if event.position.x < screen_width * 0.5 and joystick_touch_id == -1:
-                if event.position.distance_to(joystick_center) <= 115.0:
-                    joystick_touch_id = event.index
-                    _update_joystick(event.position)
-            elif event.position.x >= screen_width * 0.5 and look_touch_id == -1:
+            var screen_size := get_viewport().get_visible_rect().size
+            if event.position.x < screen_size.x * 0.5 and event.position.y > screen_size.y * 0.35 and joystick_touch_id == -1:
+                joystick_touch_id = event.index
+                joystick_center = event.position
+                joystick_base.position = joystick_center - joystick_base.size / 2.0
+                _update_joystick(event.position)
+            elif event.position.x >= screen_size.x * 0.5 and look_touch_id == -1:
                 look_touch_id = event.index
         else:
             if event.index == joystick_touch_id:
                 joystick_touch_id = -1
                 mobile_move = Vector2.ZERO
+                joystick_center = joystick_home_center
+                joystick_base.position = joystick_center - joystick_base.size / 2.0
                 joystick_knob.position = joystick_center - joystick_knob.size / 2.0
             if event.index == look_touch_id:
                 look_touch_id = -1
