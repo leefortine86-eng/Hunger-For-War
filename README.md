@@ -40,6 +40,7 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [ ] Authored high-resolution character textures, higher-detail character meshes, and animation blending
 - [x] Ranged enemy attacks with line-of-sight checks and distance keeping
 - [x] Friendly three-person fireteam that follows the player and engages visible enemies
+- [x] Basic fireteam orders: follow, hold position, and advance to a point ahead of the player
 - [x] Enemies seek nearby defensive cover after taking damage
 - [x] Basic coordinated enemy flanking: hostile soldiers choose alternating lateral approach positions when operating as a squad
 - [ ] Advanced enemy awareness, obstacle-aware flanking, suppression, and squad tactics
@@ -110,3 +111,12 @@ The visual-development pass now moves beyond single flat material colors: friend
 - Existing procedural body, head, limb and rifle meshes are attached to skeleton bones through BoneAttachment3D nodes; the skeleton blends aiming, hip-fire, crouched-fire, movement and reload poses.
 - Locomotion phase is passed into the skeleton controller for leg swing, while pose changes are blended rather than snapped.
 - This is an intermediate articulated rig using attached primitive meshes, not yet a weighted skinned character mesh or a full AnimationTree/AnimationPlayer clip library. The new rig has not been executed in Godot in this environment, so editor/runtime compatibility and attachment alignment still need validation.
+
+
+## Fireteam command system
+- Added mobile HUD buttons for FOLLOW, HOLD, and ADVANCE orders.
+- FOLLOW restores the existing player-relative formation.
+- HOLD tells each friendly soldier to stay at their current position while continuing to engage enemies in range.
+- ADVANCE sends the fireteam toward a point 14 metres ahead of the player, retaining the existing support-fire behavior.
+- Desktop keyboard shortcuts: F = follow, H = hold, G = advance.
+- This is a first command layer; individual soldier selection, map-click waypoints, squad formations, and obstacle-aware navigation remain future work. The commands have not yet been tested in Godot or on Android.
