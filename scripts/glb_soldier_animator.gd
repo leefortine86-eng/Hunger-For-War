@@ -58,7 +58,7 @@ func _classify_bone(name: String) -> String:
         return "foot"
     if name.contains("forearm") or name.contains("lowerarm") or name.contains("lower_arm"):
         return "forearm"
-    if name.contains("upperarm") or name.contains("upper_arm") or name.contains("shoulder") or name.contains("arm_l") or name.contains("arm_r"):
+    if name.contains("upperarm") or name.contains("upper_arm") or name.contains("leftarm") or name.contains("rightarm") or name.contains("shoulder") or name.contains("arm_l") or name.contains("arm_r"):
         return "arm"
     if name.contains("pelvis") or name == "hips" or name == "hip":
         return "pelvis"
