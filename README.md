@@ -36,7 +36,7 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 
 ### Battlefield and presentation
 - [x] Prototype ground, lighting, cover, and test enemies
-- [x] First capture-zone objective with contested-state logic
+- [x] Sequential Alpha and Bravo capture objectives with contested-zone logic and mission completion
 - [ ] Detailed terrain, military structures, and destructible-looking set dressing
 - [ ] Vehicles and larger battlefield spaces
 - [ ] Improved lighting, atmosphere, sound, and visual effects
