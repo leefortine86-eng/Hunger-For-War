@@ -47,6 +47,7 @@ var flashlight_equipped: bool = false
 var laser_equipped: bool = false
 
 signal weapon_changed(weapon_name: String, weapon_class: String)
+signal hit_confirmed(killed: bool)
 
 func _ready():
     weapon_list = WEAPON_CATALOG.get_weapons()
@@ -454,7 +455,8 @@ func _fire_once(raycast: RayCast3D):
         var hit_distance := raycast.global_position.distance_to(raycast.get_collision_point())
         if hit_distance <= effective_range:
             if target.has_method("take_damage"):
-                target.take_damage(damage)
+                var eliminated := bool(target.take_damage(damage))
+                hit_confirmed.emit(eliminated)
     can_fire = true
 
 func reload():
