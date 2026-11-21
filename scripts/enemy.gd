@@ -2,19 +2,24 @@ extends CharacterBody3D
 
 @export var max_health: float = 100.0
 @export var move_speed: float = 2.5
-@export var attack_range: float = 2.0
-@export var attack_damage: float = 10.0
-@export var attack_cooldown: float = 1.2
+@export var preferred_range: float = 11.0
+@export var fire_range: float = 28.0
+@export var attack_damage: float = 8.0
+@export var attack_cooldown: float = 1.15
+@export var accuracy: float = 0.82
 
 var health: float = 100.0
 var gravity: float = 20.0
 var attack_timer: float = 0.0
 var player: CharacterBody3D
+var muzzle_light: OmniLight3D
+var muzzle_flash_time: float = 0.0
 
 func _ready():
     health = max_health
     player = get_tree().get_first_node_in_group("player") as CharacterBody3D
     _build_soldier_appearance()
+    _build_enemy_rifle()
 
 func _material(color: Color) -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
@@ -69,8 +74,65 @@ func _build_soldier_appearance():
         _add_capsule_part("Boot", 0.13, 0.30, Vector3(side * 0.20, 0.08, -0.08), dark_gear)
         _add_box_part("ShoulderPad", Vector3(0.32, 0.20, 0.34), Vector3(side * 0.46, 1.42, 0), armor)
 
+
+func _build_enemy_rifle():
+    var rifle := MeshInstance3D.new()
+    rifle.name = "EnemyRifle"
+    var mesh := BoxMesh.new()
+    mesh.size = Vector3(0.10, 0.10, 0.78)
+    rifle.mesh = mesh
+    rifle.position = Vector3(0.0, 1.12, -0.48)
+    rifle.material_override = _material(Color(0.07, 0.08, 0.07))
+    add_child(rifle)
+
+    muzzle_light = OmniLight3D.new()
+    muzzle_light.position = Vector3(0.0, 1.12, -0.90)
+    muzzle_light.light_color = Color(1.0, 0.55, 0.18)
+    muzzle_light.light_energy = 0.0
+    muzzle_light.omni_range = 3.0
+    add_child(muzzle_light)
+
+func _has_line_of_sight(target_position: Vector3) -> bool:
+    var query := PhysicsRayQueryParameters3D.create(
+        global_position + Vector3(0, 1.25, 0),
+        target_position
+    )
+    query.exclude = [get_rid()]
+    var hit := get_world_3d().direct_space_state.intersect_ray(query)
+    return hit.is_empty() or hit.get("collider") == player
+
+func _fire_at_player():
+    if not is_instance_valid(player):
+        return
+    var aim_point = player.global_position + Vector3(0, 0.8, 0)
+    if not _has_line_of_sight(aim_point):
+        return
+
+    if is_instance_valid(muzzle_light):
+        muzzle_light.light_energy = 2.8
+        muzzle_flash_time = 0.06
+
+    var spread := Vector3(
+        randf_range(-1.0, 1.0),
+        randf_range(-0.7, 0.7),
+        randf_range(-1.0, 1.0)
+    ) * (1.0 - accuracy) * 2.2
+    var shot_target = aim_point + spread
+    var query := PhysicsRayQueryParameters3D.create(
+        global_position + Vector3(0, 1.25, 0),
+        shot_target
+    )
+    query.exclude = [get_rid()]
+    var hit := get_world_3d().direct_space_state.intersect_ray(query)
+    if not hit.is_empty() and hit.get("collider") == player:
+        player.take_damage(attack_damage)
+
 func _physics_process(delta):
     attack_timer = max(attack_timer - delta, 0.0)
+    if muzzle_flash_time > 0.0:
+        muzzle_flash_time -= delta
+        if muzzle_flash_time <= 0.0 and is_instance_valid(muzzle_light):
+            muzzle_light.light_energy = 0.0
 
     if not is_on_floor():
         velocity.y -= gravity * delta
@@ -91,16 +153,21 @@ func _physics_process(delta):
     if distance > 0.1:
         look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
 
-    if distance > attack_range:
+    if distance > preferred_range + 2.0:
         var direction = to_player.normalized()
         velocity.x = direction.x * move_speed
         velocity.z = direction.z * move_speed
+    elif distance < preferred_range - 3.0:
+        var retreat = -to_player.normalized()
+        velocity.x = retreat.x * move_speed * 0.65
+        velocity.z = retreat.z * move_speed * 0.65
     else:
-        velocity.x = 0.0
-        velocity.z = 0.0
-        if attack_timer <= 0.0 and player.has_method("take_damage"):
-            player.take_damage(attack_damage)
-            attack_timer = attack_cooldown
+        velocity.x = move_toward(velocity.x, 0.0, move_speed * delta * 4.0)
+        velocity.z = move_toward(velocity.z, 0.0, move_speed * delta * 4.0)
+
+    if distance <= fire_range and attack_timer <= 0.0:
+        _fire_at_player()
+        attack_timer = attack_cooldown
 
     move_and_slide()
 
