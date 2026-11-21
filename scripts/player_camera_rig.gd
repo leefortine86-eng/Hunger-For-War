@@ -27,6 +27,13 @@ var _horizontal_speed: float = 0.0
 var _fatigue: float = 0.0
 var _bob_time: float = 0.0
 
+func _ready() -> void:
+	_weapon = get_node_or_null(weapon_path) as Node3D
+	if _weapon != null:
+		_weapon_home_position = _weapon.position
+	else:
+		push_warning("PlayerCameraRig: weapon node not found at %s." % weapon_path)
+
 func set_stance(prone: bool, crouching: bool) -> void:
     if prone:
         target_height = prone_height
