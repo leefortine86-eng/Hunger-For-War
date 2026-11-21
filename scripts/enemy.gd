@@ -29,6 +29,8 @@ var pose_rig: Node
 var rifle: MeshInstance3D
 var simulated_magazine: int = 8
 var reload_pose_timer: float = 0.0
+var hit_reaction_timer: float = 0.0
+var is_eliminated: bool = false
 
 func _ready():
     health = max_health
@@ -301,7 +303,10 @@ func _physics_process(delta):
     if distance > 0.1:
         look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
 
-    if reload_pose_timer > 0.0:
+    if hit_reaction_timer > 0.0:
+        hit_reaction_timer = maxf(hit_reaction_timer - delta, 0.0)
+        pose_rig.set_pose("hit")
+    elif reload_pose_timer > 0.0:
         reload_pose_timer = maxf(reload_pose_timer - delta, 0.0)
         pose_rig.set_pose("reload")
         if reload_pose_timer <= 0.0:
@@ -391,15 +396,38 @@ func _animate_soldier(delta: float):
     pose_rig.set_locomotion(amount, walk_cycle)
 
 func take_damage(amount: float) -> bool:
+    if is_eliminated:
+        return false
     health = maxf(health - amount, 0.0)
-    _find_cover_position()
     print("Enemy hit! Health: ", health)
     if health <= 0.0:
         die()
         return true
+    hit_reaction_timer = 0.24
+    if is_instance_valid(pose_rig):
+        pose_rig.set_pose("hit")
+    _find_cover_position()
     return false
 
 func die():
+    if is_eliminated:
+        return
+    is_eliminated = true
     print("Enemy eliminated!")
-    queue_free()
+    velocity = Vector3.ZERO
+    set_physics_process(false)
+    set_process(false)
+    collision_layer = 0
+    collision_mask = 0
+    if is_instance_valid(muzzle_light):
+        muzzle_light.light_energy = 0.0
+    if is_instance_valid(pose_rig):
+        pose_rig.set_pose("hit")
+    var fall_tween := create_tween()
+    fall_tween.set_parallel(true)
+    fall_tween.tween_property(self, "rotation:z", rotation.z + deg_to_rad(82.0), 0.42).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+    fall_tween.tween_property(self, "position:y", maxf(position.y - 0.22, -0.22), 0.42).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+    fall_tween.set_parallel(false)
+    fall_tween.tween_interval(4.0)
+    fall_tween.tween_callback(queue_free)
 
