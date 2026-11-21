@@ -35,7 +35,7 @@ The goal is a polished, controller-first modern military FPS with high-quality 3
 ### Enemies and AI
 - [x] Basic enemy soldier prototype
 - [x] Basic procedural walk-cycle animation for enemy soldiers
-- [x] First-pass distinct faction uniforms: woodland-green allies with blue ID markings and tan-grey hostiles with red ID markings
+- [x] First-pass hostile soldier uniform: dusty tan/grey camouflage with red identification markings
 - [x] First-pass modern soldier equipment: helmet rails/NVG mounts, eye protection, headsets, plate-carrier pouches, radios, knee pads, gloves, boots, and class-neutral rifle accessories
 - [x] Procedural shader-based woodland and dusty camouflage patterns on uniform surfaces
 - [ ] Authored high-resolution character textures, higher-detail character meshes, and animation blending
@@ -43,7 +43,7 @@ The goal is a polished, controller-first modern military FPS with high-quality 3
 - [x] Enemies seek nearby defensive cover after taking damage
 - [x] Basic coordinated enemy flanking: hostile soldiers choose alternating lateral approach positions when operating as a squad
 - [ ] Advanced enemy awareness, obstacle-aware flanking, suppression, and squad tactics
-- [ ] Enemy return fire and squad behavior
+- [ ] Improved hostile coordination, suppression, and obstacle-aware combat AI
 
 ### Battlefield and presentation
 - [x] Prototype ground, lighting, cover, and test enemies
@@ -138,3 +138,7 @@ The visual-development pass now moves beyond single flat material colors: hostil
 - Added a brief upper-body flinch pose to the procedural Skeleton3D rig when a hostile soldier takes non-lethal damage.
 - Replaced instant enemy removal with a short scripted fall, disabled collision and combat processing during the fall, and retained the body briefly before cleanup.
 - This is a lightweight prototype animation, not a physics ragdoll or authored animation clip. It has not yet been run in Godot; fall direction, pivot alignment, and bone blending still require visual testing.
+
+
+## Current direction clarification
+The playable experience is a direct first-person military shooter. There are no friendly fireteam followers, squad-command orders, or player squad-management systems in the current design. Hostile AI may coordinate its own movement and attacks, but the player experience remains focused on individual first-person combat.
