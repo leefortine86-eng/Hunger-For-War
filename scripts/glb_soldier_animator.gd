@@ -85,17 +85,18 @@ func _classify_bone(name: String) -> String:
     return ""
 
 func _bone_side(name: String) -> float:
-    if name.ends_with("_l") or name.ends_with(".l") or name.contains("left"):
+    # Support both descriptive names (LeftArm) and common Bip01_L_Arm rigs.
+    if name.contains("left") or name.contains("_l_") or name.ends_with("_l") or name.ends_with(".l"):
         return -1.0
-    if name.ends_with("_r") or name.ends_with(".r") or name.contains("right"):
+    if name.contains("right") or name.contains("_r_") or name.ends_with("_r") or name.ends_with(".r"):
         return 1.0
     return 0.0
 
 func _is_right_hand(name: String) -> bool:
-    return name.contains("righthand") or name.contains("right_hand") or name.ends_with("hand_r") or name.ends_with("hand.r") or name == "hand.r"
+    return name.contains("righthand") or name.contains("right_hand") or name.contains("_r_hand") or name.ends_with("hand_r") or name.ends_with("hand.r") or name == "hand.r"
 
 func _is_left_hand(name: String) -> bool:
-    return name.contains("lefthand") or name.contains("left_hand") or name.ends_with("hand_l") or name.ends_with("hand.l") or name == "hand.l"
+    return name.contains("lefthand") or name.contains("left_hand") or name.contains("_l_hand") or name.ends_with("hand_l") or name.ends_with("hand.l") or name == "hand.l"
 
 func attach_weapon_to_hand(weapon: Node3D) -> void:
     if not is_instance_valid(weapon):
