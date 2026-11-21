@@ -817,6 +817,42 @@ func _create_defensive_positions():
         _make_environment_box(canopy, "CanopyPost", Vector3(0.16, 3.0, 0.16), Vector3(x_side * 2.3, 1.5, 0), tower_material)
     _make_environment_box(canopy, "CanopyRoof", Vector3(5.0, 0.2, 3.2), Vector3(0, 3.05, 0), tower_material)
 
+    # Perimeter security fence: spaced steel posts, mesh-like rails, and warning lamps.
+    var fence_material := StandardMaterial3D.new()
+    fence_material.albedo_color = Color(0.16, 0.19, 0.17)
+    fence_material.metallic = 0.42
+    fence_material.roughness = 0.9
+    for fence_index in range(17):
+        var fence_x := -40.0 + float(fence_index) * 5.0
+        _make_environment_box(self, "PerimeterFencePost", Vector3(0.12, 2.6, 0.12), Vector3(fence_x, 1.3, -47.0), fence_material, false)
+        if fence_index < 16:
+            _make_environment_box(self, "PerimeterFenceRail", Vector3(4.95, 0.055, 0.055), Vector3(fence_x + 2.5, 0.75, -47.0), fence_material, false)
+            _make_environment_box(self, "PerimeterFenceTopRail", Vector3(4.95, 0.055, 0.055), Vector3(fence_x + 2.5, 2.25, -47.0), fence_material, false)
+    for lamp_x in [-34.0, 0.0, 34.0]:
+        var perimeter_lamp := OmniLight3D.new()
+        perimeter_lamp.position = Vector3(lamp_x, 2.55, -46.5)
+        perimeter_lamp.light_color = Color(0.78, 0.82, 0.68)
+        perimeter_lamp.light_energy = 0.35
+        perimeter_lamp.omni_range = 5.5
+        add_child(perimeter_lamp)
+
+    # Layered sandbag courses make the firing bays read as assembled positions.
+    for bay_x in [-14.5, 14.5, 10.0]:
+        var bay_z := -31.5 if absf(bay_x) > 12.0 else 21.0
+        for course in range(2):
+            for bag_index in range(5):
+                var bag := MeshInstance3D.new()
+                var bag_mesh := BoxMesh.new()
+                bag_mesh.size = Vector3(0.82, 0.30, 0.42)
+                bag.mesh = bag_mesh
+                bag.position = Vector3(bay_x - 1.65 + float(bag_index) * 0.82, 0.32 + float(course) * 0.27, bay_z + 0.52)
+                bag.rotation.y = deg_to_rad(randf_range(-3.0, 3.0))
+                var bag_material := StandardMaterial3D.new()
+                bag_material.albedo_color = Color(0.40 + randf_range(-0.025, 0.025), 0.37, 0.27)
+                bag_material.roughness = 1.0
+                bag.material_override = bag_material
+                add_child(bag)
+
 
 func _create_wreck_atmosphere():
     var ember_material := StandardMaterial3D.new()
