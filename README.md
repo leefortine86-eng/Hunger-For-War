@@ -22,12 +22,16 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Basic hitscan weapon and magazine / reserve ammunition
 - [x] Reloading
 - [x] First-person rifle prototype, recoil, muzzle flash, and firing feedback
-- [x] Expandable 53-weapon catalog (all 38 WARDOGS entries plus 15 additional Arma Reforger base-game firearms) inspired by WARDOGS and Arma Reforger\n- [x] Mobile arsenal dropdown and keyboard / touch weapon cycling\n- [x] Distinct procedural weapon silhouettes by weapon class\n- [ ] Explosive projectile behavior, weapon attachments, and class-specific firing modes
+- [x] Expandable 53-weapon catalog (all 38 WARDOGS entries plus 15 additional Arma Reforger base-game firearms) inspired by WARDOGS and Arma Reforger
+- [x] Mobile arsenal dropdown and keyboard / touch weapon cycling
+- [x] Distinct procedural weapon silhouettes by weapon class
+- [ ] Explosive projectile behavior, weapon attachments, and class-specific firing modes
 - [ ] Improved hit effects and combat feedback
 
 ### Enemies and AI
 - [x] Basic enemy soldier prototype
-- [x] Basic procedural walk-cycle animation for friendly and enemy soldiers\n- [ ] Improved soldier models, materials, and animation blending
+- [x] Basic procedural walk-cycle animation for friendly and enemy soldiers
+- [ ] Improved soldier models, materials, and animation blending
 - [x] Ranged enemy attacks with line-of-sight checks and distance keeping
 - [x] Friendly three-person fireteam that follows the player and engages visible enemies
 - [x] Enemies seek nearby defensive cover after taking damage
