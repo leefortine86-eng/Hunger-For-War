@@ -177,6 +177,53 @@ func _process(delta):
             mission_label.text = "MISSION: SECURE OBJECTIVE BRAVO"
             print("OBJECTIVE ALPHA SECURED — ADVANCE TO BRAVO")
 
+func _make_ground_material() -> ShaderMaterial:
+    var shader := Shader.new()
+    shader.code = """
+shader_type spatial;
+render_mode diffuse_burley;
+float hash_value(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+void fragment() {
+    vec2 p = UV * vec2(110.0);
+    float broad = hash_value(floor(p));
+    float fine = hash_value(floor(p * 13.0));
+    vec3 soil_a = vec3(0.25, 0.24, 0.18);
+    vec3 soil_b = vec3(0.18, 0.21, 0.14);
+    vec3 soil_c = vec3(0.32, 0.29, 0.21);
+    vec3 soil = mix(soil_a, soil_b, smoothstep(0.25, 0.78, broad));
+    soil = mix(soil, soil_c, smoothstep(0.86, 0.98, fine) * 0.38);
+    ALBEDO = soil * (0.94 + 0.12 * hash_value(floor(p * 29.0)));
+    ROUGHNESS = 1.0;
+}
+"""
+    var material := ShaderMaterial.new()
+    material.shader = shader
+    return material
+
+func _make_weathered_wall_material(base_color: Color, stain_color: Color) -> ShaderMaterial:
+    var shader := Shader.new()
+    shader.code = """
+shader_type spatial;
+render_mode diffuse_burley;
+uniform vec4 base_color : source_color;
+uniform vec4 stain_color : source_color;
+float hash_value(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+void fragment() {
+    vec2 p = UV * vec2(18.0, 12.0);
+    float broad = hash_value(floor(p));
+    float fine = hash_value(floor(p * 9.0));
+    vec3 wall = mix(base_color.rgb, stain_color.rgb, smoothstep(0.58, 0.92, broad) * 0.28);
+    wall *= 0.91 + fine * 0.13;
+    ALBEDO = wall;
+    ROUGHNESS = 0.97;
+}
+"""
+    var material := ShaderMaterial.new()
+    material.shader = shader
+    material.set_shader_parameter("base_color", base_color)
+    material.set_shader_parameter("stain_color", stain_color)
+    return material
+
 func _create_ground():
     var ground_body := StaticBody3D.new()
     ground_body.name = "BattlefieldGround"
@@ -186,10 +233,7 @@ func _create_ground():
     var ground_mesh := BoxMesh.new()
     ground_mesh.size = Vector3(100, 1, 100)
     ground.mesh = ground_mesh
-    var ground_material := StandardMaterial3D.new()
-    ground_material.albedo_color = Color(0.22, 0.25, 0.18)
-    ground_material.roughness = 1.0
-    ground.material_override = ground_material
+    ground.material_override = _make_ground_material()
     ground_body.add_child(ground)
 
     var collision := CollisionShape3D.new()
@@ -337,6 +381,17 @@ func _make_building(building_name: String, center: Vector3, footprint: Vector2, 
     _make_environment_box(building, "RoofParapetRear", Vector3(width + 0.3, 0.48, 0.22), Vector3(0, wall_height + 0.78, -half_d), roof_material)
     _make_environment_box(building, "DoorFrame", Vector3(door_width + 0.16, 0.12, 0.12), Vector3(0, door_height + 0.30, half_d + 0.04), roof_material, false)
 
+    # Weather seals, window trim, door hardware, and exposed electrical fittings.
+    for window_side in [-1.0, 1.0]:
+        _make_environment_box(building, "WindowFrameVertical", Vector3(0.10, 1.18, 0.14), Vector3(window_side * (window_width * 0.5 + 0.04), window_y, half_d + 0.08), roof_material, false)
+        _make_environment_box(building, "WindowFrameHorizontal", Vector3(window_width + 0.18, 0.10, 0.14), Vector3(0, window_y + 0.58, half_d + 0.08), roof_material, false)
+        _make_environment_box(building, "WindowSillTrim", Vector3(window_width + 0.24, 0.12, 0.24), Vector3(0, window_y - 0.58, half_d + 0.10), roof_material, false)
+    for corner_x in [-1.0, 1.0]:
+        _make_environment_box(building, "BuildingCornerTrim", Vector3(0.12, wall_height, 0.12), Vector3(corner_x * (half_w - 0.12), wall_height * 0.5 + 0.28, half_d + 0.12), roof_material, false)
+    _make_environment_box(building, "DoorSecurityPanel", Vector3(0.46, 0.52, 0.08), Vector3(door_width * 0.5 - 0.28, 0.78, half_d + 0.22), roof_material, false)
+    _make_environment_box(building, "ExteriorConduit", Vector3(0.08, wall_height + 0.2, 0.08), Vector3(-half_w + 0.28, wall_height * 0.5 + 0.28, half_d + 0.18), roof_material, false)
+    _make_environment_box(building, "ExteriorJunctionBox", Vector3(0.42, 0.52, 0.18), Vector3(-half_w + 0.72, 1.05, half_d + 0.18), roof_material, false)
+
     # Exterior roof-access ladder and roof ventilation details (visual props for this prototype).
     var ladder_x := half_w + 0.24
     for side_z in [-0.42, 0.42]:
@@ -357,9 +412,11 @@ func _create_battlefield_environment():
     var concrete_material := StandardMaterial3D.new()
     concrete_material.albedo_color = Color(0.37, 0.37, 0.33)
     concrete_material.roughness = 0.96
+    var concrete_surface := _make_weathered_wall_material(Color(0.37, 0.37, 0.33), Color(0.19, 0.20, 0.18))
     var plaster_material := StandardMaterial3D.new()
     plaster_material.albedo_color = Color(0.48, 0.43, 0.34)
     plaster_material.roughness = 0.95
+    var plaster_surface := _make_weathered_wall_material(Color(0.48, 0.43, 0.34), Color(0.22, 0.22, 0.18))
     var roof_material := StandardMaterial3D.new()
     roof_material.albedo_color = Color(0.20, 0.22, 0.20)
     roof_material.roughness = 0.98
@@ -382,10 +439,10 @@ func _create_battlefield_environment():
     _make_environment_box(self, "RoadShoulderRight", Vector3(1.1, 0.045, 100.0), Vector3(4.5, 0.53, -4), concrete_material, false)
 
     # Low-rise concrete / plaster compounds, positioned away from the central spawn lane.
-    _make_building("WestCommandBuilding", Vector3(-20, 0, -20), Vector2(11, 9), 3.6, plaster_material, roof_material)
-    _make_building("EastBarracks", Vector3(20, 0, -29), Vector2(10, 8), 3.4, concrete_material, roof_material)
-    _make_building("WestCheckpoint", Vector3(-21, 0, 13), Vector2(9, 8), 3.2, concrete_material, roof_material)
-    _make_building("EastRuinedOutpost", Vector3(21, 0, 10), Vector2(10, 8), 3.1, plaster_material, roof_material)
+    _make_building("WestCommandBuilding", Vector3(-20, 0, -20), Vector2(11, 9), 3.6, plaster_surface, roof_material)
+    _make_building("EastBarracks", Vector3(20, 0, -29), Vector2(10, 8), 3.4, concrete_surface, roof_material)
+    _make_building("WestCheckpoint", Vector3(-21, 0, 13), Vector2(9, 8), 3.2, concrete_surface, roof_material)
+    _make_building("EastRuinedOutpost", Vector3(21, 0, 10), Vector2(10, 8), 3.1, plaster_surface, roof_material)
 
     # Defensive fighting positions and military logistics props.
     _make_cover("NorthHescoBarrierA", Vector3(5.0, 1.25, 1.1), Vector3(-11, 0.62, -39), Color(0.40, 0.38, 0.29))
