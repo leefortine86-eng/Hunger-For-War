@@ -36,6 +36,15 @@ var weapon_home_position := Vector3(0.28, -0.25, -0.55)
 var weapon_aim_position := Vector3(0.0, -0.16, -0.42)
 var muzzle_light: OmniLight3D
 var weapon_model: Node3D
+var attachment_loadouts: Dictionary = {}
+var attachments: Dictionary = {"optic":"none", "muzzle":"none", "underbarrel":"none", "utility":"none", "magazine":"standard"}
+var base_magazine_size: int = 30
+var base_reserve_ammo: int = 120
+var base_effective_range: float = 400.0
+var base_recoil_scale: float = 1.0
+var suppressor_equipped: bool = false
+var flashlight_equipped: bool = false
+var laser_equipped: bool = false
 
 signal weapon_changed(weapon_name: String, weapon_class: String)
 
@@ -80,6 +89,11 @@ func _apply_weapon_data(data: Dictionary):
     reload_time = float(data.get("reload", 2.0))
     effective_range = float(data.get("range", 300.0))
     fire_mode = str(data.get("mode", "SEMI"))
+    base_magazine_size = magazine_size
+    base_reserve_ammo = reserve_ammo
+    base_effective_range = effective_range
+    attachments = attachment_loadouts.get(current_weapon_id, {"optic":"none", "muzzle":"none", "underbarrel":"none", "utility":"none", "magazine":"standard"}).duplicate()
+    _apply_attachment_stats()
     reloading = false
     trigger_held = false
     burst_shots_remaining = 0
@@ -186,6 +200,7 @@ func _build_weapon_model():
             _add_box("AmmoBox", Vector3(0.18, 0.19, 0.22), Vector3(0, -0.20, 0.05), polymer)
 
     _add_box("Barrel", Vector3(0.045, 0.045, barrel_length), Vector3(0, 0, -0.62), metal)
+    _build_attachment_visuals(profile, dark, metal, polymer)
     muzzle_light = OmniLight3D.new()
     muzzle_light.name = "MuzzleFlash"
     muzzle_light.position = Vector3(0, 0, -0.82)
@@ -211,6 +226,82 @@ func _build_weapon_model():
     weapon_model.add_child(muzzle_flash_mesh)
 
     weapon_model.position = weapon_home_position + Vector3(0.22, -0.28, 0)
+
+func get_attachment_options(slot: String) -> Array:
+    var profile := str(current_weapon.get("profile", "rifle"))
+    match slot:
+        "optic":
+            return [{"id":"none","name":"Iron sights"},{"id":"red_dot","name":"Red dot"},{"id":"holo","name":"Holographic"},{"id":"scope_4x","name":"4x optic"}] if profile in ["rifle","bullpup","dmr","sniper","lmg","smg"] else [{"id":"none","name":"Standard sights"}]
+        "muzzle":
+            return [{"id":"none","name":"Standard muzzle"},{"id":"suppressor","name":"Suppressor"}] if profile not in ["launcher","bow"] else [{"id":"none","name":"No attachment"}]
+        "underbarrel":
+            return [{"id":"none","name":"No grip"},{"id":"vertical_grip","name":"Vertical grip"},{"id":"angled_grip","name":"Angled grip"}] if profile in ["rifle","bullpup","dmr","lmg","smg"] else [{"id":"none","name":"No attachment"}]
+        "utility":
+            return [{"id":"none","name":"No utility"},{"id":"flashlight","name":"Flashlight"},{"id":"laser","name":"Laser"}] if profile not in ["launcher","bow"] else [{"id":"none","name":"No utility"}]
+        "magazine":
+            return [{"id":"standard","name":"Standard magazine"},{"id":"extended","name":"Extended magazine"}] if profile not in ["launcher","bow","sniper"] else [{"id":"standard","name":"Standard load"}]
+    return []
+
+func set_attachment(slot: String, attachment_id: String) -> void:
+    var valid := false
+    for option in get_attachment_options(slot):
+        if str(option.get("id", "")) == attachment_id:
+            valid = true
+            break
+    if not valid:
+        return
+    attachments[slot] = attachment_id
+    attachment_loadouts[current_weapon_id] = attachments.duplicate()
+    _apply_attachment_stats()
+    _build_weapon_model()
+
+func get_attachment_summary() -> String:
+    var names: Array[String] = []
+    for slot in ["optic", "muzzle", "underbarrel", "utility", "magazine"]:
+        var selected := str(attachments.get(slot, "none"))
+        if selected not in ["none", "standard"]:
+            names.append(selected.replace("_", " ").capitalize())
+    return " | ".join(names) if not names.is_empty() else "No attachments"
+
+func _apply_attachment_stats() -> void:
+    magazine_size = base_magazine_size
+    reserve_ammo = maxi(reserve_ammo, base_reserve_ammo)
+    effective_range = base_effective_range
+    suppressor_equipped = attachments.get("muzzle", "none") == "suppressor"
+    flashlight_equipped = attachments.get("utility", "none") == "flashlight"
+    laser_equipped = attachments.get("utility", "none") == "laser"
+    if attachments.get("magazine", "standard") == "extended":
+        magazine_size = maxi(1, int(round(float(base_magazine_size) * 1.5)))
+        reserve_ammo = maxi(reserve_ammo, base_reserve_ammo + int(round(float(base_magazine_size) * 1.5)))
+    if attachments.get("optic", "none") == "scope_4x":
+        effective_range *= 1.25
+    elif attachments.get("optic", "none") in ["red_dot", "holo"]:
+        effective_range *= 1.08
+
+func _build_attachment_visuals(profile: String, dark: Color, metal: Color, polymer: Color) -> void:
+    var optic := str(attachments.get("optic", "none"))
+    if optic != "none" and profile not in ["pistol", "launcher", "bow"]:
+        var optic_body := _add_box("Attachment_Optic", Vector3(0.09, 0.12, 0.17), Vector3(0, 0.17, -0.08), polymer)
+        if optic == "scope_4x":
+            optic_body.scale = Vector3(1.0, 1.35, 1.8)
+            _add_box("Optic_Lens", Vector3(0.075, 0.075, 0.025), Vector3(0, 0.18, -0.19), Color(0.12, 0.28, 0.32))
+        else:
+            _add_box("Optic_Window", Vector3(0.07, 0.075, 0.025), Vector3(0, 0.19, -0.17), Color(0.12, 0.32, 0.34))
+    if attachments.get("muzzle", "none") == "suppressor":
+        _add_box("Suppressor", Vector3(0.075, 0.075, 0.25), Vector3(0, 0, -0.82), dark)
+    var grip := str(attachments.get("underbarrel", "none"))
+    if grip != "none":
+        var grip_size := Vector3(0.07, 0.17, 0.075)
+        var grip_pos := Vector3(0, -0.14, -0.35)
+        if grip == "angled_grip":
+            grip_pos = Vector3(0, -0.12, -0.38)
+        _add_box("Attachment_Grip", grip_size, grip_pos, polymer)
+    if flashlight_equipped:
+        _add_box("Attachment_Flashlight", Vector3(0.075, 0.075, 0.14), Vector3(0.075, -0.07, -0.48), metal)
+    if laser_equipped:
+        _add_box("Attachment_Laser", Vector3(0.055, 0.055, 0.12), Vector3(-0.075, -0.07, -0.48), Color(0.55, 0.08, 0.06))
+    if attachments.get("magazine", "standard") == "extended" and profile not in ["pistol", "launcher", "bow"]:
+        _add_box("ExtendedMagazine", Vector3(0.09, 0.29, 0.12), Vector3(0, -0.19, 0.03), dark)
 
 func set_aiming(enabled: bool):
     aiming = enabled
@@ -290,14 +381,18 @@ func _fire_once(raycast: RayCast3D):
     fire_cooldown = fire_rate
     var profile := str(current_weapon.get("profile", "rifle"))
     var recoil_scale := 0.7 if profile == "pistol" else 1.35 if profile == "lmg" or profile == "shotgun" else 1.8 if profile == "sniper" or profile == "launcher" else 1.0
+    if attachments.get("underbarrel", "none") == "vertical_grip":
+        recoil_scale *= 0.78
+    elif attachments.get("underbarrel", "none") == "angled_grip":
+        recoil_scale *= 0.88
     recoil_amount = (0.075 if aiming else 0.12) * recoil_scale
     if is_instance_valid(weapon_model):
         weapon_model.rotation.x = -0.035 if aiming else -0.065
     if is_instance_valid(muzzle_light):
-        muzzle_light.light_energy = 3.5
+        muzzle_light.light_energy = 1.0 if suppressor_equipped else 3.5
         muzzle_timer = 0.045
     if is_instance_valid(muzzle_flash_mesh):
-        muzzle_flash_mesh.visible = true
+        muzzle_flash_mesh.visible = not suppressor_equipped
 
     if _is_explosive_weapon():
         _launch_explosive_projectile(raycast)
