@@ -26,6 +26,7 @@ func _ready():
     _create_terrain_features()
     _dress_building_interiors()
     _dress_building_exteriors()
+    _create_modern_military_details()
     _create_defensive_positions()
     _create_wreck_atmosphere()
     _create_capture_objective()
@@ -673,6 +674,51 @@ func _dress_building_exteriors():
         floodlight.spot_range = 13.0
         floodlight.spot_angle = 48.0
         add_child(floodlight)
+
+
+func _create_modern_military_details():
+    var concrete := StandardMaterial3D.new()
+    concrete.albedo_color = Color(0.34, 0.35, 0.32)
+    concrete.roughness = 0.98
+    var steel := StandardMaterial3D.new()
+    steel.albedo_color = Color(0.12, 0.15, 0.14)
+    steel.metallic = 0.45
+    steel.roughness = 0.88
+    var camo_net := StandardMaterial3D.new()
+    camo_net.albedo_color = Color(0.22, 0.27, 0.18, 0.72)
+    camo_net.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    # Precast anti-vehicle barriers and modular blast-wall segments.
+    for i in range(4):
+        var barrier := _make_environment_box(self, "PrecastBlastWall%d" % i, Vector3(3.0, 1.35, 0.38), Vector3(-8.0 + float(i) * 5.3, 0.68, -36.0), concrete)
+        barrier.rotation.y = deg_to_rad(-3.0 if i % 2 == 0 else 3.0)
+    for side in [-1.0, 1.0]:
+        for i in range(3):
+            var jersey := _make_environment_box(self, "JerseyBarrier_%d_%d" % [int(side), i], Vector3(2.2, 0.95, 0.65), Vector3(side * 16.0, 0.48, -4.0 + float(i) * 5.0), concrete)
+            jersey.rotation.y = deg_to_rad(side * 7.0)
+    # Camouflage shade over a small equipment staging area.
+    var shade := Node3D.new()
+    shade.name = "EquipmentStagingShade"
+    shade.position = Vector3(13.0, 0, 24.0)
+    add_child(shade)
+    for x_side in [-1.0, 1.0]:
+        _make_environment_box(shade, "ShadePost", Vector3(0.12, 3.0, 0.12), Vector3(x_side * 2.0, 1.5, 0), steel, false)
+    _make_environment_box(shade, "CamoShadeCanopy", Vector3(4.4, 0.12, 3.0), Vector3(0, 3.0, 0), camo_net, false)
+    _make_environment_box(shade, "FieldEquipmentPallet", Vector3(2.2, 0.18, 1.5), Vector3(0, 0.12, 0), steel)
+    # Portable generator and cable reel beside the checkpoint compound.
+    var generator := Node3D.new()
+    generator.name = "FieldGeneratorSet"
+    generator.position = Vector3(-16.0, 0, 19.0)
+    add_child(generator)
+    _make_environment_box(generator, "GeneratorBody", Vector3(1.5, 1.0, 0.9), Vector3(0, 0.6, 0), steel)
+    _make_environment_box(generator, "GeneratorControlPanel", Vector3(0.65, 0.42, 0.06), Vector3(0, 0.85, -0.48), concrete, false)
+    _make_environment_box(generator, "GeneratorExhaust", Vector3(0.12, 0.45, 0.12), Vector3(0.48, 1.28, 0.2), steel, false)
+    # Low steel tripods and directional antennas communicate a deployed command post.
+    var comms := Node3D.new()
+    comms.name = "TacticalCommsTripod"
+    comms.position = Vector3(-28.0, 0, -16.0)
+    add_child(comms)
+    _make_environment_box(comms, "CommsMast", Vector3(0.08, 5.0, 0.08), Vector3(0, 2.5, 0), steel, false)
+    _make_environment_box(comms, "CommsDish", Vector3(0.75, 0.75, 0.12), Vector3(0.0, 4.3, -0.22), concrete, false)
 
 func _create_defensive_positions():
     var tower_material := StandardMaterial3D.new()
