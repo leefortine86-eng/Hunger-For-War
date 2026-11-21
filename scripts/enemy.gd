@@ -402,3 +402,4 @@ func take_damage(amount: float) -> bool:
 func die():
     print("Enemy eliminated!")
     queue_free()
+
