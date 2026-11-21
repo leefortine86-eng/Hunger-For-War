@@ -1,7 +1,7 @@
 extends CharacterBody3D
 
-# Friendly woodland infantry. Allies hold position, acquire hostile AI soldiers,
-# check line of sight, and provide measured supporting fire.
+# Friendly infantry AI: hold position, identify hostiles, use cover/LOS,
+# and deliver measured rifle support fire without changing player controls.
 
 @export var engagement_range: float = 34.0
 @export var damage_per_shot: float = 11.0
@@ -10,15 +10,19 @@ extends CharacterBody3D
 
 var target: CharacterBody3D
 var shot_timer: float = 0.6
+var shot_pose_remaining: float = 0.0
 var muzzle_flash_timer: float = 0.0
 var muzzle_light: OmniLight3D
 var soldier_animator: Node
+var weapon_mount: Node3D
 
 func _ready() -> void:
     add_to_group("allies")
     _build_character()
     _build_rifle()
     _build_muzzle_light()
+    if is_instance_valid(soldier_animator) and soldier_animator.has_method("attach_weapon_to_hand"):
+        soldier_animator.attach_weapon_to_hand(weapon_mount)
     set_physics_process(true)
 
 func _build_character() -> void:
@@ -26,13 +30,11 @@ func _build_character() -> void:
     if soldier_scene == null:
         push_warning("Friendly soldier: imported GLB could not be loaded.")
         return
-
     var model := soldier_scene.instantiate()
     model.name = "FriendlyWoodlandSoldier"
     add_child(model)
     _tint_model(model)
     _add_friendly_identification(model)
-
     var animator := Node3D.new()
     animator.name = "GLBSoldierAnimator"
     animator.set_script(load("res://scripts/glb_soldier_animator.gd"))
@@ -67,55 +69,43 @@ func _add_friendly_identification(model: Node3D) -> void:
         marker.material_override = blue
         model.add_child(marker)
 
+func _rifle_part(parent: Node3D, part_name: String, size: Vector3, part_position: Vector3, material: Material) -> MeshInstance3D:
+    var part := MeshInstance3D.new()
+    part.name = part_name
+    var mesh := BoxMesh.new()
+    mesh.size = size
+    part.mesh = mesh
+    part.position = part_position
+    part.material_override = material
+    parent.add_child(part)
+    return part
+
 func _build_rifle() -> void:
+    weapon_mount = Node3D.new()
+    weapon_mount.name = "FriendlyRifleAssembly"
+    add_child(weapon_mount)
     var finish := StandardMaterial3D.new()
     finish.albedo_color = Color(0.055, 0.065, 0.055)
     finish.roughness = 0.78
+    var polymer := StandardMaterial3D.new()
+    polymer.albedo_color = Color(0.12, 0.14, 0.12)
+    polymer.roughness = 0.86
 
-    var rifle := MeshInstance3D.new()
-    rifle.name = "FriendlyRifle"
-    var body := BoxMesh.new()
-    body.size = Vector3(0.085, 0.085, 0.72)
-    rifle.mesh = body
-    rifle.position = Vector3(0.0, 1.10, -0.48)
-    rifle.material_override = finish
-    add_child(rifle)
-
-    var stock := MeshInstance3D.new()
-    stock.name = "RifleStock"
-    var stock_mesh := BoxMesh.new()
-    stock_mesh.size = Vector3(0.12, 0.12, 0.24)
-    stock.mesh = stock_mesh
-    stock.position = Vector3(0.0, 1.10, -0.10)
-    stock.material_override = finish
-    add_child(stock)
-
-    var magazine := MeshInstance3D.new()
-    magazine.name = "RifleMagazine"
-    var magazine_mesh := BoxMesh.new()
-    magazine_mesh.size = Vector3(0.11, 0.25, 0.14)
-    magazine.mesh = magazine_mesh
-    magazine.position = Vector3(0.0, 0.92, -0.40)
-    magazine.material_override = finish
-    add_child(magazine)
-
-    var optic := MeshInstance3D.new()
-    optic.name = "RifleOptic"
-    var optic_mesh := BoxMesh.new()
-    optic_mesh.size = Vector3(0.12, 0.10, 0.15)
-    optic.mesh = optic_mesh
-    optic.position = Vector3(0.0, 1.20, -0.40)
-    optic.material_override = finish
-    add_child(optic)
+    _rifle_part(weapon_mount, "RifleReceiver", Vector3(0.085, 0.085, 0.72), Vector3(0.0, 1.10, -0.48), finish)
+    _rifle_part(weapon_mount, "RifleStock", Vector3(0.12, 0.12, 0.24), Vector3(0.0, 1.10, -0.10), polymer)
+    _rifle_part(weapon_mount, "RifleMagazine", Vector3(0.11, 0.25, 0.14), Vector3(0.0, 0.92, -0.40), finish)
+    _rifle_part(weapon_mount, "RifleOptic", Vector3(0.12, 0.10, 0.15), Vector3(0.0, 1.20, -0.40), polymer)
+    _rifle_part(weapon_mount, "RifleForegrip", Vector3(0.075, 0.16, 0.09), Vector3(0.0, 0.98, -0.70), polymer)
+    _rifle_part(weapon_mount, "RifleBarrel", Vector3(0.045, 0.045, 0.38), Vector3(0.0, 1.10, -1.00), finish)
 
 func _build_muzzle_light() -> void:
     muzzle_light = OmniLight3D.new()
     muzzle_light.name = "FriendlyMuzzleFlash"
-    muzzle_light.position = Vector3(0.0, 1.10, -0.92)
+    muzzle_light.position = Vector3(0.0, 1.10, -1.18)
     muzzle_light.light_color = Color(1.0, 0.62, 0.25)
     muzzle_light.light_energy = 0.0
     muzzle_light.omni_range = 3.0
-    add_child(muzzle_light)
+    weapon_mount.add_child(muzzle_light)
 
 func _find_target() -> CharacterBody3D:
     var best: CharacterBody3D
@@ -147,10 +137,14 @@ func _fire_at_target() -> void:
     if is_instance_valid(muzzle_light):
         muzzle_light.light_energy = 2.4
         muzzle_flash_timer = 0.055
+    shot_pose_remaining = 0.16
+    if is_instance_valid(soldier_animator):
+        soldier_animator.set_combat_pose("hip_fire")
     shot_timer = shot_interval
 
 func _physics_process(delta: float) -> void:
     shot_timer = maxf(shot_timer - delta, 0.0)
+    shot_pose_remaining = maxf(shot_pose_remaining - delta, 0.0)
     if muzzle_flash_timer > 0.0:
         muzzle_flash_timer -= delta
         if muzzle_flash_timer <= 0.0 and is_instance_valid(muzzle_light):
@@ -159,7 +153,6 @@ func _physics_process(delta: float) -> void:
     velocity = Vector3.ZERO
     if not is_instance_valid(target) or target.get("is_eliminated") == true:
         target = _find_target()
-
     if not is_instance_valid(target):
         if is_instance_valid(soldier_animator):
             soldier_animator.set_combat_pose("ready")
@@ -169,10 +162,8 @@ func _physics_process(delta: float) -> void:
     if distance > engagement_range:
         target = null
         return
-
     look_at(Vector3(target.global_position.x, global_position.y, target.global_position.z), Vector3.UP)
-    if is_instance_valid(soldier_animator):
+    if is_instance_valid(soldier_animator) and shot_pose_remaining <= 0.0:
         soldier_animator.set_combat_pose("aim")
-
     if shot_timer <= 0.0 and _has_line_of_sight(target):
         _fire_at_target()
