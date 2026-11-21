@@ -41,8 +41,9 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 
 ### Battlefield and presentation
 - [x] Prototype ground, lighting, cover, and test enemies
+- [x] First-pass settlement environment with four enterable buildings, window openings, flat rooftops, a service road, checkpoint barriers, a burned-out transport wreck, utility poles, berms, and scrub
 - [x] Sequential Alpha and Bravo capture objectives with contested-zone logic and mission completion
-- [ ] Detailed terrain, military structures, and destructible-looking set dressing
+- [ ] Higher-detail original building interiors, material variety, terrain elevation, and destructible-looking set dressing
 - [ ] Vehicles and larger battlefield spaces
 - [ ] Improved lighting, atmosphere, sound, and visual effects
 
