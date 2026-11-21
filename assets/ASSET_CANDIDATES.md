@@ -2,6 +2,16 @@
 
 This is a sourcing review, not an import record. None of these files has been added to the game. The current playable prototype remains unchanged.
 
+## Preferred route: Ara 3D Gen — build a custom soldier
+
+- Online builder: https://ara3dgen.com/
+- Source repository and technical details: https://github.com/TuriaArt/3d-gen-TU
+- Cost/access: the project describes itself as free and open source, with no account, install, credits or export fees required for the online builder. Do not enter any paid AI/API key; those integrations are optional and unnecessary for the base character export.
+- Licensing: generator code is MIT; its MakeHuman character data is CC0; the project states exported characters may be used commercially without attribution. Motion clips are credited to the CMU Graphics Lab motion-capture library.
+- Relevant features: customizable camouflage fabric, tactical vest and combat helmet options; Mixamo-named game skeleton; a right-hand weapon socket; GLB export; shooter animations including rifle idle, aim, single/full-auto fire, reload, aiming walk/strafe, sprint, crouch aim/walk, hit reaction and death.
+- Technical note: the project documents a 65-bone game rig option and Godot GLB import. The self-hosted route requires Node 20+, Git and a one-time download of approximately 420 MB of CC0 source data; that is not the preferred route for the user's Android-first workflow.
+- Decision: **first-choice character creation route to evaluate**. Use the browser builder to create a woodland/modern combat operator, export a rigged GLB with only the required shooter clips, and test that exact file in a separate Godot scene. The tool's own claims are not a substitute for our Godot/Android validation.
+
 ## Candidate: Male Soldier 03 — provisional character test
 
 - Source: https://models.codelove.in/models/military-male-03/
