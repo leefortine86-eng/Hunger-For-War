@@ -28,7 +28,7 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 ### Enemies and AI
 - [x] Basic enemy soldier prototype
 - [ ] Improved soldier models, materials, and animations
-- [x] Ranged enemy attacks with line-of-sight checks and distance keeping\n- [ ] Enemy awareness, cover use, and tactical movement
+- [x] Ranged enemy attacks with line-of-sight checks and distance keeping\n- [x] Friendly three-person fireteam that follows the player and engages visible enemies\n- [ ] Enemy awareness, cover use, and tactical movement
 - [ ] Enemy return fire and squad behavior
 
 ### Battlefield and presentation
@@ -45,4 +45,4 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 
 ## Current development milestone
 
-Core controls, a procedural first-person rifle, aiming, recoil, muzzle flash, ranged enemy combat, and a capture-and-secure objective with mission HUD are now in the project. Next development should add cover-aware enemy AI, friendly squad members, additional mission types, and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
+Core controls, a procedural first-person rifle, aiming, recoil, muzzle flash, ranged enemy combat, and a capture-and-secure objective with mission HUD are now in the project. A three-person friendly fireteam now follows the player in formation and provides supporting fire against visible enemies. Next development should add cover-aware enemy AI, additional mission types, and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
