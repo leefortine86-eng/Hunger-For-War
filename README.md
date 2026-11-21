@@ -28,7 +28,9 @@ The goal is a polished, controller-first modern military FPS with high-quality 3
 - [x] Physical rocket and grenade projectiles with gravity, impact detection, blast radius, and distance-based damage falloff
 - [x] Weapon attachment system with optics, suppressors, grips, flashlight / laser, and extended magazines
 - [x] Refined procedural weapon barrels, muzzle devices, receiver controls, and handguard rails
-- [ ] Improved hit effects and combat feedback
+- [x] Hitscan hit-confirmation marker and distinct elimination marker
+- [x] Brief enemy hit-reaction pose and scripted fall/death presentation
+- [ ] Impact effects, combat audio, controller vibration, and more advanced damage feedback
 
 ### Enemies and AI
 - [x] Basic enemy soldier prototype
@@ -130,3 +132,9 @@ The visual-development pass now moves beyond single flat material colors: hostil
 - Hit feedback is driven by the weapon damage result and applies across the current hitscan firearm system.
 - Explosive projectile damage feedback, sound, controller vibration, and full kill-feed presentation remain future work.
 - This is a code implementation pass only; it has not yet been validated in Godot or tested with a physical controller.
+
+
+## Enemy combat reaction pass
+- Added a brief upper-body flinch pose to the procedural Skeleton3D rig when a hostile soldier takes non-lethal damage.
+- Replaced instant enemy removal with a short scripted fall, disabled collision and combat processing during the fall, and retained the body briefly before cleanup.
+- This is a lightweight prototype animation, not a physics ragdoll or authored animation clip. It has not yet been run in Godot; fall direction, pivot alignment, and bone blending still require visual testing.
