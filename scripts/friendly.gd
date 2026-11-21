@@ -112,7 +112,7 @@ func _fire_at(target: Node3D):
     query.exclude = [get_rid()]
     var hit := get_world_3d().direct_space_state.intersect_ray(query)
     if not hit.is_empty() and hit.get("collider") == target:
-        target.take_damage(12.0)
+        target.call("take_damage", 12.0)
 
 func _physics_process(delta):
     attack_timer = maxf(attack_timer - delta, 0.0)
