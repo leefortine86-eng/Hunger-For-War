@@ -22,6 +22,7 @@ func _ready():
     _create_ground()
     _create_lighting()
     _create_battlefield_cover()
+    _create_battlefield_environment()
     _create_capture_objective()
     _create_second_objective()
     _create_mission_hud()
@@ -248,6 +249,190 @@ func _create_battlefield_cover():
     _make_cover("SupplyCrateB", Vector3(1.2, 1.2, 1.2), Vector3(4.2, 0.6, -15.0), crate_color)
     _make_cover("BrokenWallLeft", Vector3(0.7, 1.8, 5.0), Vector3(-12.0, 0.9, -17.0), concrete)
     _make_cover("BrokenWallRight", Vector3(0.7, 1.8, 5.0), Vector3(12.0, 0.9, -17.0), concrete)
+
+
+func _make_environment_box(parent: Node3D, object_name: String, size: Vector3, local_position: Vector3, material: Material, collision_enabled: bool = true):
+    var holder: Node3D
+    if collision_enabled:
+        var body := StaticBody3D.new()
+        body.name = object_name
+        body.position = local_position
+        body.add_to_group("battlefield_cover")
+        parent.add_child(body)
+        holder = body
+        var collision := CollisionShape3D.new()
+        var shape := BoxShape3D.new()
+        shape.size = size
+        collision.shape = shape
+        body.add_child(collision)
+    else:
+        var node := Node3D.new()
+        node.name = object_name
+        node.position = local_position
+        parent.add_child(node)
+        holder = node
+    var mesh_instance := MeshInstance3D.new()
+    mesh_instance.name = object_name + "Mesh"
+    var box := BoxMesh.new()
+    box.size = size
+    mesh_instance.mesh = box
+    mesh_instance.material_override = material
+    holder.add_child(mesh_instance)
+    return holder
+
+func _make_building(building_name: String, center: Vector3, footprint: Vector2, wall_height: float, wall_material: Material, roof_material: Material, door_side: String = "front"):
+    var building := Node3D.new()
+    building.name = building_name
+    building.position = center
+    add_child(building)
+    var width := footprint.x
+    var depth := footprint.y
+    var wall := 0.32
+    var half_w := width * 0.5
+    var half_d := depth * 0.5
+    var door_width := 1.8
+    var door_height := 2.25
+    var window_width := 1.5
+    var window_height := 1.0
+    var window_y := 1.75
+
+    # Concrete foundation and interior floor.
+    _make_environment_box(building, "ConcreteFoundation", Vector3(width, 0.28, depth), Vector3(0, 0.14, 0), roof_material)
+    _make_environment_box(building, "InteriorFloor", Vector3(width - 0.5, 0.12, depth - 0.5), Vector3(0, 0.34, 0), wall_material, false)
+
+    # Rear wall, with a broad window opening.
+    var side_segment := (width - window_width) * 0.5
+    _make_environment_box(building, "RearWallLeft", Vector3(side_segment, wall_height, wall), Vector3(-(window_width + side_segment) * 0.5, wall_height * 0.5 + 0.28, -half_d), wall_material)
+    _make_environment_box(building, "RearWallRight", Vector3(side_segment, wall_height, wall), Vector3((window_width + side_segment) * 0.5, wall_height * 0.5 + 0.28, -half_d), wall_material)
+    _make_environment_box(building, "RearWindowLintel", Vector3(window_width, wall_height - window_y - window_height * 0.5, wall), Vector3(0, window_y + window_height * 0.5 + 0.28, -half_d), wall_material)
+    _make_environment_box(building, "RearWindowSill", Vector3(window_width, window_y - window_height * 0.5 + 0.28, wall), Vector3(0, (window_y - window_height * 0.5 + 0.28) * 0.5, -half_d), wall_material)
+
+    # Front wall has a walk-through doorway.
+    var front_segment := (width - door_width) * 0.5
+    _make_environment_box(building, "FrontWallLeft", Vector3(front_segment, wall_height, wall), Vector3(-(door_width + front_segment) * 0.5, wall_height * 0.5 + 0.28, half_d), wall_material)
+    _make_environment_box(building, "FrontWallRight", Vector3(front_segment, wall_height, wall), Vector3((door_width + front_segment) * 0.5, wall_height * 0.5 + 0.28, half_d), wall_material)
+    _make_environment_box(building, "DoorLintel", Vector3(door_width, wall_height - door_height, wall), Vector3(0, door_height + (wall_height - door_height) * 0.5 + 0.28, half_d), wall_material)
+
+    # Side walls include narrow firing / observation windows.
+    for side in [-1.0, 1.0]:
+        var x := side * half_w
+        var segment_depth := (depth - window_width) * 0.5
+        _make_environment_box(building, "SideWallFront", Vector3(wall, wall_height, segment_depth), Vector3(x, wall_height * 0.5 + 0.28, (window_width + segment_depth) * 0.5), wall_material)
+        _make_environment_box(building, "SideWallRear", Vector3(wall, wall_height, segment_depth), Vector3(x, wall_height * 0.5 + 0.28, -(window_width + segment_depth) * 0.5), wall_material)
+        _make_environment_box(building, "SideWindowLintel", Vector3(wall, wall_height - window_y - window_height * 0.5, window_width), Vector3(x, window_y + window_height * 0.5 + 0.28, 0), wall_material)
+        _make_environment_box(building, "SideWindowSill", Vector3(wall, window_y - window_height * 0.5 + 0.28, window_width), Vector3(x, (window_y - window_height * 0.5 + 0.28) * 0.5, 0), wall_material)
+
+    _make_environment_box(building, "FlatRoof", Vector3(width + 0.5, 0.28, depth + 0.5), Vector3(0, wall_height + 0.42, 0), roof_material)
+    _make_environment_box(building, "RoofParapetFront", Vector3(width + 0.3, 0.48, 0.22), Vector3(0, wall_height + 0.78, half_d), roof_material)
+    _make_environment_box(building, "RoofParapetRear", Vector3(width + 0.3, 0.48, 0.22), Vector3(0, wall_height + 0.78, -half_d), roof_material)
+    _make_environment_box(building, "DoorFrame", Vector3(door_width + 0.16, 0.12, 0.12), Vector3(0, door_height + 0.30, half_d + 0.04), roof_material, false)
+
+    # Exterior sandbag firing position beside each structure.
+    _make_cover(building_name + "FrontSandbags", Vector3(3.4, 0.65, 0.65), center + Vector3(-half_w - 2.0, 0.33, half_d + 1.2), Color(0.43, 0.39, 0.28))
+    return building
+
+func _create_battlefield_environment():
+    var road_material := StandardMaterial3D.new()
+    road_material.albedo_color = Color(0.13, 0.14, 0.13)
+    road_material.roughness = 1.0
+    var concrete_material := StandardMaterial3D.new()
+    concrete_material.albedo_color = Color(0.37, 0.37, 0.33)
+    concrete_material.roughness = 0.96
+    var plaster_material := StandardMaterial3D.new()
+    plaster_material.albedo_color = Color(0.48, 0.43, 0.34)
+    plaster_material.roughness = 0.95
+    var roof_material := StandardMaterial3D.new()
+    roof_material.albedo_color = Color(0.20, 0.22, 0.20)
+    roof_material.roughness = 0.98
+    var dark_material := StandardMaterial3D.new()
+    dark_material.albedo_color = Color(0.075, 0.085, 0.08)
+    dark_material.metallic = 0.25
+    dark_material.roughness = 0.85
+    var rust_material := StandardMaterial3D.new()
+    rust_material.albedo_color = Color(0.24, 0.19, 0.14)
+    rust_material.metallic = 0.35
+    rust_material.roughness = 0.9
+    var glass_material := StandardMaterial3D.new()
+    glass_material.albedo_color = Color(0.10, 0.17, 0.18, 0.48)
+    glass_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    glass_material.roughness = 0.22
+
+    # A worn service road gives the map a readable route through the combat zone.
+    _make_environment_box(self, "MainServiceRoad", Vector3(8.0, 0.035, 100.0), Vector3(0, 0.52, -4), road_material, false)
+    _make_environment_box(self, "RoadShoulderLeft", Vector3(1.1, 0.045, 100.0), Vector3(-4.5, 0.53, -4), concrete_material, false)
+    _make_environment_box(self, "RoadShoulderRight", Vector3(1.1, 0.045, 100.0), Vector3(4.5, 0.53, -4), concrete_material, false)
+
+    # Low-rise concrete / plaster compounds, positioned away from the central spawn lane.
+    _make_building("WestCommandBuilding", Vector3(-20, 0, -20), Vector2(11, 9), 3.6, plaster_material, roof_material)
+    _make_building("EastBarracks", Vector3(20, 0, -29), Vector2(10, 8), 3.4, concrete_material, roof_material)
+    _make_building("WestCheckpoint", Vector3(-21, 0, 13), Vector2(9, 8), 3.2, concrete_material, roof_material)
+    _make_building("EastRuinedOutpost", Vector3(21, 0, 10), Vector2(10, 8), 3.1, plaster_material, roof_material)
+
+    # Defensive fighting positions and military logistics props.
+    _make_cover("NorthHescoBarrierA", Vector3(5.0, 1.25, 1.1), Vector3(-11, 0.62, -39), Color(0.40, 0.38, 0.29))
+    _make_cover("NorthHescoBarrierB", Vector3(5.0, 1.25, 1.1), Vector3(11, 0.62, -39), Color(0.40, 0.38, 0.29))
+    _make_cover("WestCheckpointBarrier", Vector3(4.0, 0.9, 0.8), Vector3(-13, 0.45, 9), Color(0.42, 0.39, 0.29))
+    _make_cover("EastCheckpointBarrier", Vector3(4.0, 0.9, 0.8), Vector3(13, 0.45, 9), Color(0.42, 0.39, 0.29))
+
+    # Burned-out vehicle silhouettes: collision is intentionally omitted from decorative pieces.
+    var wreck := Node3D.new()
+    wreck.name = "BurnedOutTransportWreck"
+    wreck.position = Vector3(8.5, 0.7, -18)
+    wreck.rotation.y = deg_to_rad(-18)
+    add_child(wreck)
+    _make_environment_box(wreck, "WreckHull", Vector3(2.3, 1.0, 4.2), Vector3.ZERO, dark_material, false)
+    _make_environment_box(wreck, "WreckCab", Vector3(1.9, 0.9, 1.4), Vector3(0, 0.72, -1.05), rust_material, false)
+    _make_environment_box(wreck, "WreckHood", Vector3(2.0, 0.18, 1.3), Vector3(0, 0.55, -1.65), rust_material, false)
+    for side in [-1.0, 1.0]:
+        for axle in [-1.25, 1.25]:
+            var wheel := MeshInstance3D.new()
+            var wheel_mesh := CylinderMesh.new()
+            wheel_mesh.top_radius = 0.43
+            wheel_mesh.bottom_radius = 0.43
+            wheel_mesh.height = 0.22
+            wheel.mesh = wheel_mesh
+            wheel.rotation.z = PI * 0.5
+            wheel.position = Vector3(side * 1.08, -0.2, axle)
+            wheel.material_override = dark_material
+            wreck.add_child(wheel)
+
+    # Utility poles, cable runs, and scattered debris add scale to the settlement.
+    for pole_x in [-31.0, -14.0, 14.0, 31.0]:
+        var pole := MeshInstance3D.new()
+        var pole_mesh := CylinderMesh.new()
+        pole_mesh.top_radius = 0.09
+        pole_mesh.bottom_radius = 0.13
+        pole_mesh.height = 7.0
+        pole.mesh = pole_mesh
+        pole.position = Vector3(pole_x, 3.5, -5.0)
+        pole.material_override = dark_material
+        add_child(pole)
+        var crossbar := MeshInstance3D.new()
+        var cross_mesh := BoxMesh.new()
+        cross_mesh.size = Vector3(2.1, 0.12, 0.12)
+        crossbar.mesh = cross_mesh
+        crossbar.position = Vector3(pole_x, 6.55, -5.0)
+        crossbar.material_override = dark_material
+        add_child(crossbar)
+
+    # Rocky berms and scrub clusters break long sight lines at the map edges.
+    for i in range(12):
+        var x := -43.0 + float(i) * 7.8
+        _make_cover("NorthBerm%02d" % i, Vector3(5.0, 1.1, 2.0), Vector3(x, 0.55, -46), Color(0.27, 0.28, 0.22))
+        _make_cover("SouthBerm%02d" % i, Vector3(5.0, 0.9, 2.0), Vector3(x, 0.45, 46), Color(0.29, 0.28, 0.22))
+
+    for i in range(18):
+        var shrub := MeshInstance3D.new()
+        var shrub_mesh := SphereMesh.new()
+        shrub_mesh.radius = randf_range(0.35, 0.85)
+        shrub_mesh.height = shrub_mesh.radius * 1.4
+        shrub.mesh = shrub_mesh
+        shrub.position = Vector3(randf_range(-42.0, 42.0), shrub_mesh.radius * 0.45, randf_range(-42.0, 42.0))
+        var shrub_material := StandardMaterial3D.new()
+        shrub_material.albedo_color = Color(0.17, 0.21, 0.14)
+        shrub_material.roughness = 1.0
+        shrub.material_override = shrub_material
+        add_child(shrub)
 
 func _spawn_enemies():
     var spawn_points := [
