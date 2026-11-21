@@ -150,7 +150,8 @@ func _process(delta: float) -> void:
     _blend_nodes(upper_arms, "arms", delta)
     _blend_nodes(forearms, "forearms", delta)
     _blend_nodes(hands, "hands", delta)
-    _blend_nodes(legs, "legs", delta)
+    if pose == "crouch_fire":
+        _blend_nodes(legs, "legs", delta)
     var weight := minf(delta * blend_speed, 1.0)
     if is_instance_valid(rifle) and targets.has("rifle_position"):
         rifle.position = rifle.position.lerp(targets["rifle_position"], weight)
