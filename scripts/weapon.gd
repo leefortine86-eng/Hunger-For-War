@@ -1,6 +1,7 @@
 extends Node3D
 
 const WEAPON_CATALOG = preload("res://scripts/weapon_catalog.gd")
+const EXPLOSIVE_PROJECTILE = preload("res://scripts/explosive_projectile.gd")
 
 @export var default_weapon_id: String = "m4"
 
@@ -298,6 +299,11 @@ func _fire_once(raycast: RayCast3D):
     if is_instance_valid(muzzle_flash_mesh):
         muzzle_flash_mesh.visible = true
 
+    if _is_explosive_weapon():
+        _launch_explosive_projectile(raycast)
+        can_fire = true
+        return
+
     var profile := str(current_weapon.get("profile", "rifle"))
     var spread := 0.003
     match profile:
@@ -338,3 +344,66 @@ func reload():
     reloading = true
     reload_remaining = reload_time
     reload_visual = 0.01
+
+func _is_explosive_weapon() -> bool:
+    return current_weapon_id in ["mgl40", "rpg7", "maaws", "verba", "m72law", "m203", "gp25", "rpg22", "rpg75"]
+
+func _launch_explosive_projectile(raycast: RayCast3D) -> void:
+    var shooter := get_parent().get_parent() as CharacterBody3D
+    var world := get_tree().current_scene
+    if not is_instance_valid(shooter) or not is_instance_valid(world):
+        return
+
+    var camera := get_parent() as Camera3D
+    var direction := -camera.global_basis.z
+    var origin := camera.global_position + direction * 1.05 + Vector3(0.0, -0.04, 0.0)
+    var speed := 48.0
+    var gravity_value := 1.4
+    var fuse := 8.0
+    var radius := 6.5
+    var projectile_damage := damage
+    var kind := "rocket"
+
+    match current_weapon_id:
+        "mgl40":
+            speed = 27.0
+            gravity_value = 9.8
+            fuse = 2.8
+            radius = 5.5
+            kind = "grenade"
+        "m203", "gp25":
+            speed = 25.0
+            gravity_value = 9.8
+            fuse = 2.6
+            radius = 5.0
+            kind = "grenade"
+        "rpg7":
+            speed = 42.0
+            gravity_value = 1.2
+            radius = 7.0
+        "maaws":
+            speed = 55.0
+            gravity_value = 0.8
+            radius = 7.5
+        "m72law":
+            speed = 40.0
+            gravity_value = 1.0
+            radius = 6.5
+        "rpg22":
+            speed = 43.0
+            gravity_value = 1.0
+            radius = 6.0
+        "rpg75":
+            speed = 38.0
+            gravity_value = 1.1
+            radius = 6.0
+        "verba":
+            speed = 62.0
+            gravity_value = 0.2
+            radius = 4.0
+            projectile_damage = damage * 0.65
+
+    var projectile := Node3D.new()
+    projectile.set_script(EXPLOSIVE_PROJECTILE)
+    world.add_child(projectile)
+    projectile.configure(origin, direction, speed, gravity_value, fuse, radius, projectile_damage, kind, shooter, world)
