@@ -25,7 +25,8 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Expandable 53-weapon catalog (all 38 WARDOGS entries plus 15 additional Arma Reforger base-game portable weapons) inspired by WARDOGS and Arma Reforger
 - [x] Mobile arsenal dropdown and keyboard / touch weapon cycling
 - [x] Distinct procedural weapon silhouettes by weapon class
-- [x] Physical rocket and grenade projectiles with gravity, impact detection, blast radius, and distance-based damage falloff\n- [ ] Weapon attachments and class-specific firing modes
+- [x] Physical rocket and grenade projectiles with gravity, impact detection, blast radius, and distance-based damage falloff
+- [ ] Weapon attachments and class-specific firing modes
 - [ ] Improved hit effects and combat feedback
 
 ### Enemies and AI
