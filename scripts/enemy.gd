@@ -175,7 +175,8 @@ func _build_soldier_appearance():
         for finger_index in range(4):
             var finger_z := hand_z - 0.075
             var finger_y := 0.99 - float(finger_index) * 0.012
-            var finger_x: float = float(side) * 0.10 + (float(finger_index) - 1.5) * 0.035
+            var side_value: float = float(side)
+            var finger_x: float = side_value * 0.10 + (float(finger_index) - 1.5) * 0.035
             _add_box_part("GloveFinger", Vector3(0.027, 0.045, 0.105), Vector3(finger_x, finger_y, finger_z), dark_gear)
         _add_box_part("GloveThumb", Vector3(0.045, 0.055, 0.12), Vector3(side * 0.18, 1.03, hand_z + 0.025), dark_gear)
         var thigh = _add_capsule_part("Thigh", 0.155, 0.68, Vector3(side * 0.20, 0.39, 0), uniform)
@@ -318,14 +319,14 @@ func _find_cover_position() -> bool:
     for cover in get_tree().get_nodes_in_group("battlefield_cover"):
         if not is_instance_valid(cover):
             continue
-        var away_from_player := cover.global_position - player.global_position
+        var away_from_player: Vector3 = cover.global_position - player.global_position
         away_from_player.y = 0.0
         if away_from_player.length() < 0.1:
             continue
-        var candidate := cover.global_position + away_from_player.normalized() * 1.6
+        var candidate: Vector3 = cover.global_position + away_from_player.normalized() * 1.6
         candidate.y = global_position.y
         var distance_to_cover := global_position.distance_to(candidate)
-        var distance_to_player := candidate.distance_to(player.global_position)
+        var distance_to_player: float = candidate.distance_to(player.global_position)
         if distance_to_cover > 16.0 or distance_to_player < 5.0:
             continue
         var query := PhysicsRayQueryParameters3D.create(
