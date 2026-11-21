@@ -27,10 +27,19 @@ var fire_button: Button
 var reload_button: Button
 var fire_button_rect := Rect2()
 var reload_button_rect := Rect2()
+var mobile_sprint: bool = false
+var mobile_crouch: bool = false
+var mobile_jump_requested: bool = false
+var jump_key_was_down: bool = false
+var body_collision: CollisionShape3D
+var sprint_button: Button
+var crouch_button: Button
+var jump_button: Button
 
 func _ready():
     add_to_group("player")
     health = max_health
+    body_collision = $CollisionShape3D
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     _create_mobile_controls()
     _create_hud()
@@ -113,6 +122,44 @@ func _create_hud():
     fire_button_rect = Rect2(fire_button.position, fire_button.size)
     reload_button_rect = Rect2(reload_button.position, reload_button.size)
 
+    sprint_button = Button.new()
+    sprint_button.name = "SprintButton"
+    sprint_button.text = "SPRINT"
+    sprint_button.position = Vector2(screen_size.x - 270, screen_size.y - 190)
+    sprint_button.size = Vector2(112, 64)
+    sprint_button.toggle_mode = true
+    sprint_button.add_theme_font_size_override("font_size", 17)
+    sprint_button.toggled.connect(_on_sprint_toggled)
+    canvas.add_child(sprint_button)
+
+    crouch_button = Button.new()
+    crouch_button.name = "CrouchButton"
+    crouch_button.text = "CROUCH"
+    crouch_button.position = Vector2(screen_size.x - 270, screen_size.y - 112)
+    crouch_button.size = Vector2(112, 58)
+    crouch_button.toggle_mode = true
+    crouch_button.add_theme_font_size_override("font_size", 17)
+    crouch_button.toggled.connect(_on_crouch_toggled)
+    canvas.add_child(crouch_button)
+
+    jump_button = Button.new()
+    jump_button.name = "JumpButton"
+    jump_button.text = "JUMP"
+    jump_button.position = Vector2(screen_size.x - 142, screen_size.y - 282)
+    jump_button.size = Vector2(112, 68)
+    jump_button.add_theme_font_size_override("font_size", 19)
+    jump_button.pressed.connect(_on_jump_pressed)
+    canvas.add_child(jump_button)
+
+func _on_sprint_toggled(enabled: bool):
+    mobile_sprint = enabled
+
+func _on_crouch_toggled(enabled: bool):
+    mobile_crouch = enabled
+
+func _on_jump_pressed():
+    mobile_jump_requested = true
+
 func _on_fire_pressed():
     weapon.fire(raycast)
 
@@ -192,13 +239,46 @@ func _physics_process(delta):
     )
     var input_dir: Vector2 = (keyboard_input + mobile_move).limit_length(1.0)
     var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-    velocity.x = direction.x * move_speed
-    velocity.z = direction.z * move_speed
+
+    var sprinting := Input.is_key_pressed(KEY_SHIFT) or mobile_sprint
+    var crouching := Input.is_key_pressed(KEY_CTRL) or mobile_crouch
+    var current_speed := move_speed
+    if crouching:
+        current_speed = move_speed * 0.45
+    elif sprinting:
+        current_speed = move_speed * 1.55
+
+    velocity.x = direction.x * current_speed
+    velocity.z = direction.z * current_speed
+
+    var jump_key_down := Input.is_key_pressed(KEY_SPACE)
+    if jump_key_down and not jump_key_was_down and is_on_floor() and not crouching:
+        velocity.y = 6.0
+    jump_key_was_down = jump_key_down
+
+    if mobile_jump_requested:
+        if is_on_floor() and not crouching:
+            velocity.y = 6.0
+        mobile_jump_requested = false
 
     if not is_on_floor():
         velocity.y -= gravity * delta
-    else:
+    elif velocity.y < 0.0:
         velocity.y = 0.0
+
+    var capsule := body_collision.shape as CapsuleShape3D
+    if capsule:
+        var target_height := 1.2 if crouching else 1.8
+        capsule.height = move_toward(capsule.height, target_height, 3.0 * delta)
+        body_collision.position.y = capsule.height * 0.5
+
+    var target_camera_height := 0.35 if crouching else 0.65
+    camera.position.y = move_toward(camera.position.y, target_camera_height, 2.5 * delta)
+
+    if is_instance_valid(sprint_button):
+        sprint_button.text = "SPRINT ON" if mobile_sprint else "SPRINT"
+    if is_instance_valid(crouch_button):
+        crouch_button.text = "STAND" if mobile_crouch else "CROUCH"
 
     move_and_slide()
 
