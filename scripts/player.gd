@@ -35,6 +35,9 @@ var body_collision: CollisionShape3D
 var sprint_button: Button
 var crouch_button: Button
 var jump_button: Button
+var aim_button: Button
+var aiming: bool = false
+var crosshair_label: Label
 
 func _ready():
     add_to_group("player")
@@ -151,6 +154,25 @@ func _create_hud():
     jump_button.pressed.connect(_on_jump_pressed)
     canvas.add_child(jump_button)
 
+    aim_button = Button.new()
+    aim_button.name = "AimButton"
+    aim_button.text = "AIM"
+    aim_button.position = Vector2(screen_size.x - 142, screen_size.y - 370)
+    aim_button.size = Vector2(112, 64)
+    aim_button.toggle_mode = true
+    aim_button.add_theme_font_size_override("font_size", 19)
+    aim_button.toggled.connect(_on_aim_toggled)
+    canvas.add_child(aim_button)
+
+    crosshair_label = Label.new()
+    crosshair_label.name = "Crosshair"
+    crosshair_label.text = "+"
+    crosshair_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+    crosshair_label.position = Vector2(-8, -17)
+    crosshair_label.add_theme_font_size_override("font_size", 30)
+    crosshair_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
+    canvas.add_child(crosshair_label)
+
 func _on_sprint_toggled(enabled: bool):
     mobile_sprint = enabled
 
@@ -159,6 +181,10 @@ func _on_crouch_toggled(enabled: bool):
 
 func _on_jump_pressed():
     mobile_jump_requested = true
+
+func _on_aim_toggled(enabled: bool):
+    aiming = enabled
+    weapon.set_aiming(aiming)
 
 func _on_fire_pressed():
     weapon.fire(raycast)
@@ -169,7 +195,7 @@ func _on_reload_pressed():
 func _input(event):
     if event is InputEventScreenTouch:
         if event.pressed:
-            if fire_button_rect.has_point(event.position) or reload_button_rect.has_point(event.position):
+            if _is_touch_ui(event.position):
                 return
 
             var screen_size := get_viewport().get_visible_rect().size
@@ -196,6 +222,13 @@ func _input(event):
         elif event.index == look_touch_id:
             _rotate_camera(event.relative, touch_sensitivity)
 
+func _is_touch_ui(position: Vector2) -> bool:
+    var controls = [fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button]
+    for control in controls:
+        if is_instance_valid(control) and Rect2(control.position, control.size).has_point(position):
+            return true
+    return false
+
 func _update_joystick(touch_position: Vector2):
     var offset: Vector2 = touch_position - joystick_center
     if offset.length() > joystick_radius:
@@ -218,9 +251,12 @@ func _unhandled_input(event):
         if event.keycode == KEY_R:
             weapon.reload()
 
-    if event is InputEventMouseButton and event.pressed:
-        if event.button_index == MOUSE_BUTTON_LEFT:
+    if event is InputEventMouseButton:
+        if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
             weapon.fire(raycast)
+        elif event.button_index == MOUSE_BUTTON_RIGHT:
+            aiming = event.pressed
+            weapon.set_aiming(aiming)
 
 func _process(_delta):
     if is_instance_valid(health_label):
@@ -231,6 +267,11 @@ func _process(_delta):
         fire_button.disabled = weapon.reloading
     if is_instance_valid(reload_button):
         reload_button.disabled = weapon.reloading or weapon.ammo_in_magazine == weapon.magazine_size or weapon.reserve_ammo <= 0
+    if is_instance_valid(camera):
+        var target_fov := 48.0 if aiming else 75.0
+        camera.fov = move_toward(camera.fov, target_fov, 100.0 * get_process_delta_time())
+    if is_instance_valid(crosshair_label):
+        crosshair_label.visible = not aiming
 
 func _physics_process(delta):
     var keyboard_input = Vector2(
