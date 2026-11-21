@@ -22,7 +22,7 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Basic hitscan weapon and magazine / reserve ammunition
 - [x] Reloading
 - [x] First-person rifle prototype, recoil, muzzle flash, and firing feedback
-- [x] Expandable 51-weapon catalog inspired by WARDOGS and Arma Reforger\n- [x] Mobile arsenal dropdown and keyboard / touch weapon cycling\n- [x] Distinct procedural weapon silhouettes by weapon class\n- [ ] Explosive projectile behavior, weapon attachments, and class-specific firing modes
+- [x] Expandable 53-weapon catalog (38 WARDOGS roster entries plus the unique Arma Reforger base-game firearms) inspired by WARDOGS and Arma Reforger\n- [x] Mobile arsenal dropdown and keyboard / touch weapon cycling\n- [x] Distinct procedural weapon silhouettes by weapon class\n- [ ] Explosive projectile behavior, weapon attachments, and class-specific firing modes
 - [ ] Improved hit effects and combat feedback
 
 ### Enemies and AI
