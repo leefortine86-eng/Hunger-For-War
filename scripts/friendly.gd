@@ -27,9 +27,9 @@ func _ready():
     add_to_group("friendlies")
     player = get_tree().get_first_node_in_group("player") as CharacterBody3D
     _build_soldier()
-    pose_rig = preload("res://scripts/soldier_pose_rig.gd").new()
+    pose_rig = preload("res://scripts/soldier_skeleton_rig.gd").new()
     add_child(pose_rig)
-    pose_rig.configure(animated_arms, animated_forearms, animated_hands, animated_legs, rifle, get_node_or_null("Body"), get_node_or_null("Head"), "rifle")
+    pose_rig.configure(self, animated_arms, animated_forearms, animated_hands, animated_legs, rifle, "rifle")
 
 func _camouflage_material(base: Color, dark_patch: Color, light_patch: Color) -> ShaderMaterial:
     var shader := Shader.new()
@@ -349,13 +349,8 @@ func _animate_soldier(delta: float):
         walk_cycle += delta * speed * 2.7
     else:
         walk_cycle = lerpf(walk_cycle, 0.0, minf(delta * 3.0, 1.0))
-    var swing := sin(walk_cycle) * minf(speed / move_speed, 1.0) * 0.42
-    for i in range(animated_arms.size()):
-        var arm = animated_arms[i]
-        var leg = animated_legs[i]
-        # The pose rig owns the legs while crouched; otherwise preserve the walk cycle.
-        if pose_rig.pose != "crouch_fire":
-            leg.rotation.x = lerpf(leg.rotation.x, -swing if i == 0 else swing, minf(delta * 9.0, 1.0))
+    var amount := minf(speed / maxf(move_speed, 0.01), 1.0)
+    pose_rig.set_locomotion(amount, walk_cycle)
 
 func take_damage(amount: float):
     health = maxf(health - amount, 0.0)
