@@ -117,6 +117,7 @@ func _create_mission_hud():
     capture_bar.show_percentage = false
     mission_hud.add_child(capture_bar)
 
+func _process(delta: float) -> void:
     if objective_captured:
         return
 
