@@ -548,6 +548,8 @@ func _physics_process(delta):
     elif velocity.y < 0.0:
         velocity.y = 0.0
 
+    # Keep the camera at a fixed height for each stance. The movement stick
+    # only changes horizontal velocity; looking is handled by the right side.
     var capsule := body_collision.shape as CapsuleShape3D
     if capsule:
         var target_height := 0.65 if prone else (1.2 if crouching else 1.8)
@@ -555,7 +557,7 @@ func _physics_process(delta):
         body_collision.position.y = capsule.height * 0.5
 
     var target_camera_height := 0.48 if prone else (1.05 if crouching else 1.55)
-    camera.position.y = move_toward(camera.position.y, target_camera_height, 3.0 * delta)
+    camera.position = Vector3(0.0, target_camera_height, 0.0)
 
     if is_instance_valid(sprint_button):
         sprint_button.text = "SPRINT ON" if mobile_sprint else "SPRINT"
