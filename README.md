@@ -32,7 +32,8 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 ### Enemies and AI
 - [x] Basic enemy soldier prototype
 - [x] Basic procedural walk-cycle animation for friendly and enemy soldiers
-- [ ] Improved soldier models, materials, and animation blending
+- [x] First-pass distinct faction uniforms: woodland-green allies with blue ID markings and tan-grey hostiles with red ID markings
+- [ ] Higher-detail soldier models, camouflage patterns, and animation blending
 - [x] Ranged enemy attacks with line-of-sight checks and distance keeping
 - [x] Friendly three-person fireteam that follows the player and engages visible enemies
 - [x] Enemies seek nearby defensive cover after taking damage
@@ -44,7 +45,7 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] First-pass settlement environment with four enterable buildings, window openings, flat rooftops, a service road, checkpoint barriers, a burned-out transport wreck, utility poles, berms, scrub, perimeter pine trees, rock clusters, drainage banks, road markings, and supply props
 - [x] Sequential Alpha and Bravo capture objectives with contested-zone logic and mission completion
 - [x] First-pass original building interiors with a command planning table, communications console, barracks bunks, lockers, checkpoint desk, and outpost storage
-- [x] First-pass defensive observation towers, firing bays, and checkpoint canopy
+- [x] First-pass defensive observation towers, firing bays, checkpoint canopy, radio mast, building service equipment, and compound floodlights
 - [x] Building roof-access ladder props and rooftop ventilation details (visual-only; climbing is not implemented)
 - [x] Subtle distance fog and a lightweight burned-wreck ember / smoke presentation
 - [ ] Material variety, true terrain elevation, and destructible-looking set dressing
@@ -64,3 +65,6 @@ Core controls, a selectable multi-class arsenal, procedural weapon silhouettes, 
 
 
 The settlement battlefield now has defensive observation towers, extra firing bays, a checkpoint canopy, roof ladder and ventilation props, subtle distance fog, and a lightweight wreck ember/smoke effect. The ladders are currently visual-only and are not climbable. The settlement battlefield also has additional terrain dressing: perimeter pine trees that frame concealed flanking routes, rock clusters, raised drainage banks, faded road markings, and supply props near the compounds. The next map is planned as a separate woodland military installation with its own layout, buildings, defensive positions, and capture objectives; it will be added after the settlement map is completed.
+
+
+Faction visuals now distinguish friendly and hostile soldiers at a glance: friendly fireteam members wear woodland-green kit with blue identification panels and arm bands; hostile soldiers wear dusty tan/grey kit with red identification markings. The settlement compounds also gained external air-conditioning units, power cabinets, cable ducts, a command radio mast, and low-intensity floodlights. These are procedural prototype details and have not yet been performance-tested on Android.
