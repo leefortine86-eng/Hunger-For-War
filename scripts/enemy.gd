@@ -184,6 +184,17 @@ func _build_soldier_appearance():
         _add_box_part("ThighUtilityPouch", Vector3(0.24, 0.30, 0.16), Vector3(side * 0.34, 0.53, -0.10), armor)
         _add_box_part("Glove", Vector3(0.18, 0.16, 0.20), Vector3(side * 0.48, 0.52, -0.05), dark_gear)
 
+    # Prefer the uploaded textured soldier as the enemy's visible character.
+    # Keep the procedural model as a fallback if Godot cannot load the GLB.
+    var soldier_scene := load("res://assets/characters/Military_Male_03.glb") as PackedScene
+    if soldier_scene != null:
+        var soldier_model := soldier_scene.instantiate()
+        soldier_model.name = "MilitaryMale03"
+        add_child(soldier_model)
+        for child in get_children():
+            if child is MeshInstance3D and child != rifle:
+                child.visible = false
+
 
 func _build_enemy_rifle():
     rifle = MeshInstance3D.new()
