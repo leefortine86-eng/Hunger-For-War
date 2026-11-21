@@ -639,11 +639,17 @@ func _process(delta):
     var gamepad_connected := Input.get_connected_joypads().size() > 0
     if gamepad_connected != last_gamepad_connected:
         _refresh_control_presentation()
-    var look_input := Vector2(
-        Input.get_action_strength("look_right") - Input.get_action_strength("look_left"),
-        Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
-    )
-    if look_input.length() > 0.16:
+    var look_input := Vector2.ZERO
+    for device_id in Input.get_connected_joypads():
+        var stick := Vector2(
+            Input.get_joy_axis(device_id, JOY_AXIS_RIGHT_X),
+            Input.get_joy_axis(device_id, JOY_AXIS_RIGHT_Y)
+        )
+        if stick.length() > 0.18:
+            var strength := clampf((stick.length() - 0.18) / 0.82, 0.0, 1.0)
+            look_input = stick.normalized() * pow(strength, 1.25)
+            break
+    if look_input.length() > 0.01:
         _rotate_camera(look_input * controller_look_speed * (0.55 if aiming else 1.0) * delta, 1.0)
     var wants_aim := mobile_aiming or mouse_aiming or Input.is_action_pressed("aim")
     if wants_aim != aiming:
