@@ -314,16 +314,25 @@ func _create_staging_ui() -> void:
 
     staging_panel = PanelContainer.new()
     staging_panel.name = "PreBattleStaging"
+    var screen_size := get_viewport().get_visible_rect().size
+    var panel_size := Vector2(minf(screen_size.x - 24.0, 620.0), minf(screen_size.y - 24.0, 520.0))
     staging_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-    staging_panel.position = Vector2(-250, -245)
-    staging_panel.size = Vector2(500, 490)
-    staging_panel.custom_minimum_size = Vector2(500, 490)
+    staging_panel.position = -panel_size * 0.5
+    staging_panel.size = panel_size
+    staging_panel.custom_minimum_size = panel_size
     staging_panel.process_mode = Node.PROCESS_MODE_ALWAYS
     overlay.add_child(staging_panel)
 
+    var scroll := ScrollContainer.new()
+    scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    scroll.custom_minimum_size = Vector2(0.0, panel_size.y - 20.0)
+    staging_panel.add_child(scroll)
+
     var column := VBoxContainer.new()
-    column.add_theme_constant_override("separation", 12)
-    staging_panel.add_child(column)
+    column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    column.add_theme_constant_override("separation", 8)
+    scroll.add_child(column)
 
     var title := Label.new()
     title.text = "HUNGER FOR WAR  |  PRE-DEPLOYMENT"
