@@ -27,6 +27,7 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Distinct procedural weapon silhouettes by weapon class
 - [x] Physical rocket and grenade projectiles with gravity, impact detection, blast radius, and distance-based damage falloff
 - [x] Weapon attachment system with optics, suppressors, grips, flashlight / laser, and extended magazines
+- [x] Refined procedural weapon barrels, muzzle devices, receiver controls, and handguard rails
 - [ ] Improved hit effects and combat feedback
 
 ### Enemies and AI
@@ -35,7 +36,8 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] First-pass distinct faction uniforms: woodland-green allies with blue ID markings and tan-grey hostiles with red ID markings
 - [x] First-pass modern soldier equipment: helmet rails/NVG mounts, eye protection, headsets, plate-carrier pouches, radios, knee pads, gloves, boots, and class-neutral rifle accessories
 - [x] Subdued woodland camouflage panels on friendly uniforms and distinct hostile tan/grey kit
-- [ ] Higher-detail character meshes, texture-based camouflage, and animation blending
+- [x] Procedural shader-based woodland and dusty camouflage patterns on uniform surfaces
+- [ ] Authored high-resolution character textures, higher-detail character meshes, and animation blending
 - [x] Ranged enemy attacks with line-of-sight checks and distance keeping
 - [x] Friendly three-person fireteam that follows the player and engages visible enemies
 - [x] Enemies seek nearby defensive cover after taking damage
@@ -51,7 +53,9 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] First-pass defensive observation towers, firing bays, checkpoint canopy, radio mast, building service equipment, compound floodlights, modular blast walls, jersey barriers, equipment shade, and field generator
 - [x] Building roof-access ladder props and rooftop ventilation details (visual-only; climbing is not implemented)
 - [x] Subtle distance fog and a lightweight burned-wreck ember / smoke presentation
-- [ ] Material variety, true terrain elevation, and destructible-looking set dressing
+- [x] Procedural shader-based ground variation and weathered plaster / concrete surfaces
+- [x] First-pass perimeter security fence, warning lamps, and layered sandbag firing bays
+- [ ] True sculpted terrain elevation, detailed terrain decals, and destructible set dressing
 - [ ] Vehicles and larger battlefield spaces
 - [ ] Improved lighting, atmosphere, sound, and visual effects
 
@@ -74,3 +78,5 @@ Faction visuals now distinguish friendly and hostile soldiers at a glance: frien
 
 
 Enemy combat now has a first tactical movement pass: when multiple hostiles are active, they alternate lateral approach positions instead of all advancing along the same direct line. This is lightweight steering rather than full navigation; obstacle-aware pathfinding, suppression behavior, and more advanced squad coordination remain future work. This change has not yet been tested in Godot or on Android.\n\nThe latest realism pass adds first-pass modern infantry kit to both factions: helmet accessory rails and NVG mounts, eye protection, headsets, plate-carrier magazine/utility pouches, radio antennas, knee protection, gloves, boots, and more complete rifle silhouettes. Friendly uniforms include muted woodland camouflage panels; hostile uniforms retain a separate dusty tan/grey palette and red faction identifiers. The settlement now also includes modular blast-wall and jersey-barrier positions, a camouflaged equipment staging shade, a field generator, and a tactical communications mast. These remain procedural low-poly prototypes; detailed scanned assets, texture maps, animation blending, and Android performance validation are still future work.
+
+The visual-development pass now moves beyond single flat material colors: friendly and hostile uniform surfaces use procedural shader camouflage palettes; the battlefield ground has layered soil/vegetation variation; and building plaster/concrete surfaces have weathering variation. Weapon silhouettes gained cylindrical barrels, muzzle devices, side rails, charging handles, and receiver details. Building fronts gained additional window trim, door hardware, conduit, and junction boxes. The outpost perimeter now has a post-and-rail security fence, low warning lights, and individually layered sandbag courses around firing bays. These are lightweight procedural materials and geometry—not finished scanned textures or production character assets—and have not been validated in Godot or profiled on Android.
