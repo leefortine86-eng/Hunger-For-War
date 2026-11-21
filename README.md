@@ -149,3 +149,8 @@ The playable experience is a direct first-person military shooter. There are no 
 - Added `assets/ASSET_PIPELINE.md` with candidate free sources, license checks, Godot GLB import rules, asset folder structure, mobile performance considerations, and the first character/weapon replacement milestone.
 - Poly Haven CC0 materials/models and Mixamo's free game-use character/animation offering are candidate sources; no external asset is claimed to be integrated yet.
 - Existing procedural soldier and weapon models remain in place until replacement assets are imported and verified in a separate Godot test scene.
+
+### Character asset preparation
+- Added `assets/ASSET_CANDIDATES.md` with license and quality reviews of free character and weapon sources. Ara 3D Gen is the preferred route to evaluate for a custom rigged modern operator; no exported model has been integrated yet.
+- Added `assets/CHARACTER_ASSET_SPEC.md` with the exact visual direction, rig/export settings, required rifle animations, and Godot/Android acceptance checks.
+- The existing playable soldier remains untouched until a real GLB export passes the import and animation checks.
