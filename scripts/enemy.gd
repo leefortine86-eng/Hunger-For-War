@@ -79,6 +79,20 @@ func _build_soldier_appearance():
     _add_box_part("HostileArmBandRight", Vector3(0.31, 0.13, 0.34), Vector3(0.48, 1.25, -0.01), hostile_red)
     _add_box_part("HostileShoulderPatch", Vector3(0.20, 0.18, 0.045), Vector3(0.0, 1.48, -0.20), hostile_red)
     _add_box_part("HelmetBrim", Vector3(0.56, 0.07, 0.48), Vector3(0, 1.99, -0.02), dark_gear)
+    # Modern protective equipment: helmet rails, eye protection, headset and front NVG mount.
+    _add_box_part("HelmetNVGMount", Vector3(0.13, 0.18, 0.12), Vector3(0, 2.02, -0.27), dark_gear)
+    _add_box_part("HelmetSideRailLeft", Vector3(0.07, 0.12, 0.32), Vector3(-0.27, 2.04, 0), dark_gear)
+    _add_box_part("HelmetSideRailRight", Vector3(0.07, 0.12, 0.32), Vector3(0.27, 2.04, 0), dark_gear)
+    _add_box_part("EyeProtection", Vector3(0.42, 0.10, 0.09), Vector3(0, 1.91, -0.20), Color(0.10, 0.15, 0.15))
+    _add_box_part("HeadsetLeft", Vector3(0.10, 0.22, 0.14), Vector3(-0.25, 1.88, 0.02), dark_gear)
+    _add_box_part("HeadsetRight", Vector3(0.10, 0.22, 0.14), Vector3(0.25, 1.88, 0.02), dark_gear)
+    # Magazine and utility pouches across the plate carrier.
+    for pouch_x in [-0.25, 0.0, 0.25]:
+        _add_box_part("MagazinePouch", Vector3(0.18, 0.22, 0.16), Vector3(pouch_x, 0.88, -0.25), dark_gear)
+    _add_box_part("UtilityPouchLeft", Vector3(0.20, 0.24, 0.18), Vector3(-0.38, 0.98, -0.12), armor)
+    _add_box_part("UtilityPouchRight", Vector3(0.20, 0.24, 0.18), Vector3(0.38, 0.98, -0.12), armor)
+    _add_box_part("RadioAntenna", Vector3(0.035, 0.65, 0.035), Vector3(0.18, 1.72, 0.31), dark_gear)
+    _add_box_part("TourniquetPouch", Vector3(0.17, 0.18, 0.14), Vector3(-0.36, 1.38, -0.10), hostile_red)
 
     for side in [-1.0, 1.0]:
         var upper_arm = _add_capsule_part("UpperArm", 0.14, 0.62, Vector3(side * 0.48, 1.12, 0), uniform)
@@ -88,6 +102,10 @@ func _build_soldier_appearance():
         animated_legs.append(thigh)
         _add_capsule_part("Boot", 0.13, 0.30, Vector3(side * 0.20, 0.08, -0.08), dark_gear)
         _add_box_part("ShoulderPad", Vector3(0.32, 0.20, 0.34), Vector3(side * 0.46, 1.42, 0), armor)
+        _add_box_part("SleeveCamouflagePanel", Vector3(0.20, 0.24, 0.30), Vector3(side * 0.49, 1.23, 0.01), uniform)
+        _add_box_part("KneePad", Vector3(0.31, 0.25, 0.16), Vector3(side * 0.20, 0.35, -0.14), dark_gear)
+        _add_box_part("ThighUtilityPouch", Vector3(0.24, 0.30, 0.16), Vector3(side * 0.34, 0.53, -0.10), armor)
+        _add_box_part("Glove", Vector3(0.18, 0.16, 0.20), Vector3(side * 0.48, 0.52, -0.05), dark_gear)
 
 
 func _build_enemy_rifle():
@@ -99,6 +117,10 @@ func _build_enemy_rifle():
     rifle.position = Vector3(0.0, 1.12, -0.48)
     rifle.material_override = _material(Color(0.07, 0.08, 0.07))
     add_child(rifle)
+    _add_box_part("RifleStock", Vector3(0.13, 0.14, 0.30), Vector3(0, 1.10, -0.06), Color(0.12, 0.14, 0.12))
+    _add_box_part("RifleMagazine", Vector3(0.13, 0.30, 0.18), Vector3(0, 0.91, -0.42), Color(0.10, 0.12, 0.10))
+    _add_box_part("RifleOptic", Vector3(0.14, 0.12, 0.18), Vector3(0, 1.23, -0.40), Color(0.08, 0.10, 0.10))
+    _add_box_part("RifleForegrip", Vector3(0.10, 0.18, 0.12), Vector3(0, 0.99, -0.68), Color(0.11, 0.13, 0.11))
 
     muzzle_light = OmniLight3D.new()
     muzzle_light.position = Vector3(0.0, 1.12, -0.90)
