@@ -882,10 +882,18 @@ func _create_wreck_atmosphere():
     add_child(fire_glow)
 
 func _spawn_enemies():
+    # Hostile troops approach from several directions around the northern
+    # objective so the player faces a larger, more active battlefield.
     var spawn_points := [
         Vector3(0, 0, -12),
         Vector3(-5, 0, -20),
-        Vector3(5, 0, -22)
+        Vector3(5, 0, -22),
+        Vector3(-14, 0, -17),
+        Vector3(14, 0, -18),
+        Vector3(-22, 0, -29),
+        Vector3(22, 0, -31),
+        Vector3(-9, 0, -40),
+        Vector3(9, 0, -41)
     ]
 
     for spawn_position in spawn_points:
@@ -894,12 +902,17 @@ func _spawn_enemies():
         enemy.add_to_group("enemies")
         add_child(enemy)
 
-    print("Three enemy soldiers deployed!")
+    print("%d enemy soldiers deployed!" % spawn_points.size())
 
-    # Friendly troops hold the near side of the woodland outpost.
+    # Friendly woodland troops reinforce the southern approaches and
+    # defensive positions around the outpost.
     var ally_positions := [
         Vector3(-3.2, 0.0, 3.0),
-        Vector3(3.2, 0.0, 3.0)
+        Vector3(3.2, 0.0, 3.0),
+        Vector3(-9.0, 0.0, 7.0),
+        Vector3(9.0, 0.0, 7.0),
+        Vector3(-17.0, 0.0, 17.0),
+        Vector3(17.0, 0.0, 17.0)
     ]
     for ally_position in ally_positions:
         var ally := ALLY_SCENE.instantiate()
@@ -907,5 +920,5 @@ func _spawn_enemies():
         ally.add_to_group("allies")
         add_child(ally)
 
-    print("Two friendly woodland soldiers deployed!")
+    print("%d friendly woodland soldiers deployed!" % ally_positions.size())
 
