@@ -1,6 +1,7 @@
 extends Node3D
 
 const ENEMY_SCENE = preload("res://scenes/enemy.tscn")
+const ALLY_SCENE = preload("res://scenes/ally.tscn")
 
 @export var capture_duration: float = 20.0
 @export var objective_radius: float = 5.5
@@ -893,4 +894,17 @@ func _spawn_enemies():
         add_child(enemy)
 
     print("Three enemy soldiers deployed!")
+
+    # Friendly troops hold the near side of the woodland outpost.
+    var ally_positions := [
+        Vector3(-3.2, 0.0, 3.0),
+        Vector3(3.2, 0.0, 3.0)
+    ]
+    for ally_position in ally_positions:
+        var ally := ALLY_SCENE.instantiate()
+        ally.position = ally_position
+        ally.add_to_group("allies")
+        add_child(ally)
+
+    print("Two friendly woodland soldiers deployed!")
 
