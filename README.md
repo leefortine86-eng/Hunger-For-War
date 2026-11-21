@@ -88,3 +88,10 @@ The visual-development pass now moves beyond single flat material colors: friend
 - Separated thigh and lower-leg shapes, added boot soles and more defined gloved hands.
 - Preserved the existing faction camouflage, identifying colors, movement logic, combat behavior and mobile controls.
 - These are still procedural low-poly character assemblies, not rigged or professionally sculpted character assets. The changes have not yet been validated in Godot or profiled on Android.
+
+
+## Shoulder-ready rifle pose
+- Repositioned friendly and hostile upper arms and forearms into a forward, bent support posture.
+- Added visible grip-hand shapes near the rifle fore-end and grip area.
+- Kept upper arms steady while the legs continue their walk cycle, avoiding the old arm-swing animation pulling the hands away from the weapon.
+- The current weapon hold is a fixed procedural pose; hand-to-trigger alignment, reload/aim transitions and a true skeletal rig remain future work. Not yet tested in Godot.
