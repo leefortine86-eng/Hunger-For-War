@@ -9,7 +9,7 @@ class_name PlayerCameraRig
 @export var aimed_fov: float = 48.0
 @export var fov_smoothing: float = 100.0
 @export_group("Weapon inertia and bob")
-@export var weapon_path: NodePath = NodePath("../Weapon")
+@export var weapon_path: NodePath = NodePath("Weapon")
 @export var look_inertia_strength: float = 0.0018
 @export var movement_bob_frequency: float = 8.0
 @export var movement_bob_amplitude: float = 0.018
