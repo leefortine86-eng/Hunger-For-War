@@ -14,6 +14,9 @@ var attack_timer: float = 0.0
 var player: CharacterBody3D
 var muzzle_light: OmniLight3D
 var muzzle_flash_time: float = 0.0
+var cover_target := Vector3.ZERO
+var has_cover_target: bool = false
+var cover_hold_timer: float = 0.0
 
 func _ready():
     health = max_health
@@ -127,6 +130,40 @@ func _fire_at_player():
     if not hit.is_empty() and hit.get("collider") == player:
         player.take_damage(attack_damage)
 
+
+func _find_cover_position() -> bool:
+    if not is_instance_valid(player):
+        return false
+    var best_distance := 100000.0
+    var found_cover := false
+    for cover in get_tree().get_nodes_in_group("battlefield_cover"):
+        if not is_instance_valid(cover):
+            continue
+        var away_from_player := cover.global_position - player.global_position
+        away_from_player.y = 0.0
+        if away_from_player.length() < 0.1:
+            continue
+        var candidate := cover.global_position + away_from_player.normalized() * 1.6
+        candidate.y = global_position.y
+        var distance_to_cover := global_position.distance_to(candidate)
+        var distance_to_player := candidate.distance_to(player.global_position)
+        if distance_to_cover > 16.0 or distance_to_player < 5.0:
+            continue
+        var query := PhysicsRayQueryParameters3D.create(
+            candidate + Vector3(0, 1.1, 0),
+            player.global_position + Vector3(0, 0.9, 0)
+        )
+        query.exclude = [get_rid()]
+        var hit := get_world_3d().direct_space_state.intersect_ray(query)
+        if not hit.is_empty() and hit.get("collider") == cover and distance_to_cover < best_distance:
+            best_distance = distance_to_cover
+            cover_target = candidate
+            found_cover = true
+    has_cover_target = found_cover
+    if found_cover:
+        cover_hold_timer = 5.0
+    return found_cover
+
 func _physics_process(delta):
     attack_timer = max(attack_timer - delta, 0.0)
     if muzzle_flash_time > 0.0:
@@ -153,6 +190,25 @@ func _physics_process(delta):
     if distance > 0.1:
         look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
 
+    if has_cover_target and cover_hold_timer > 0.0:
+        var to_cover := cover_target - global_position
+        to_cover.y = 0.0
+        if to_cover.length() > 1.15:
+            var cover_direction := to_cover.normalized()
+            velocity.x = cover_direction.x * move_speed * 1.15
+            velocity.z = cover_direction.z * move_speed * 1.15
+        else:
+            velocity.x = move_toward(velocity.x, 0.0, move_speed * delta * 5.0)
+            velocity.z = move_toward(velocity.z, 0.0, move_speed * delta * 5.0)
+            cover_hold_timer -= delta
+        if distance <= fire_range and attack_timer <= 0.0:
+            _fire_at_player()
+            attack_timer = attack_cooldown
+        move_and_slide()
+        if cover_hold_timer <= 0.0:
+            has_cover_target = false
+        return
+
     if distance > preferred_range + 2.0:
         var direction = to_player.normalized()
         velocity.x = direction.x * move_speed
@@ -173,6 +229,7 @@ func _physics_process(delta):
 
 func take_damage(amount: float):
     health -= amount
+    _find_cover_position()
     print("Enemy hit! Health: ", health)
     if health <= 0.0:
         die()
