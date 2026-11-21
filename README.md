@@ -41,9 +41,9 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 
 ### Battlefield and presentation
 - [x] Prototype ground, lighting, cover, and test enemies
-- [x] First-pass settlement environment with four enterable buildings, window openings, flat rooftops, a service road, checkpoint barriers, a burned-out transport wreck, utility poles, berms, and scrub
+- [x] First-pass settlement environment with four enterable buildings, window openings, flat rooftops, a service road, checkpoint barriers, a burned-out transport wreck, utility poles, berms, scrub, perimeter pine trees, rock clusters, drainage banks, road markings, and supply props
 - [x] Sequential Alpha and Bravo capture objectives with contested-zone logic and mission completion
-- [ ] Higher-detail original building interiors, material variety, terrain elevation, and destructible-looking set dressing
+- [ ] Higher-detail original building interiors, material variety, true terrain elevation, and destructible-looking set dressing
 - [ ] Vehicles and larger battlefield spaces
 - [ ] Improved lighting, atmosphere, sound, and visual effects
 
@@ -57,3 +57,6 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 ## Current development milestone
 
 Core controls, a selectable multi-class arsenal, procedural weapon silhouettes, aiming, recoil, movement sway, reload motion, muzzle flash, ranged enemy combat, and sequential capture objectives are now in the project. A three-person friendly fireteam now follows the player in formation and provides supporting fire against visible enemies. The current catalog contains all 38 WARDOGS roster entries and the remaining unique portable weapons from the Arma Reforger base-game roster. Weapon stats are original prototype tuning values, not copied game balance. Rocket launchers and grenade launchers now fire physical projectiles with different speeds and trajectories, impact/fuse detonation, area damage, and a short explosion visual. Weapon attachments now have a mobile attachment panel, per-weapon saved loadouts, visible procedural attachment models, extended-magazine capacity, optic range bonuses, and grip recoil reductions. Suppressors reduce muzzle flash. Next development should add more class-specific firing behavior and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
+
+
+The settlement battlefield now has additional terrain dressing: perimeter pine trees that frame concealed flanking routes, rock clusters, raised drainage banks, faded road markings, and supply props near the compounds. The next map is planned as a separate woodland military installation with its own layout, buildings, defensive positions, and capture objectives; it will be added after the settlement map is completed.
