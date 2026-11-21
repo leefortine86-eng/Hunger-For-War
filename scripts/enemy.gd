@@ -28,6 +28,7 @@ var animated_legs: Array = []
 var pose_rig: Node
 var glb_animator: Node
 var rifle: MeshInstance3D
+var weapon_mount: Node3D
 var simulated_magazine: int = 8
 var reload_pose_timer: float = 0.0
 var hit_reaction_timer: float = 0.0
@@ -39,9 +40,12 @@ func _ready():
     squad_slot = get_tree().get_nodes_in_group("enemies").size()
     _build_soldier_appearance()
     _build_enemy_rifle()
+    if is_instance_valid(glb_animator) and glb_animator.has_method("attach_weapon_to_hand"):
+        glb_animator.attach_weapon_to_hand(weapon_mount)
     pose_rig = preload("res://scripts/soldier_skeleton_rig.gd").new()
     add_child(pose_rig)
-    pose_rig.configure(self, animated_arms, animated_forearms, animated_hands, animated_legs, rifle, "rifle")
+    var fallback_weapon: Node3D = rifle if not is_instance_valid(glb_animator) else null
+    pose_rig.configure(self, animated_arms, animated_forearms, animated_hands, animated_legs, fallback_weapon, "rifle")
 
 func _camouflage_material(base: Color, dark_patch: Color, light_patch: Color) -> ShaderMaterial:
     var shader := Shader.new()
@@ -230,26 +234,44 @@ func _apply_hostile_faction_look(model: Node3D) -> void:
         model.add_child(marker)
 
 
+func _rifle_assembly_part(parent: Node3D, part_name: String, size: Vector3, part_position: Vector3, color: Color) -> MeshInstance3D:
+    var part := MeshInstance3D.new()
+    part.name = part_name
+    var mesh := BoxMesh.new()
+    mesh.size = size
+    part.mesh = mesh
+    part.position = part_position
+    part.material_override = _material(color)
+    parent.add_child(part)
+    return part
+
 func _build_enemy_rifle():
+    weapon_mount = Node3D.new()
+    weapon_mount.name = "EnemyRifleAssembly"
+    add_child(weapon_mount)
+
     rifle = MeshInstance3D.new()
-    rifle.name = "EnemyRifle"
+    rifle.name = "EnemyRifleReceiver"
     var mesh := BoxMesh.new()
     mesh.size = Vector3(0.10, 0.10, 0.78)
     rifle.mesh = mesh
     rifle.position = Vector3(0.0, 1.12, -0.48)
     rifle.material_override = _material(Color(0.07, 0.08, 0.07))
-    add_child(rifle)
-    _add_box_part("RifleStock", Vector3(0.13, 0.14, 0.30), Vector3(0, 1.10, -0.06), Color(0.12, 0.14, 0.12))
-    _add_box_part("RifleMagazine", Vector3(0.13, 0.30, 0.18), Vector3(0, 0.91, -0.42), Color(0.10, 0.12, 0.10))
-    _add_box_part("RifleOptic", Vector3(0.14, 0.12, 0.18), Vector3(0, 1.23, -0.40), Color(0.08, 0.10, 0.10))
-    _add_box_part("RifleForegrip", Vector3(0.10, 0.18, 0.12), Vector3(0, 0.99, -0.68), Color(0.11, 0.13, 0.11))
+    weapon_mount.add_child(rifle)
+
+    _rifle_assembly_part(weapon_mount, "RifleStock", Vector3(0.13, 0.14, 0.30), Vector3(0, 1.10, -0.06), Color(0.12, 0.14, 0.12))
+    _rifle_assembly_part(weapon_mount, "RifleMagazine", Vector3(0.13, 0.30, 0.18), Vector3(0, 0.91, -0.42), Color(0.10, 0.12, 0.10))
+    _rifle_assembly_part(weapon_mount, "RifleOptic", Vector3(0.14, 0.12, 0.18), Vector3(0, 1.23, -0.40), Color(0.08, 0.10, 0.10))
+    _rifle_assembly_part(weapon_mount, "RifleForegrip", Vector3(0.10, 0.18, 0.12), Vector3(0, 0.99, -0.68), Color(0.11, 0.13, 0.11))
+    _rifle_assembly_part(weapon_mount, "RifleBarrel", Vector3(0.045, 0.045, 0.38), Vector3(0, 1.12, -1.02), Color(0.08, 0.09, 0.08))
 
     muzzle_light = OmniLight3D.new()
-    muzzle_light.position = Vector3(0.0, 1.12, -0.90)
+    muzzle_light.name = "EnemyMuzzleFlash"
+    muzzle_light.position = Vector3(0.0, 1.12, -1.18)
     muzzle_light.light_color = Color(1.0, 0.55, 0.18)
     muzzle_light.light_energy = 0.0
     muzzle_light.omni_range = 3.0
-    add_child(muzzle_light)
+    weapon_mount.add_child(muzzle_light)
 
 func _has_line_of_sight(target_position: Vector3) -> bool:
     var query := PhysicsRayQueryParameters3D.create(
