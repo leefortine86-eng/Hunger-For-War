@@ -304,7 +304,7 @@ func _make_building(building_name: String, center: Vector3, footprint: Vector2, 
     var side_segment := (width - window_width) * 0.5
     _make_environment_box(building, "RearWallLeft", Vector3(side_segment, wall_height, wall), Vector3(-(window_width + side_segment) * 0.5, wall_height * 0.5 + 0.28, -half_d), wall_material)
     _make_environment_box(building, "RearWallRight", Vector3(side_segment, wall_height, wall), Vector3((window_width + side_segment) * 0.5, wall_height * 0.5 + 0.28, -half_d), wall_material)
-    _make_environment_box(building, "RearWindowLintel", Vector3(window_width, wall_height - window_y - window_height * 0.5, wall), Vector3(0, window_y + window_height * 0.5 + 0.28, -half_d), wall_material)
+    _make_environment_box(building, "RearWindowLintel", Vector3(window_width, wall_height - window_y - window_height * 0.5, wall), Vector3(0, window_y + window_height * 0.5 + (wall_height - window_y - window_height * 0.5) * 0.5 + 0.28, -half_d), wall_material)
     _make_environment_box(building, "RearWindowSill", Vector3(window_width, window_y - window_height * 0.5 + 0.28, wall), Vector3(0, (window_y - window_height * 0.5 + 0.28) * 0.5, -half_d), wall_material)
 
     # Front wall has a walk-through doorway.
@@ -319,7 +319,7 @@ func _make_building(building_name: String, center: Vector3, footprint: Vector2, 
         var segment_depth := (depth - window_width) * 0.5
         _make_environment_box(building, "SideWallFront", Vector3(wall, wall_height, segment_depth), Vector3(x, wall_height * 0.5 + 0.28, (window_width + segment_depth) * 0.5), wall_material)
         _make_environment_box(building, "SideWallRear", Vector3(wall, wall_height, segment_depth), Vector3(x, wall_height * 0.5 + 0.28, -(window_width + segment_depth) * 0.5), wall_material)
-        _make_environment_box(building, "SideWindowLintel", Vector3(wall, wall_height - window_y - window_height * 0.5, window_width), Vector3(x, window_y + window_height * 0.5 + 0.28, 0), wall_material)
+        _make_environment_box(building, "SideWindowLintel", Vector3(wall, wall_height - window_y - window_height * 0.5, window_width), Vector3(x, window_y + window_height * 0.5 + (wall_height - window_y - window_height * 0.5) * 0.5 + 0.28, 0), wall_material)
         _make_environment_box(building, "SideWindowSill", Vector3(wall, window_y - window_height * 0.5 + 0.28, window_width), Vector3(x, (window_y - window_height * 0.5 + 0.28) * 0.5, 0), wall_material)
 
     _make_environment_box(building, "FlatRoof", Vector3(width + 0.5, 0.28, depth + 0.5), Vector3(0, wall_height + 0.42, 0), roof_material)
