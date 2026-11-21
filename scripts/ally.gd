@@ -145,7 +145,7 @@ func _choose_maneuver_position() -> void:
     var radial := away_from_target.normalized()
     var lateral := Vector3(-radial.z, 0.0, radial.x)
     var side := -1.0 if squad_slot % 2 == 0 else 1.0
-    var spacing := 2.6 + float(squad_slot / 2) * 1.1
+    var spacing := 2.6 + (float(squad_slot) / 2.0) * 1.1
     maneuver_target = target.global_position + radial * preferred_range + lateral * side * spacing
     maneuver_timer = 3.5 + randf_range(0.0, 1.2)
 
