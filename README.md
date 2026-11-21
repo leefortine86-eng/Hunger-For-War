@@ -95,3 +95,11 @@ The visual-development pass now moves beyond single flat material colors: friend
 - Added visible grip-hand shapes near the rifle fore-end and grip area.
 - Kept upper arms steady while the legs continue their walk cycle, avoiding the old arm-swing animation pulling the hands away from the weapon.
 - The current weapon hold is a fixed procedural pose; hand-to-trigger alignment, reload/aim transitions and a true skeletal rig remain future work. Not yet tested in Godot.
+
+
+## Blended soldier combat pose rig
+- Added a reusable articulated procedural pose controller for upper arms, forearms, hands, rifle placement, torso and head.
+- Friendly and hostile combat logic now blends between movement-ready, aimed fire, close hip-fire, crouched firing and reload poses.
+- Added short simulated magazine cycles so soldiers visibly lower and manipulate their rifles during reload transitions before resuming fire.
+- Pose profiles include different reach/balance offsets for rifle, SMG, LMG, pistol and launcher families; current AI soldiers use the rifle profile.
+- This is an articulated procedural bridge using the existing mesh parts, not yet a weighted Skeleton3D rig with authored finger animation clips. Hand contact and trigger-finger alignment remain approximate, and the result has not been opened or tested in Godot. A true skeletal rig, weapon-specific hand meshes and authored animation clips remain a later quality step.
