@@ -13,6 +13,7 @@ var objective_label: Label
 var mission_label: Label
 var capture_bar: ProgressBar
 var objective_marker: Node3D
+var objective_bravo: Node3D
 var mission_hud: CanvasLayer
 var squad_label: Label
 
@@ -22,6 +23,7 @@ func _ready():
     _create_lighting()
     _create_battlefield_cover()
     _create_capture_objective()
+    _create_second_objective()
     _create_mission_hud()
     _spawn_enemies()
     _spawn_friendly_squad()
@@ -71,6 +73,16 @@ func _create_capture_objective():
 
     _make_cover("ObjectiveSandbagsLeft", Vector3(3.2, 0.65, 0.65), Vector3(-5.5, 0.33, -31.0), Color(0.43, 0.40, 0.29))
     _make_cover("ObjectiveSandbagsRight", Vector3(3.2, 0.65, 0.65), Vector3(5.5, 0.33, -31.0), Color(0.43, 0.40, 0.29))
+
+
+func _create_second_objective():
+    objective_bravo = objective_marker.duplicate()
+    objective_bravo.name = "ObjectiveBravo"
+    objective_bravo.position = Vector3(0, 0, -46)
+    objective_bravo.visible = false
+    add_child(objective_bravo)
+    _make_cover("BravoSandbagsLeft", Vector3(3.0, 0.65, 0.65), Vector3(-5.0, 0.33, -43.0), Color(0.43, 0.40, 0.29))
+    _make_cover("BravoSandbagsRight", Vector3(3.0, 0.65, 0.65), Vector3(5.0, 0.33, -43.0), Color(0.43, 0.40, 0.29))
 
 func _create_mission_hud():
     mission_hud = CanvasLayer.new()
@@ -140,13 +152,23 @@ func _process(delta):
     elif player_in_zone:
         objective_label.text = "CAPTURING OBJECTIVE: %d%%" % int(percent)
     else:
-        objective_label.text = "OBJECTIVE: %d%% — ENTER THE ZONE" % int(percent)
+        objective_label.text = "%s: %d%% — ENTER THE ZONE" % [objective_marker.name.to_upper(), int(percent)]
 
     if capture_progress >= capture_duration:
-        objective_captured = true
-        objective_label.text = "OBJECTIVE ALPHA SECURED"
-        mission_label.text = "MISSION COMPLETE — AREA SECURED"
-        print("OBJECTIVE ALPHA CAPTURED — MISSION COMPLETE")
+        if objective_marker == objective_bravo:
+            objective_captured = true
+            objective_label.text = "OBJECTIVE BRAVO SECURED"
+            mission_label.text = "MISSION COMPLETE — BOTH OBJECTIVES SECURED"
+            print("BOTH OBJECTIVES CAPTURED — MISSION COMPLETE")
+        else:
+            objective_marker.visible = false
+            objective_marker = objective_bravo
+            objective_marker.visible = true
+            capture_progress = 0.0
+            capture_bar.value = 0.0
+            objective_label.text = "OBJECTIVE BRAVO ACTIVE — MOVE TO THE NEXT ZONE"
+            mission_label.text = "MISSION: SECURE OBJECTIVE BRAVO"
+            print("OBJECTIVE ALPHA SECURED — ADVANCE TO BRAVO")
 
 func _create_ground():
     var ground_body := StaticBody3D.new()
