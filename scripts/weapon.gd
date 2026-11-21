@@ -307,7 +307,7 @@ func _apply_attachment_stats() -> void:
 func _build_attachment_visuals(profile: String, dark: Color, metal: Color, polymer: Color) -> void:
     var optic := str(attachments.get("optic", "none"))
     if optic != "none" and profile not in ["pistol", "launcher", "bow"]:
-        var optic_body := _add_box("Attachment_Optic", Vector3(0.09, 0.12, 0.17), Vector3(0, 0.17, -0.08), polymer)
+        var optic_body: MeshInstance3D = _add_box("Attachment_Optic", Vector3(0.09, 0.12, 0.17), Vector3(0, 0.17, -0.08), polymer) as MeshInstance3D
         if optic == "scope_4x":
             optic_body.scale = Vector3(1.0, 1.35, 1.8)
             _add_box("Optic_Lens", Vector3(0.075, 0.075, 0.025), Vector3(0, 0.18, -0.19), Color(0.12, 0.28, 0.32))
