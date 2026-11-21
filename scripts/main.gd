@@ -251,7 +251,7 @@ func _spawn_friendly_squad():
         var soldier := CharacterBody3D.new()
         soldier.name = "FriendlyOperative%d" % (i + 1)
         soldier.set_script(FRIENDLY_SCRIPT)
-        soldier.formation_offset = formation_positions[i]
+        soldier.set("formation_offset", formation_positions[i])
         soldier.position = formation_positions[i]
         add_child(soldier)
     print("Friendly fireteam deployed!")
