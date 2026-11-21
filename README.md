@@ -22,12 +22,12 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Basic hitscan weapon and magazine / reserve ammunition
 - [x] Reloading
 - [x] First-person rifle prototype, recoil, muzzle flash, and firing feedback
-- [x] Expandable 53-weapon catalog (38 WARDOGS roster entries plus the unique Arma Reforger base-game firearms) inspired by WARDOGS and Arma Reforger\n- [x] Mobile arsenal dropdown and keyboard / touch weapon cycling\n- [x] Distinct procedural weapon silhouettes by weapon class\n- [ ] Explosive projectile behavior, weapon attachments, and class-specific firing modes
+- [x] Expandable 53-weapon catalog (all 38 WARDOGS entries plus 15 additional Arma Reforger base-game firearms) inspired by WARDOGS and Arma Reforger\n- [x] Mobile arsenal dropdown and keyboard / touch weapon cycling\n- [x] Distinct procedural weapon silhouettes by weapon class\n- [ ] Explosive projectile behavior, weapon attachments, and class-specific firing modes
 - [ ] Improved hit effects and combat feedback
 
 ### Enemies and AI
 - [x] Basic enemy soldier prototype
-- [ ] Improved soldier models, materials, and animations
+- [x] Basic procedural walk-cycle animation for friendly and enemy soldiers\n- [ ] Improved soldier models, materials, and animation blending
 - [x] Ranged enemy attacks with line-of-sight checks and distance keeping
 - [x] Friendly three-person fireteam that follows the player and engages visible enemies
 - [x] Enemies seek nearby defensive cover after taking damage
@@ -50,4 +50,4 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 
 ## Current development milestone
 
-Core controls, a selectable multi-class arsenal, procedural weapon silhouettes, aiming, recoil, movement sway, reload motion, muzzle flash, ranged enemy combat, and sequential capture objectives are now in the project. A three-person friendly fireteam now follows the player in formation and provides supporting fire against visible enemies. The current catalog contains 38 WARDOGS-inspired entries and the distinct portable weapons from the Arma Reforger base-game roster. Weapon stats are original prototype tuning values, not copied game balance. Next development should add class-specific projectile behavior, attachments, firing modes, and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
+Core controls, a selectable multi-class arsenal, procedural weapon silhouettes, aiming, recoil, movement sway, reload motion, muzzle flash, ranged enemy combat, and sequential capture objectives are now in the project. A three-person friendly fireteam now follows the player in formation and provides supporting fire against visible enemies. The current catalog contains all 38 WARDOGS roster entries and the distinct portable weapons from the Arma Reforger base-game roster. Weapon stats are original prototype tuning values, not copied game balance. Next development should add class-specific projectile behavior, attachments, firing modes, and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
