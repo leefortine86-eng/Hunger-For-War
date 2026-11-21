@@ -254,11 +254,11 @@ func _create_lighting():
     world.environment = environment
     add_child(world)
 
-func _make_cover(name: String, size: Vector3, position: Vector3, color: Color):
+func _make_cover(cover_name: String, cover_size: Vector3, cover_position: Vector3, color: Color):
     var cover := StaticBody3D.new()
-    cover.name = name
+    cover.name = cover_name
     cover.add_to_group("battlefield_cover")
-    cover.position = position
+    cover.position = cover_position
     add_child(cover)
 
     var mesh_instance := MeshInstance3D.new()
@@ -323,7 +323,7 @@ func _make_environment_box(parent: Node3D, object_name: String, size: Vector3, l
     holder.add_child(mesh_instance)
     return holder
 
-func _make_building(building_name: String, center: Vector3, footprint: Vector2, wall_height: float, wall_material: Material, roof_material: Material, door_side: String = "front"):
+func _make_building(building_name: String, center: Vector3, footprint: Vector2, wall_height: float, wall_material: Material, roof_material: Material, _door_side: String = "front"):
     var building := Node3D.new()
     building.name = building_name
     building.position = center
@@ -500,10 +500,10 @@ func _create_battlefield_environment():
         add_child(shrub)
 
 
-func _make_tree(tree_name: String, position: Vector3, scale_factor: float = 1.0):
+func _make_tree(tree_name: String, tree_position: Vector3, scale_factor: float = 1.0):
     var tree := Node3D.new()
     tree.name = tree_name
-    tree.position = position
+    tree.position = tree_position
     add_child(tree)
 
     var trunk_body := StaticBody3D.new()
