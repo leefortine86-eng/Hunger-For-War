@@ -39,9 +39,11 @@ func _part(part_name: String, mesh: Mesh, pos: Vector3, color: Color):
     return part
 
 func _build_soldier():
-    var green := Color(0.16, 0.27, 0.19)
-    var armor := Color(0.27, 0.34, 0.25)
-    var dark := Color(0.08, 0.11, 0.10)
+    # Friendly faction: woodland green kit with blue team-identification panels.
+    var green := Color(0.13, 0.23, 0.15)
+    var armor := Color(0.24, 0.32, 0.22)
+    var dark := Color(0.07, 0.10, 0.09)
+    var friendly_blue := Color(0.045, 0.24, 0.62)
     var body_mesh := CapsuleMesh.new()
     body_mesh.radius = 0.34
     body_mesh.height = 1.25
@@ -53,6 +55,13 @@ func _build_soldier():
     var vest_mesh := BoxMesh.new()
     vest_mesh.size = Vector3(0.68, 0.55, 0.36)
     _part("PlateCarrier", vest_mesh, Vector3(0, 1.08, -0.04), armor)
+    var chest_id_mesh := BoxMesh.new()
+    chest_id_mesh.size = Vector3(0.22, 0.22, 0.04)
+    _part("FriendlyChestMark", chest_id_mesh, Vector3(0, 1.18, -0.245), friendly_blue)
+    var helmet_mesh := SphereMesh.new()
+    helmet_mesh.radius = 0.27
+    helmet_mesh.height = 0.30
+    _part("WoodlandHelmet", helmet_mesh, Vector3(0, 2.02, 0), Color(0.12, 0.20, 0.13))
     var pack_mesh := BoxMesh.new()
     pack_mesh.size = Vector3(0.42, 0.55, 0.22)
     _part("Pack", pack_mesh, Vector3(0, 1.12, 0.28), dark)
@@ -62,6 +71,9 @@ func _build_soldier():
         limb.height = 0.68
         var arm_part = _part("Arm", limb, Vector3(side * 0.43, 1.0, -0.12), green)
         animated_arms.append(arm_part)
+        var band_mesh := BoxMesh.new()
+        band_mesh.size = Vector3(0.29, 0.13, 0.34)
+        _part("FriendlyBlueArmBand", band_mesh, Vector3(side * 0.43, 1.23, -0.12), friendly_blue)
         var leg := CapsuleMesh.new()
         leg.radius = 0.16
         leg.height = 0.78
