@@ -1,7 +1,6 @@
 extends Node3D
 
 const ENEMY_SCENE = preload("res://scenes/enemy.tscn")
-const FRIENDLY_SCRIPT = preload("res://scripts/friendly.gd")
 
 @export var capture_duration: float = 20.0
 @export var objective_radius: float = 5.5
@@ -15,7 +14,6 @@ var capture_bar: ProgressBar
 var objective_marker: Node3D
 var objective_bravo: Node3D
 var mission_hud: CanvasLayer
-var squad_label: Label
 
 func _ready():
     print("HUNGER FOR WAR battlefield loaded!")
@@ -33,7 +31,6 @@ func _ready():
     _create_second_objective()
     _create_mission_hud()
     _spawn_enemies()
-    _spawn_friendly_squad()
 
 
 func _create_capture_objective():
@@ -119,16 +116,6 @@ func _create_mission_hud():
     capture_bar.show_percentage = false
     mission_hud.add_child(capture_bar)
 
-    squad_label = Label.new()
-    squad_label.position = Vector2(24, 181)
-    squad_label.text = "SQUAD: 3 OPERATIVES"
-    squad_label.add_theme_font_size_override("font_size", 17)
-    squad_label.add_theme_color_override("font_color", Color(0.72, 0.88, 1.0))
-    mission_hud.add_child(squad_label)
-
-func _process(delta):
-    if is_instance_valid(squad_label):
-        squad_label.text = "SQUAD: %d OPERATIVES" % get_tree().get_nodes_in_group("friendlies").size()
     if objective_captured:
         return
 
@@ -907,17 +894,3 @@ func _spawn_enemies():
 
     print("Three enemy soldiers deployed!")
 
-func _spawn_friendly_squad():
-    var formation_positions := [
-        Vector3(-2.0, 0.0, 2.5),
-        Vector3(2.0, 0.0, 2.5),
-        Vector3(0.0, 0.0, 4.0)
-    ]
-    for i in range(formation_positions.size()):
-        var soldier := CharacterBody3D.new()
-        soldier.name = "FriendlyOperative%d" % (i + 1)
-        soldier.set_script(FRIENDLY_SCRIPT)
-        soldier.set("formation_offset", formation_positions[i])
-        soldier.position = formation_positions[i]
-        add_child(soldier)
-    print("Friendly fireteam deployed!")
