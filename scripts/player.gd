@@ -203,7 +203,7 @@ func _create_hud():
     weapon_select.add_theme_font_size_override("font_size", 15)
     for item in weapon.weapon_list:
         weapon_select.add_item("%s  |  %s" % [item.get("name", "Weapon"), item.get("class", "Class")])
-        weapon_select.set_item_metadata(weapon_select.item_count - 1, item.get("id", ""))
+        weapon_select.set_item_metadata(weapon_select.get_item_count() - 1, item.get("id", ""))
     weapon_select.item_selected.connect(_on_weapon_selected)
     canvas.add_child(weapon_select)
     weapon.weapon_changed.connect(_on_weapon_changed)
