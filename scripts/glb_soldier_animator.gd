@@ -1,13 +1,14 @@
 extends Node3D
 
-# Lightweight additive animation layer for the imported soldier.
-# The source GLB has a rig but no animation clips, so this script adds
-# locomotion and combat poses without replacing the skeleton's rest pose.
+# Additive animation layer for the imported, rigged soldier.
+# The source GLB contains a skeleton but no animation clips. This controller
+# preserves the imported rest pose and layers lightweight combat/locomotion motion.
 
 @export var walk_rate: float = 7.0
-@export var walk_swing: float = 0.46
-@export var run_swing: float = 0.62
-@export var blend_speed: float = 8.0
+@export var walk_swing: float = 0.48
+@export var run_swing: float = 0.68
+@export var blend_speed: float = 7.5
+@export var crouch_depth: float = 0.22
 
 var skeleton: Skeleton3D
 var actor: CharacterBody3D
@@ -19,6 +20,8 @@ var bone_roles: Array[Dictionary] = []
 var base_rotations: Dictionary = {}
 var base_positions: Dictionary = {}
 var pose_weight: float = 0.0
+var recoil_time: float = 0.0
+var idle_breath_time: float = 0.0
 
 func _ready() -> void:
     actor = get_parent().get_parent() as CharacterBody3D
@@ -76,8 +79,10 @@ func _bone_side(name: String) -> float:
     return 0.0
 
 func set_combat_pose(next_pose: String) -> void:
-    if next_pose in ["ready", "aim", "hip_fire", "crouch_fire", "reload", "hit", "death"]:
+    if next_pose in ["ready", "aim", "hip_fire", "crouch_fire", "reload", "hit", "death", "move"]:
         combat_pose = next_pose
+        if next_pose == "hip_fire" or next_pose == "crouch_fire":
+            recoil_time = 0.13
 
 func _process(delta: float) -> void:
     if not is_instance_valid(skeleton):
@@ -85,11 +90,22 @@ func _process(delta: float) -> void:
     movement_speed = 0.0
     if is_instance_valid(actor):
         movement_speed = Vector2(actor.velocity.x, actor.velocity.z).length()
-    var target_locomotion := clampf(movement_speed / 3.5, 0.0, 1.0)
-    locomotion = move_toward(locomotion, target_locomotion, delta * 4.5)
-    if locomotion > 0.015:
-        phase += delta * walk_rate * lerpf(0.65, 1.35, locomotion)
+    var target_locomotion := clampf(movement_speed / 4.4, 0.0, 1.0)
+    locomotion = move_toward(locomotion, target_locomotion, delta * 5.5)
+    if locomotion > 0.012:
+        phase += delta * walk_rate * lerpf(0.72, 1.48, locomotion)
+    idle_breath_time += delta
+    recoil_time = maxf(recoil_time - delta, 0.0)
     pose_weight = move_toward(pose_weight, 1.0, delta * blend_speed)
+
+    var is_aiming := combat_pose in ["aim", "hip_fire", "crouch_fire"]
+    var is_crouched := combat_pose == "crouch_fire"
+    var is_reloading := combat_pose == "reload"
+    var is_hit := combat_pose == "hit"
+    var is_dead := combat_pose == "death"
+    var run_blend := clampf((movement_speed - 2.5) / 2.5, 0.0, 1.0)
+    var swing_size := lerpf(walk_swing, run_swing, run_blend)
+    var breath := sin(idle_breath_time * 1.65) * 0.012
 
     for item in bone_roles:
         var index: int = item.index
@@ -97,49 +113,55 @@ func _process(delta: float) -> void:
         var side: float = item.side
         var base: Quaternion = base_rotations.get(index, Quaternion.IDENTITY)
         var offset := Quaternion.IDENTITY
+        var position_offset := Vector3.ZERO
         var swing := sin(phase + (PI if side > 0.0 else 0.0)) * locomotion
-        var speed_swing := lerpf(walk_swing, run_swing, clampf(movement_speed / 5.0, 0.0, 1.0))
+
         match role:
             "thigh":
-                offset = Quaternion.from_euler(Vector3(swing * speed_swing, 0.0, 0.0))
+                offset = Quaternion.from_euler(Vector3(swing * swing_size, 0.0, 0.0))
             "calf":
-                offset = Quaternion.from_euler(Vector3(maxf(0.0, -swing) * 0.48 * locomotion, 0.0, 0.0))
+                var knee_lift := maxf(0.0, -swing) * (0.42 + run_blend * 0.20) * locomotion
+                offset = Quaternion.from_euler(Vector3(knee_lift, 0.0, 0.0))
             "foot":
-                offset = Quaternion.from_euler(Vector3(maxf(0.0, swing) * 0.18 * locomotion, 0.0, 0.0))
+                offset = Quaternion.from_euler(Vector3(maxf(0.0, swing) * 0.20 * locomotion, 0.0, 0.0))
             "arm":
-                var arm_motion := -swing * 0.10
-                if combat_pose in ["aim", "hip_fire", "crouch_fire", "reload"]:
-                    arm_motion *= 0.18
-                offset = Quaternion.from_euler(Vector3(arm_motion, 0.0, side * 0.035 * locomotion))
+                var arm_swing := -swing * 0.22
+                if is_aiming or is_reloading:
+                    arm_swing *= 0.12
+                var ready_raise := -0.20 if is_aiming else -0.08
+                if is_reloading:
+                    ready_raise = -0.02
+                offset = Quaternion.from_euler(Vector3(ready_raise + arm_swing, 0.0, side * (0.045 * locomotion)))
             "forearm":
-                var elbow := 0.10
-                if combat_pose == "aim" or combat_pose == "hip_fire" or combat_pose == "crouch_fire":
-                    elbow = 0.42
-                elif combat_pose == "reload":
-                    elbow = 0.58
-                offset = Quaternion.from_euler(Vector3(elbow, 0.0, 0.0))
-            "spine":
-                var breath := sin(Time.get_ticks_msec() / 1000.0 * 1.7) * 0.012
-                var lean := -0.035 if combat_pose == "aim" else 0.0
-                if combat_pose == "hit":
-                    lean = 0.16
-                offset = Quaternion.from_euler(Vector3(lean + breath, 0.0, sin(phase * 2.0) * locomotion * 0.018))
+                var elbow := 0.16
+                if is_aiming:
+                    elbow = 0.48
+                elif is_reloading:
+                    elbow = 0.64
+                offset = Quaternion.from_euler(Vector3(elbow + recoil_time * 0.65, 0.0, side * (0.025 if is_aiming else 0.0)))
             "pelvis":
-                if combat_pose == "crouch_fire":
-                    skeleton.set_bone_pose_position(index, base_positions.get(index, Vector3.ZERO) + Vector3(0.0, -0.10, 0.0))
-                else:
-                    skeleton.set_bone_pose_position(index, base_positions.get(index, Vector3.ZERO))
+                position_offset.y = -crouch_depth if is_crouched else 0.0
+                offset = Quaternion.from_euler(Vector3(0.0, 0.0, sin(phase * 2.0) * locomotion * 0.018))
+            "spine":
+                var lean := -0.055 if is_aiming else 0.0
+                if is_hit:
+                    lean = 0.18
+                if is_dead:
+                    lean = 0.72
+                offset = Quaternion.from_euler(Vector3(lean + breath + recoil_time * 0.32, 0.0, sin(phase * 2.0) * locomotion * 0.025))
             "head":
-                var head_tilt := -0.025 if combat_pose == "aim" else 0.0
-                if combat_pose == "hit":
-                    head_tilt = -0.12
+                var head_tilt := -0.035 if is_aiming else 0.0
+                if is_hit:
+                    head_tilt = -0.16
+                if is_dead:
+                    head_tilt = -0.30
                 offset = Quaternion.from_euler(Vector3(head_tilt, 0.0, 0.0))
-        if combat_pose == "death":
-            if role == "spine":
-                offset = Quaternion.from_euler(Vector3(0.55, 0.0, 0.0))
-            elif role == "head":
-                offset = Quaternion.from_euler(Vector3(-0.18, 0.0, 0.0))
+
         var target_rotation: Quaternion = base * offset
         var current := skeleton.get_bone_pose_rotation(index)
-        skeleton.set_bone_pose_rotation(index, current.slerp(target_rotation, pose_weight))
+        skeleton.set_bone_pose_rotation(index, current.slerp(target_rotation, minf(delta * blend_speed, 1.0)))
+        var base_position: Vector3 = base_positions.get(index, Vector3.ZERO)
+        var target_position: Vector3 = base_position + position_offset
+        var current_position := skeleton.get_bone_pose_position(index)
+        skeleton.set_bone_pose_position(index, current_position.lerp(target_position, minf(delta * blend_speed, 1.0)))
     skeleton.force_update_all_bone_transforms()
