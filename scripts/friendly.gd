@@ -308,6 +308,8 @@ func _physics_process(delta):
         if reload_pose_timer <= 0.0:
             if to_enemy.length() <= 8.0:
                 pose_rig.set_pose("hip_fire")
+            elif Vector2(velocity.x, velocity.z).length() < 0.2:
+                pose_rig.set_pose("crouch_fire")
             else:
                 pose_rig.set_pose("aim")
         if to_enemy.length() <= fire_range and attack_timer <= 0.0 and reload_pose_timer <= 0.0:
@@ -342,8 +344,9 @@ func _animate_soldier(delta: float):
     for i in range(animated_arms.size()):
         var arm = animated_arms[i]
         var leg = animated_legs[i]
-        # Keep upper arms steady around the rifle; animate the legs independently.
-        leg.rotation.x = lerpf(leg.rotation.x, -swing if i == 0 else swing, minf(delta * 9.0, 1.0))
+        # The pose rig owns the legs while crouched; otherwise preserve the walk cycle.
+        if pose_rig.pose != "crouch_fire":
+            leg.rotation.x = lerpf(leg.rotation.x, -swing if i == 0 else swing, minf(delta * 9.0, 1.0))
 
 func take_damage(amount: float):
     health = maxf(health - amount, 0.0)
