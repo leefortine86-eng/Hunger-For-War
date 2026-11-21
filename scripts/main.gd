@@ -335,6 +335,15 @@ func _make_building(building_name: String, center: Vector3, footprint: Vector2, 
     _make_environment_box(building, "RoofParapetRear", Vector3(width + 0.3, 0.48, 0.22), Vector3(0, wall_height + 0.78, -half_d), roof_material)
     _make_environment_box(building, "DoorFrame", Vector3(door_width + 0.16, 0.12, 0.12), Vector3(0, door_height + 0.30, half_d + 0.04), roof_material, false)
 
+    # Exterior roof-access ladder and roof ventilation details (visual props for this prototype).
+    var ladder_x := half_w + 0.24
+    for side_z in [-0.42, 0.42]:
+        _make_environment_box(building, "RoofLadderRail", Vector3(0.10, wall_height + 0.55, 0.10), Vector3(ladder_x, (wall_height + 0.55) * 0.5, side_z), roof_material, false)
+    for rung in range(maxi(4, int(wall_height / 0.38))):
+        _make_environment_box(building, "RoofLadderRung", Vector3(0.12, 0.08, 0.9), Vector3(ladder_x, 0.35 + float(rung) * 0.38, 0), roof_material, false)
+    _make_environment_box(building, "RoofVentBase", Vector3(0.9, 0.35, 0.75), Vector3(half_w * 0.45, wall_height + 0.72, -half_d * 0.35), roof_material, false)
+    _make_environment_box(building, "RoofVentCap", Vector3(1.1, 0.12, 0.9), Vector3(half_w * 0.45, wall_height + 0.96, -half_d * 0.35), roof_material, false)
+
     # Exterior sandbag firing position beside each structure.
     _make_cover(building_name + "FrontSandbags", Vector3(3.4, 0.65, 0.65), center + Vector3(-half_w - 2.0, 0.33, half_d + 1.2), Color(0.43, 0.39, 0.28))
     return building
