@@ -79,14 +79,25 @@ func _build_soldier():
     var dark := Color(0.07, 0.10, 0.09)
     var friendly_blue := Color(0.045, 0.24, 0.62)
     var body_mesh := CapsuleMesh.new()
-    body_mesh.radius = 0.34
-    body_mesh.height = 1.25
-    var body_part = _part("Body", body_mesh, Vector3(0, 1.0, 0), green)
+    body_mesh.radius = 0.285
+    body_mesh.height = 1.12
+    var body_part = _part("Body", body_mesh, Vector3(0, 1.04, 0), green)
     body_part.material_override = _camouflage_material(green, Color(0.07, 0.13, 0.08), Color(0.30, 0.31, 0.20))
     var head_mesh := SphereMesh.new()
-    head_mesh.radius = 0.22
-    head_mesh.height = 0.42
-    _part("Head", head_mesh, Vector3(0, 1.82, 0), Color(0.48, 0.36, 0.27))
+    head_mesh.radius = 0.18
+    head_mesh.height = 0.36
+    _part("Head", head_mesh, Vector3(0, 1.79, 0), Color(0.48, 0.36, 0.27))
+    var neck_mesh := CapsuleMesh.new()
+    neck_mesh.radius = 0.105
+    neck_mesh.height = 0.22
+    _part("Neck", neck_mesh, Vector3(0, 1.65, 0), Color(0.40, 0.29, 0.22))
+    var belt_mesh := BoxMesh.new()
+    belt_mesh.size = Vector3(0.62, 0.13, 0.32)
+    _part("CombatBelt", belt_mesh, Vector3(0, 0.69, 0), dark)
+    var pelvis_mesh := CapsuleMesh.new()
+    pelvis_mesh.radius = 0.23
+    pelvis_mesh.height = 0.34
+    _part("Pelvis", pelvis_mesh, Vector3(0, 0.54, 0.01), green)
     var vest_mesh := BoxMesh.new()
     vest_mesh.size = Vector3(0.68, 0.55, 0.36)
     _part("PlateCarrier", vest_mesh, Vector3(0, 1.08, -0.04), armor)
@@ -145,10 +156,14 @@ func _build_soldier():
         sleeve_patch.size = Vector3(0.20, 0.22, 0.28)
         _part("SleeveCamoPanel", sleeve_patch, Vector3(side * 0.43, 1.08, 0.02), Color(0.27, 0.29, 0.18))
         var leg := CapsuleMesh.new()
-        leg.radius = 0.16
-        leg.height = 0.78
-        var leg_part = _part("Leg", leg, Vector3(side * 0.19, 0.39, 0.02), dark)
+        leg.radius = 0.15
+        leg.height = 0.68
+        var leg_part = _part("Thigh", leg, Vector3(side * 0.19, 0.40, 0.02), green)
         animated_legs.append(leg_part)
+        var calf := CapsuleMesh.new()
+        calf.radius = 0.12
+        calf.height = 0.48
+        _part("LowerLeg", calf, Vector3(side * 0.19, 0.16, 0.025), green)
         var knee_pad := BoxMesh.new()
         knee_pad.size = Vector3(0.30, 0.23, 0.15)
         _part("KneePad", knee_pad, Vector3(side * 0.19, 0.35, -0.13), dark)
@@ -161,6 +176,9 @@ func _build_soldier():
         var glove_mesh := BoxMesh.new()
         glove_mesh.size = Vector3(0.17, 0.15, 0.18)
         _part("CombatGlove", glove_mesh, Vector3(side * 0.43, 0.54, -0.10), dark)
+        var boot_sole := BoxMesh.new()
+        boot_sole.size = Vector3(0.27, 0.07, 0.38)
+        _part("BootSole", boot_sole, Vector3(side * 0.19, 0.035, -0.10), Color(0.035, 0.04, 0.035))
 
     var gun_mesh := BoxMesh.new()
     gun_mesh.size = Vector3(0.09, 0.09, 0.72)
