@@ -34,10 +34,10 @@ func _bind_skeleton() -> void:
             role = "thigh"
         elif bone_name.contains("calf") or bone_name.contains("lowerleg") or bone_name.contains("lower_leg") or bone_name.contains("shin"):
             role = "calf"
-        elif bone_name.contains("upperarm") or bone_name.contains("upper_arm") or bone_name.contains("arm"):
-            role = "arm"
         elif bone_name.contains("forearm") or bone_name.contains("lowerarm") or bone_name.contains("lower_arm"):
             role = "forearm"
+        elif bone_name.contains("upperarm") or bone_name.contains("upper_arm") or bone_name.contains("arm"):
+            role = "arm"
         elif bone_name.contains("spine") or bone_name.contains("chest"):
             role = "spine"
         elif bone_name.contains("neck") or bone_name.contains("head"):
