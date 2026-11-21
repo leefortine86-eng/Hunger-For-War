@@ -39,7 +39,8 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Ranged enemy attacks with line-of-sight checks and distance keeping
 - [x] Friendly three-person fireteam that follows the player and engages visible enemies
 - [x] Enemies seek nearby defensive cover after taking damage
-- [ ] Broader enemy awareness, flanking, and squad tactics
+- [x] Basic coordinated enemy flanking: hostile soldiers choose alternating lateral approach positions when operating as a squad
+- [ ] Advanced enemy awareness, obstacle-aware flanking, suppression, and squad tactics
 - [ ] Enemy return fire and squad behavior
 
 ### Battlefield and presentation
@@ -72,4 +73,4 @@ The settlement battlefield now has defensive observation towers, extra firing ba
 Faction visuals now distinguish friendly and hostile soldiers at a glance: friendly fireteam members wear woodland-green kit with blue identification panels and arm bands; hostile soldiers wear dusty tan/grey kit with red identification markings. The settlement compounds also gained external air-conditioning units, power cabinets, cable ducts, a command radio mast, and low-intensity floodlights. These are procedural prototype details and have not yet been performance-tested on Android.
 
 
-The latest realism pass adds first-pass modern infantry kit to both factions: helmet accessory rails and NVG mounts, eye protection, headsets, plate-carrier magazine/utility pouches, radio antennas, knee protection, gloves, boots, and more complete rifle silhouettes. Friendly uniforms include muted woodland camouflage panels; hostile uniforms retain a separate dusty tan/grey palette and red faction identifiers. The settlement now also includes modular blast-wall and jersey-barrier positions, a camouflaged equipment staging shade, a field generator, and a tactical communications mast. These remain procedural low-poly prototypes; detailed scanned assets, texture maps, animation blending, and Android performance validation are still future work.
+Enemy combat now has a first tactical movement pass: when multiple hostiles are active, they alternate lateral approach positions instead of all advancing along the same direct line. This is lightweight steering rather than full navigation; obstacle-aware pathfinding, suppression behavior, and more advanced squad coordination remain future work. This change has not yet been tested in Godot or on Android.\n\nThe latest realism pass adds first-pass modern infantry kit to both factions: helmet accessory rails and NVG mounts, eye protection, headsets, plate-carrier magazine/utility pouches, radio antennas, knee protection, gloves, boots, and more complete rifle silhouettes. Friendly uniforms include muted woodland camouflage panels; hostile uniforms retain a separate dusty tan/grey palette and red faction identifiers. The settlement now also includes modular blast-wall and jersey-barrier positions, a camouflaged equipment staging shade, a field generator, and a tactical communications mast. These remain procedural low-poly prototypes; detailed scanned assets, texture maps, animation blending, and Android performance validation are still future work.
