@@ -267,10 +267,14 @@ func _create_hud():
 func _refresh_control_presentation():
     last_gamepad_connected = Input.get_connected_joypads().size() > 0
     var show_touch_controls := DisplayServer.is_touchscreen_available() and not last_gamepad_connected
-    var touch_controls = [touch_overlay, fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select, attachment_toggle, attachment_panel]
+    var touch_controls = [touch_overlay, fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button]
     for control in touch_controls:
         if is_instance_valid(control):
             control.visible = show_touch_controls
+    var arsenal_controls = [weapon_select, attachment_toggle, attachment_panel]
+    for control in arsenal_controls:
+        if is_instance_valid(control):
+            control.visible = not last_gamepad_connected
     if is_instance_valid(controller_hint_label):
         controller_hint_label.visible = last_gamepad_connected
         controller_hint_label.text = "LEFT STICK MOVE   RIGHT STICK LOOK   LT AIM   RT FIRE   X RELOAD   LB/RB WEAPONS"
