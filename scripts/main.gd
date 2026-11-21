@@ -543,7 +543,7 @@ func _create_terrain_features():
     _make_environment_box(self, "CommandSupplyCrates", Vector3(1.2, 0.9, 0.9), Vector3(-17.0, 0.95, -16.0), crate_material)
     _make_environment_box(self, "BarracksStorageCrates", Vector3(1.0, 0.8, 1.0), Vector3(17.0, 0.9, -25.0), crate_material)
     _make_environment_box(self, "CheckpointGenerator", Vector3(1.2, 0.9, 0.8), Vector3(-15.0, 0.95, 15.0), metal_material)
-    _make_environment_box(self, "OutpostFuelDrums", Vector3(0.65, 1.0, 0.65), Vector3(17.0, 1.0, 13.0), rust_material if false else crate_material)
+    _make_environment_box(self, "OutpostFuelDrums", Vector3(0.65, 1.0, 0.65), Vector3(17.0, 1.0, 13.0), crate_material)
 
 func _spawn_enemies():
     var spawn_points := [
