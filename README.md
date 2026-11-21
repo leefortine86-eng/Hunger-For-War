@@ -122,3 +122,11 @@ The visual-development pass now moves beyond single flat material colors: hostil
 - Removed the friendly fireteam follower system, command buttons, squad HUD, and associated spawn script so the game remains a direct first-person military shooter.
 - Controller input is an early foundation, not a finished console interface. Controller navigation for menus, remapping, vibration tuning, accessibility options, and platform-specific integration remain future work.
 - PS5 is a long-term target. A release would require Sony developer approval/access and a supported Godot console porting arrangement; this repository change does not make a PS5 build or certify compatibility.
+
+
+## FPS combat feedback pass
+- Added a short center-screen hit marker when a hitscan weapon damages a target.
+- Enemy damage handling now reports whether the hit eliminated the soldier, allowing a distinct longer red elimination marker.
+- Hit feedback is driven by the weapon damage result and applies across the current hitscan firearm system.
+- Explosive projectile damage feedback, sound, controller vibration, and full kill-feed presentation remain future work.
+- This is a code implementation pass only; it has not yet been validated in Godot or tested with a physical controller.
