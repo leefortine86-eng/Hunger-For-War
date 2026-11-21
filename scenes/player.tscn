@@ -22,7 +22,7 @@ current = true
 script = ExtResource("2")
 
 [node name="RayCast3D" type="RayCast3D" parent="Camera3D"]
-target_position = Vector3(0, 0, -100)
+target_position = Vector3(0, 0, -1000)
 enabled = true
 
 
