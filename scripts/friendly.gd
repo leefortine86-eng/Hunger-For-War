@@ -16,12 +16,20 @@ var muzzle_light: OmniLight3D
 var flash_timer: float = 0.0
 var walk_cycle: float = 0.0
 var animated_arms: Array = []
+var animated_forearms: Array = []
+var animated_hands: Array = []
 var animated_legs: Array = []
+var pose_rig: Node
+var simulated_magazine: int = 8
+var reload_pose_timer: float = 0.0
 
 func _ready():
     add_to_group("friendlies")
     player = get_tree().get_first_node_in_group("player") as CharacterBody3D
     _build_soldier()
+    pose_rig = preload("res://scripts/soldier_pose_rig.gd").new()
+    add_child(pose_rig)
+    pose_rig.configure(animated_arms, animated_forearms, animated_hands, animated_legs, rifle, get_node_or_null("Body"), get_node_or_null("Head"), "rifle")
 
 func _camouflage_material(base: Color, dark_patch: Color, light_patch: Color) -> ShaderMaterial:
     var shader := Shader.new()
@@ -157,9 +165,11 @@ func _build_soldier():
         var forearm_part = _part("Forearm", forearm_mesh, Vector3(side * 0.16, 1.12, -0.47), green)
         forearm_part.rotation.x = -0.82
         forearm_part.rotation.z = side * 0.24
+        animated_forearms.append(forearm_part)
         var hand_mesh := BoxMesh.new()
         hand_mesh.size = Vector3(0.15, 0.13, 0.18)
-        _part("WeaponGripHand", hand_mesh, Vector3(side * 0.10, 1.02, -0.68), dark)
+        var hand_part = _part("WeaponGripHand", hand_mesh, Vector3(side * 0.10, 1.02, -0.68), dark)
+        animated_hands.append(hand_part)
         var band_mesh := BoxMesh.new()
         band_mesh.size = Vector3(0.29, 0.13, 0.34)
         _part("FriendlyBlueArmBand", band_mesh, Vector3(side * 0.40, 1.36, -0.16), friendly_blue)
@@ -242,8 +252,9 @@ func _can_hit(target: Node3D) -> bool:
     return not hit.is_empty() and hit.get("collider") == target
 
 func _fire_at(target: Node3D):
-    if not is_instance_valid(target) or not _can_hit(target):
+    if not is_instance_valid(target) or not _can_hit(target) or reload_pose_timer > 0.0 or simulated_magazine <= 0:
         return
+    simulated_magazine -= 1
     muzzle_light.light_energy = 2.4
     flash_timer = 0.055
     var aim := target.global_position + Vector3(0, 1.0, 0)
@@ -276,6 +287,11 @@ func _physics_process(delta):
     var to_formation := desired_position - global_position
     to_formation.y = 0.0
     var enemy := _nearest_enemy()
+    if reload_pose_timer > 0.0:
+        reload_pose_timer = maxf(reload_pose_timer - delta, 0.0)
+        pose_rig.set_pose("reload")
+        if reload_pose_timer <= 0.0:
+            simulated_magazine = 8
 
     if is_instance_valid(enemy):
         var to_enemy := enemy.global_position - global_position
@@ -289,10 +305,21 @@ func _physics_process(delta):
         else:
             velocity.x = move_toward(velocity.x, 0.0, move_speed * delta * 4.0)
             velocity.z = move_toward(velocity.z, 0.0, move_speed * delta * 4.0)
-        if to_enemy.length() <= fire_range and attack_timer <= 0.0:
-            _fire_at(enemy)
+        if reload_pose_timer <= 0.0:
+            if to_enemy.length() <= 8.0:
+                pose_rig.set_pose("hip_fire")
+            else:
+                pose_rig.set_pose("aim")
+        if to_enemy.length() <= fire_range and attack_timer <= 0.0 and reload_pose_timer <= 0.0:
+            if simulated_magazine <= 0:
+                reload_pose_timer = 2.1
+                pose_rig.set_pose("reload")
+            else:
+                _fire_at(enemy)
             attack_timer = fire_cooldown
     else:
+        if reload_pose_timer <= 0.0:
+            pose_rig.set_pose("move" if to_formation.length() > follow_distance else "hip_fire")
         if to_formation.length() > follow_distance:
             var direction := to_formation.normalized()
             velocity.x = direction.x * move_speed
