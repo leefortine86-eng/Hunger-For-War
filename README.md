@@ -43,7 +43,8 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Prototype ground, lighting, cover, and test enemies
 - [x] First-pass settlement environment with four enterable buildings, window openings, flat rooftops, a service road, checkpoint barriers, a burned-out transport wreck, utility poles, berms, scrub, perimeter pine trees, rock clusters, drainage banks, road markings, and supply props
 - [x] Sequential Alpha and Bravo capture objectives with contested-zone logic and mission completion
-- [ ] Higher-detail original building interiors, material variety, true terrain elevation, and destructible-looking set dressing
+- [x] First-pass original building interiors with a command planning table, communications console, barracks bunks, lockers, checkpoint desk, and outpost storage
+- [ ] Material variety, true terrain elevation, and destructible-looking set dressing
 - [ ] Vehicles and larger battlefield spaces
 - [ ] Improved lighting, atmosphere, sound, and visual effects
 
