@@ -194,6 +194,10 @@ func _build_soldier_appearance():
         for child in get_children():
             if child is MeshInstance3D and child != rifle:
                 child.visible = false
+        var animator := Node3D.new()
+        animator.name = "GLBSoldierAnimator"
+        animator.set_script(load("res://scripts/glb_soldier_animator.gd"))
+        soldier_model.add_child(animator)
 
 
 func _build_enemy_rifle():
