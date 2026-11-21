@@ -439,6 +439,7 @@ func _update_joystick(touch_position: Vector2):
 
 func _rotate_camera(relative_motion: Vector2, sensitivity: float):
     rotate_y(-relative_motion.x * sensitivity)
+    camera.feed_look_motion(relative_motion * sensitivity)
     camera.rotate_x(-relative_motion.y * sensitivity)
     camera.rotation.x = clamp(camera.rotation.x, -1.5, 1.5)
 
@@ -527,6 +528,8 @@ func _physics_process(delta: float) -> void:
 
     camera.set_stance(prone, crouching)
     movement.physics_step(delta, input_dir, sprinting, crouching, prone, jump_requested)
+    var horizontal_speed := Vector2(velocity.x, velocity.z).length()
+    camera.set_motion_state(horizontal_speed, movement.get_fatigue_ratio())
 
     if is_instance_valid(sprint_button):
         sprint_button.text = "SPRINT ON" if mobile_sprint else "SPRINT"
