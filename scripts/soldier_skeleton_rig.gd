@@ -99,7 +99,7 @@ func _attach_weapon(weapon: Node3D, bone_name: String) -> void:
     weapon.rotation = saved_rotation
 
 func set_pose(next_pose: String) -> void:
-    if next_pose not in ["move", "aim", "hip_fire", "crouch_fire", "reload"]:
+    if next_pose not in ["move", "aim", "hip_fire", "crouch_fire", "reload", "hit"]:
         return
     pose = next_pose
     _build_pose_targets()
@@ -130,6 +130,11 @@ func _build_pose_targets() -> void:
         "reload":
             upper = Vector3(-0.08, 0.0, 0.30)
             fore = Vector3(0.16, 0.0, 0.12)
+        "hit":
+            upper = Vector3(0.16, 0.0, 0.34)
+            fore = Vector3(0.10, 0.0, 0.20)
+            target_rotations["spine"] = Quaternion.from_euler(Vector3(0.18, 0.0, 0.0))
+            target_rotations["head"] = Quaternion.from_euler(Vector3(-0.10, 0.0, 0.08))
         "move":
             upper = Vector3(-0.12, 0.0, 0.30)
             fore = Vector3(-0.12, 0.0, 0.20)
@@ -152,8 +157,9 @@ func _build_pose_targets() -> void:
         target_positions["pelvis"] = Vector3.ZERO
         target_rotations["thigh_0"] = Quaternion.IDENTITY
         target_rotations["thigh_1"] = Quaternion.IDENTITY
-    target_rotations["spine"] = Quaternion.from_euler(Vector3(-0.035 if pose == "aim" else 0.0, 0, 0))
-    target_rotations["head"] = Quaternion.from_euler(Vector3(0.02 if pose == "aim" else 0.0, 0, 0))
+    if pose != "hit":
+        target_rotations["spine"] = Quaternion.from_euler(Vector3(-0.035 if pose == "aim" else 0.0, 0, 0))
+        target_rotations["head"] = Quaternion.from_euler(Vector3(0.02 if pose == "aim" else 0.0, 0, 0))
 
 func set_locomotion(amount: float, phase: float) -> void:
     move_amount = clampf(amount, 0.0, 1.0)
