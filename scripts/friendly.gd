@@ -23,6 +23,40 @@ func _ready():
     player = get_tree().get_first_node_in_group("player") as CharacterBody3D
     _build_soldier()
 
+func _camouflage_material(base: Color, dark_patch: Color, light_patch: Color) -> ShaderMaterial:
+    var shader := Shader.new()
+    shader.code = """
+shader_type spatial;
+render_mode diffuse_burley, specular_schlick_ggx;
+uniform vec4 base_color : source_color;
+uniform vec4 dark_color : source_color;
+uniform vec4 light_color : source_color;
+float hash_cell(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+void fragment() {
+    vec2 cell = floor(UV * vec2(24.0, 18.0));
+    vec2 local_uv = fract(UV * vec2(24.0, 18.0));
+    float seed = hash_cell(cell);
+    float shape = smoothstep(0.18, 0.72, length((local_uv - vec2(0.5)) * vec2(0.85, 1.15)));
+    vec3 fabric = base_color.rgb;
+    if (seed > 0.60 && shape < 0.78) {
+        fabric = dark_color.rgb;
+    } else if (seed < 0.22 && shape < 0.70) {
+        fabric = light_color.rgb;
+    }
+    float weave = 0.965 + 0.035 * sin(UV.x * 850.0) * sin(UV.y * 760.0);
+    ALBEDO = fabric * weave;
+    ROUGHNESS = 0.96;
+}
+"""
+    var material := ShaderMaterial.new()
+    material.shader = shader
+    material.set_shader_parameter("base_color", base)
+    material.set_shader_parameter("dark_color", dark_patch)
+    material.set_shader_parameter("light_color", light_patch)
+    return material
+
 func _mat(color: Color) -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
     material.albedo_color = color
@@ -47,7 +81,8 @@ func _build_soldier():
     var body_mesh := CapsuleMesh.new()
     body_mesh.radius = 0.34
     body_mesh.height = 1.25
-    _part("Body", body_mesh, Vector3(0, 1.0, 0), green)
+    var body_part = _part("Body", body_mesh, Vector3(0, 1.0, 0), green)
+    body_part.material_override = _camouflage_material(green, Color(0.07, 0.13, 0.08), Color(0.30, 0.31, 0.20))
     var head_mesh := SphereMesh.new()
     head_mesh.radius = 0.22
     head_mesh.height = 0.42
@@ -101,6 +136,7 @@ func _build_soldier():
         limb.radius = 0.13
         limb.height = 0.68
         var arm_part = _part("Arm", limb, Vector3(side * 0.43, 1.0, -0.12), green)
+        arm_part.material_override = _camouflage_material(green, Color(0.07, 0.13, 0.08), Color(0.30, 0.31, 0.20))
         animated_arms.append(arm_part)
         var band_mesh := BoxMesh.new()
         band_mesh.size = Vector3(0.29, 0.13, 0.34)
