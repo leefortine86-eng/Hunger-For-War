@@ -23,6 +23,7 @@ func configure(soldier: Node3D, arms: Array, forearms: Array, hands: Array, legs
     _build_bones(soldier, arms, forearms, hands, legs)
     _attach_mesh(soldier.get_node_or_null("Body"), "spine")
     _attach_mesh(soldier.get_node_or_null("Head"), "head")
+    _attach_weapon(weapon, "spine")
     for i in range(arms.size()):
         _attach_mesh(arms[i], "upper_arm_" + str(i))
     for i in range(forearms.size()):
@@ -82,6 +83,20 @@ func _attach_mesh(part: Node3D, bone_name: String) -> void:
     attachment.add_child(part)
     part.position = Vector3.ZERO
     part.rotation = saved_rotation
+
+func _attach_weapon(weapon: Node3D, bone_name: String) -> void:
+    if not is_instance_valid(weapon) or not bone_ids.has(bone_name):
+        return
+    var saved_position := weapon.position
+    var saved_rotation := weapon.rotation
+    var attachment := BoneAttachment3D.new()
+    attachment.name = "Attach_Weapon"
+    attachment.bone_name = bone_name
+    skeleton.add_child(attachment)
+    weapon.get_parent().remove_child(weapon)
+    attachment.add_child(weapon)
+    weapon.position = saved_position - Vector3(0, 1.04, 0)
+    weapon.rotation = saved_rotation
 
 func set_pose(next_pose: String) -> void:
     if next_pose not in ["move", "aim", "hip_fire", "crouch_fire", "reload"]:
