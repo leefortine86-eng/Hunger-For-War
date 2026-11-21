@@ -26,7 +26,7 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Mobile arsenal dropdown and keyboard / touch weapon cycling
 - [x] Distinct procedural weapon silhouettes by weapon class
 - [x] Physical rocket and grenade projectiles with gravity, impact detection, blast radius, and distance-based damage falloff
-- [ ] Weapon attachments and class-specific firing modes
+- [x] Weapon attachment system with optics, suppressors, grips, flashlight / laser, and extended magazines
 - [ ] Improved hit effects and combat feedback
 
 ### Enemies and AI
@@ -55,4 +55,4 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 
 ## Current development milestone
 
-Core controls, a selectable multi-class arsenal, procedural weapon silhouettes, aiming, recoil, movement sway, reload motion, muzzle flash, ranged enemy combat, and sequential capture objectives are now in the project. A three-person friendly fireteam now follows the player in formation and provides supporting fire against visible enemies. The current catalog contains all 38 WARDOGS roster entries and the remaining unique portable weapons from the Arma Reforger base-game roster. Weapon stats are original prototype tuning values, not copied game balance. Rocket launchers and grenade launchers now fire physical projectiles with different speeds and trajectories, impact/fuse detonation, area damage, and a short explosion visual. Next development should add weapon attachments, more class-specific firing modes, and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
+Core controls, a selectable multi-class arsenal, procedural weapon silhouettes, aiming, recoil, movement sway, reload motion, muzzle flash, ranged enemy combat, and sequential capture objectives are now in the project. A three-person friendly fireteam now follows the player in formation and provides supporting fire against visible enemies. The current catalog contains all 38 WARDOGS roster entries and the remaining unique portable weapons from the Arma Reforger base-game roster. Weapon stats are original prototype tuning values, not copied game balance. Rocket launchers and grenade launchers now fire physical projectiles with different speeds and trajectories, impact/fuse detonation, area damage, and a short explosion visual. Weapon attachments now have a mobile attachment panel, per-weapon saved loadouts, visible procedural attachment models, extended-magazine capacity, optic range bonuses, and grip recoil reductions. Suppressors reduce muzzle flash. Next development should add more class-specific firing behavior and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
