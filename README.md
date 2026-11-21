@@ -16,13 +16,13 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Jump controls for keyboard and touch
 - [ ] Reliable movement and collision testing on Android
 - [x] Aim-down-sights controls and zoomed camera view
-- [ ] Player movement and weapon animations
+- [x] First-person weapon sway, movement bob, recoil, and reload animation
 
 ### Weapons and combat
 - [x] Basic hitscan weapon and magazine / reserve ammunition
 - [x] Reloading
 - [x] First-person rifle prototype, recoil, muzzle flash, and firing feedback
-- [ ] Additional weapon types and weapon selection
+- [x] Expandable 51-weapon catalog inspired by WARDOGS and Arma Reforger\n- [x] Mobile arsenal dropdown and keyboard / touch weapon cycling\n- [x] Distinct procedural weapon silhouettes by weapon class\n- [ ] Explosive projectile behavior, weapon attachments, and class-specific firing modes
 - [ ] Improved hit effects and combat feedback
 
 ### Enemies and AI
@@ -50,4 +50,4 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 
 ## Current development milestone
 
-Core controls, a procedural first-person rifle, aiming, recoil, muzzle flash, ranged enemy combat, and a capture-and-secure objective with mission HUD are now in the project. A three-person friendly fireteam now follows the player in formation and provides supporting fire against visible enemies. Next development should add cover-aware enemy AI, additional mission types, and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
+Core controls, a selectable multi-class arsenal, procedural weapon silhouettes, aiming, recoil, movement sway, reload motion, muzzle flash, ranged enemy combat, and sequential capture objectives are now in the project. A three-person friendly fireteam now follows the player in formation and provides supporting fire against visible enemies. The current catalog contains 38 WARDOGS-inspired entries and the distinct portable weapons from the Arma Reforger base-game roster. Weapon stats are original prototype tuning values, not copied game balance. Next development should add class-specific projectile behavior, attachments, firing modes, and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
