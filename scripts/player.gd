@@ -277,7 +277,7 @@ func _refresh_control_presentation():
             control.visible = not last_gamepad_connected
     if is_instance_valid(controller_hint_label):
         controller_hint_label.visible = last_gamepad_connected
-        controller_hint_label.text = "LEFT STICK MOVE   RIGHT STICK LOOK   LT AIM   RT FIRE   X RELOAD   LB/RB WEAPONS"
+        controller_hint_label.text = "LEFT STICK MOVE   RIGHT STICK LOOK   LT AIM   RT FIRE   FACE BUTTONS   LB/RB WEAPONS"
 
 func _toggle_attachment_panel():
     attachment_panel.visible = not attachment_panel.visible
