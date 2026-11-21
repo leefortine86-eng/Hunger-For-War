@@ -35,7 +35,6 @@ The goal is a polished, controller-first modern military FPS with high-quality 3
 - [x] Basic procedural walk-cycle animation for enemy soldiers
 - [x] First-pass distinct faction uniforms: woodland-green allies with blue ID markings and tan-grey hostiles with red ID markings
 - [x] First-pass modern soldier equipment: helmet rails/NVG mounts, eye protection, headsets, plate-carrier pouches, radios, knee pads, gloves, boots, and class-neutral rifle accessories
-- [x] Subdued woodland camouflage panels on friendly uniforms and distinct hostile tan/grey kit
 - [x] Procedural shader-based woodland and dusty camouflage patterns on uniform surfaces
 - [ ] Authored high-resolution character textures, higher-detail character meshes, and animation blending
 - [x] Ranged enemy attacks with line-of-sight checks and distance keeping
@@ -79,13 +78,13 @@ The settlement battlefield now has defensive observation towers, extra firing ba
 Faction visuals now distinguish hostile soldiers at a glance: friendly fireteam members wear woodland-green kit with blue identification panels and arm bands; hostile soldiers wear dusty tan/grey kit with red identification markings. The settlement compounds also gained external air-conditioning units, power cabinets, cable ducts, a command radio mast, and low-intensity floodlights. These are procedural prototype details and have not yet been performance-tested on Android.
 
 
-Enemy combat now has a first tactical movement pass: when multiple hostiles are active, they alternate lateral approach positions instead of all advancing along the same direct line. This is lightweight steering rather than full navigation; obstacle-aware pathfinding, suppression behavior, and more advanced squad coordination remain future work. This change has not yet been tested in Godot or on Android.\n\nThe latest realism pass adds first-pass modern infantry kit to both factions: helmet accessory rails and NVG mounts, eye protection, headsets, plate-carrier magazine/utility pouches, radio antennas, knee protection, gloves, boots, and more complete rifle silhouettes. Friendly uniforms include muted woodland camouflage panels; hostile uniforms retain a separate dusty tan/grey palette and red faction identifiers. The settlement now also includes modular blast-wall and jersey-barrier positions, a camouflaged equipment staging shade, a field generator, and a tactical communications mast. These remain procedural low-poly prototypes; detailed scanned assets, texture maps, animation blending, and Android performance validation are still future work.
+Enemy combat now has a first tactical movement pass: when multiple hostiles are active, they alternate lateral approach positions instead of all advancing along the same direct line. This is lightweight steering rather than full navigation; obstacle-aware pathfinding, suppression behavior, and more advanced squad coordination remain future work. This change has not yet been tested in Godot or on Android.\n\nThe latest realism pass adds first-pass modern infantry kit to the hostile faction: helmet accessory rails and NVG mounts, eye protection, headsets, plate-carrier magazine/utility pouches, radio antennas, knee protection, gloves, boots, and more complete rifle silhouettes. Hostile uniforms use a dusty tan/grey palette and red faction identifiers. The settlement now also includes modular blast-wall and jersey-barrier positions, a camouflaged equipment staging shade, a field generator, and a tactical communications mast. These remain procedural low-poly prototypes; detailed scanned assets, texture maps, animation blending, and Android performance validation are still future work.
 
 The visual-development pass now moves beyond single flat material colors: friendly and hostile uniform surfaces use procedural shader camouflage palettes; the battlefield ground has layered soil/vegetation variation; and building plaster/concrete surfaces have weathering variation. Weapon silhouettes gained cylindrical barrels, muzzle devices, side rails, charging handles, and receiver details. Building fronts gained additional window trim, door hardware, conduit, and junction boxes. The outpost perimeter now has a post-and-rail security fence, low warning lights, and individually layered sandbag courses around firing bays. These are lightweight procedural materials and geometry—not finished scanned textures or production character assets—and have not been validated in Godot or profiled on Android.
 
 
 ## Soldier proportion and equipment pass
-- Refined friendly and hostile torso and head proportions to reduce the oversized capsule/sphere appearance.
+- Refined soldier torso and head proportions to reduce the oversized capsule/sphere appearance.
 - Added neck, pelvis and combat-belt transitions to make the body read more like a layered infantry uniform.
 - Separated thigh and lower-leg shapes, added boot soles and more defined gloved hands.
 - Preserved the existing faction camouflage, identifying colors, movement logic, combat behavior and mobile controls.
@@ -93,7 +92,7 @@ The visual-development pass now moves beyond single flat material colors: friend
 
 
 ## Shoulder-ready rifle pose
-- Repositioned friendly and hostile upper arms and forearms into a forward, bent support posture.
+- Repositioned soldier upper arms and forearms into a forward, bent support posture.
 - Added visible grip-hand shapes near the rifle fore-end and grip area.
 - Kept upper arms steady while the legs continue their walk cycle, avoiding the old arm-swing animation pulling the hands away from the weapon.
 - The current weapon hold is a fixed procedural pose; hand-to-trigger alignment, reload/aim transitions and a true skeletal rig remain future work. Not yet tested in Godot.
@@ -101,7 +100,7 @@ The visual-development pass now moves beyond single flat material colors: friend
 
 ## Blended soldier combat pose rig
 - Added a reusable articulated procedural pose controller for upper arms, forearms, hands, rifle placement, torso and head.
-- Friendly and hostile combat logic now blends between movement-ready, aimed fire, close hip-fire, crouched firing and reload poses.
+- Hostile combat logic now blends between movement-ready, aimed fire, close hip-fire, crouched firing and reload poses.
 - Added short simulated magazine cycles so soldiers visibly lower and manipulate their rifles during reload transitions before resuming fire.
 - Pose profiles include different reach/balance offsets for rifle, SMG, LMG, pistol and launcher families; current AI soldiers use the rifle profile.
 - This is an articulated procedural bridge using the existing mesh parts, not yet a weighted Skeleton3D rig with authored finger animation clips. Hand contact and trigger-finger alignment remain approximate, and the result has not been opened or tested in Godot. A true skeletal rig, weapon-specific hand meshes and authored animation clips remain a later quality step.
