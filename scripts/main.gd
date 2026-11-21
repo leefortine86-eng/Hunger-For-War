@@ -24,6 +24,7 @@ func _ready():
     _create_battlefield_cover()
     _create_battlefield_environment()
     _create_terrain_features()
+    _dress_building_interiors()
     _create_capture_objective()
     _create_second_objective()
     _create_mission_hud()
@@ -544,6 +545,61 @@ func _create_terrain_features():
     _make_environment_box(self, "BarracksStorageCrates", Vector3(1.0, 0.8, 1.0), Vector3(17.0, 0.9, -25.0), crate_material)
     _make_environment_box(self, "CheckpointGenerator", Vector3(1.2, 0.9, 0.8), Vector3(-15.0, 0.95, 15.0), metal_material)
     _make_environment_box(self, "OutpostFuelDrums", Vector3(0.65, 1.0, 0.65), Vector3(17.0, 1.0, 13.0), crate_material)
+
+
+func _dress_building_interiors():
+    var timber := StandardMaterial3D.new()
+    timber.albedo_color = Color(0.24, 0.20, 0.14)
+    timber.roughness = 0.96
+    var dark_metal := StandardMaterial3D.new()
+    dark_metal.albedo_color = Color(0.12, 0.15, 0.14)
+    dark_metal.metallic = 0.28
+    dark_metal.roughness = 0.88
+    var canvas := StandardMaterial3D.new()
+    canvas.albedo_color = Color(0.38, 0.39, 0.31)
+    canvas.roughness = 1.0
+    var screen := StandardMaterial3D.new()
+    screen.albedo_color = Color(0.12, 0.24, 0.22)
+    screen.emission_enabled = true
+    screen.emission = Color(0.04, 0.12, 0.09)
+    screen.emission_energy_multiplier = 0.35
+
+    # Command room: a central planning table and wall-side communications station.
+    var command = get_node_or_null("WestCommandBuilding") as Node3D
+    if is_instance_valid(command):
+        _make_environment_box(command, "OperationsTable", Vector3(2.5, 0.12, 1.25), Vector3(0, 0.92, -0.8), timber, false)
+        for x_pos in [-1.05, 1.05]:
+            for z_pos in [-1.25, -0.35]:
+                _make_environment_box(command, "TableLeg", Vector3(0.12, 0.72, 0.12), Vector3(x_pos, 0.48, z_pos), dark_metal, false)
+        _make_environment_box(command, "RadioConsole", Vector3(1.4, 0.85, 0.48), Vector3(-3.2, 0.92, -2.7), dark_metal, false)
+        _make_environment_box(command, "ConsoleDisplay", Vector3(0.8, 0.48, 0.08), Vector3(-3.2, 1.58, -2.92), screen, false)
+        _make_environment_box(command, "MapBoard", Vector3(2.2, 1.15, 0.08), Vector3(0, 2.0, -4.25), canvas, false)
+        _make_environment_box(command, "CommandSupplyStack", Vector3(0.9, 0.8, 0.9), Vector3(3.4, 0.9, -2.8), timber)
+
+    # Barracks: simple raised bunks and personal storage along the side walls.
+    var barracks = get_node_or_null("EastBarracks") as Node3D
+    if is_instance_valid(barracks):
+        for side in [-1.0, 1.0]:
+            for row in range(2):
+                var z_pos := -2.2 + float(row) * 3.6
+                _make_environment_box(barracks, "BunkFrame", Vector3(2.4, 0.18, 0.95), Vector3(side * 3.0, 0.72, z_pos), dark_metal, false)
+                _make_environment_box(barracks, "BunkMattress", Vector3(2.3, 0.16, 0.88), Vector3(side * 3.0, 0.88, z_pos), canvas, false)
+                _make_environment_box(barracks, "Locker", Vector3(0.65, 1.45, 0.65), Vector3(side * 4.0, 1.22, z_pos + 0.9), dark_metal, false)
+        _make_environment_box(barracks, "BarracksFootlocker", Vector3(1.0, 0.55, 0.55), Vector3(0, 0.78, -2.7), timber)
+
+    # Checkpoint: guard desk and a radio set just inside the doorway.
+    var checkpoint = get_node_or_null("WestCheckpoint") as Node3D
+    if is_instance_valid(checkpoint):
+        _make_environment_box(checkpoint, "GuardDesk", Vector3(1.8, 0.85, 0.72), Vector3(-2.4, 0.95, -1.8), timber, false)
+        _make_environment_box(checkpoint, "CheckpointRadio", Vector3(0.45, 0.35, 0.32), Vector3(-2.4, 1.52, -1.8), dark_metal, false)
+        _make_environment_box(checkpoint, "CheckpointLocker", Vector3(0.7, 1.5, 0.7), Vector3(3.2, 1.25, -2.5), dark_metal, false)
+
+    # Ruined outpost: scattered crates and a damaged work surface, leaving the doorway clear.
+    var outpost = get_node_or_null("EastRuinedOutpost") as Node3D
+    if is_instance_valid(outpost):
+        _make_environment_box(outpost, "RuinedWorkTable", Vector3(1.8, 0.18, 0.85), Vector3(-2.5, 0.82, -2.1), timber, false)
+        _make_environment_box(outpost, "OutpostCrateA", Vector3(0.85, 0.85, 0.85), Vector3(2.8, 0.92, -2.5), timber)
+        _make_environment_box(outpost, "OutpostCrateB", Vector3(0.75, 0.7, 0.75), Vector3(2.5, 1.65, -2.5), timber, false)
 
 func _spawn_enemies():
     var spawn_points := [
