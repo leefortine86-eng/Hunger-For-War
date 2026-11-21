@@ -14,6 +14,9 @@ var health: float = 100.0
 var rifle: MeshInstance3D
 var muzzle_light: OmniLight3D
 var flash_timer: float = 0.0
+var walk_cycle: float = 0.0
+var animated_arms: Array = []
+var animated_legs: Array = []
 
 func _ready():
     add_to_group("friendlies")
@@ -57,11 +60,13 @@ func _build_soldier():
         var limb := CapsuleMesh.new()
         limb.radius = 0.13
         limb.height = 0.68
-        _part("Arm", limb, Vector3(side * 0.43, 1.0, -0.12), green)
+        var arm_part = _part("Arm", limb, Vector3(side * 0.43, 1.0, -0.12), green)
+        animated_arms.append(arm_part)
         var leg := CapsuleMesh.new()
         leg.radius = 0.16
         leg.height = 0.78
-        _part("Leg", leg, Vector3(side * 0.19, 0.39, 0.02), dark)
+        var leg_part = _part("Leg", leg, Vector3(side * 0.19, 0.39, 0.02), dark)
+        animated_legs.append(leg_part)
 
     var gun_mesh := BoxMesh.new()
     gun_mesh.size = Vector3(0.09, 0.09, 0.72)
@@ -129,6 +134,7 @@ func _physics_process(delta):
     if not is_instance_valid(player):
         player = get_tree().get_first_node_in_group("player") as CharacterBody3D
         move_and_slide()
+        _animate_soldier(delta)
         return
 
     var desired_position := player.global_position + player.global_basis * formation_offset
@@ -162,6 +168,20 @@ func _physics_process(delta):
             velocity.z = move_toward(velocity.z, 0.0, move_speed * delta * 4.0)
 
     move_and_slide()
+    _animate_soldier(delta)
+
+func _animate_soldier(delta: float):
+    var speed := Vector2(velocity.x, velocity.z).length()
+    if speed > 0.15:
+        walk_cycle += delta * speed * 2.7
+    else:
+        walk_cycle = lerpf(walk_cycle, 0.0, minf(delta * 3.0, 1.0))
+    var swing := sin(walk_cycle) * minf(speed / move_speed, 1.0) * 0.42
+    for i in range(animated_arms.size()):
+        var arm = animated_arms[i]
+        var leg = animated_legs[i]
+        arm.rotation.x = lerpf(arm.rotation.x, swing if i == 0 else -swing, minf(delta * 9.0, 1.0))
+        leg.rotation.x = lerpf(leg.rotation.x, -swing if i == 0 else swing, minf(delta * 9.0, 1.0))
 
 func take_damage(amount: float):
     health = maxf(health - amount, 0.0)
