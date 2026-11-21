@@ -25,6 +25,7 @@ func _ready():
     _create_battlefield_environment()
     _create_terrain_features()
     _dress_building_interiors()
+    _dress_building_exteriors()
     _create_defensive_positions()
     _create_wreck_atmosphere()
     _create_capture_objective()
@@ -616,6 +617,62 @@ func _dress_building_interiors():
         _make_environment_box(outpost, "OutpostCrateA", Vector3(0.85, 0.85, 0.85), Vector3(2.8, 0.92, -2.5), timber)
         _make_environment_box(outpost, "OutpostCrateB", Vector3(0.75, 0.7, 0.75), Vector3(2.5, 1.65, -2.5), timber, false)
 
+
+
+func _dress_building_exteriors():
+    var metal := StandardMaterial3D.new()
+    metal.albedo_color = Color(0.16, 0.19, 0.18)
+    metal.metallic = 0.32
+    metal.roughness = 0.86
+    var faded_paint := StandardMaterial3D.new()
+    faded_paint.albedo_color = Color(0.39, 0.37, 0.30)
+    faded_paint.roughness = 0.96
+    var warning := StandardMaterial3D.new()
+    warning.albedo_color = Color(0.62, 0.34, 0.08)
+    warning.roughness = 0.9
+
+    # External generators, ventilation units, conduits and wall-mounted service boxes.
+    var command := get_node_or_null("WestCommandBuilding") as Node3D
+    if is_instance_valid(command):
+        _make_environment_box(command, "CommandACUnit", Vector3(1.35, 0.75, 0.9), Vector3(3.1, 2.9, -3.0), metal, false)
+        _make_environment_box(command, "CommandPowerBox", Vector3(0.55, 0.9, 0.28), Vector3(-5.58, 1.1, 1.5), metal, false)
+        _make_environment_box(command, "CommandCableDuct", Vector3(0.12, 0.12, 3.2), Vector3(-5.55, 0.55, -1.0), metal, false)
+        _make_environment_box(command, "CommandWarningPanel", Vector3(0.62, 0.42, 0.04), Vector3(-5.55, 1.8, 1.5), warning, false)
+
+    var barracks := get_node_or_null("EastBarracks") as Node3D
+    if is_instance_valid(barracks):
+        _make_environment_box(barracks, "BarracksACUnit", Vector3(1.4, 0.8, 0.9), Vector3(-3.2, 2.9, -2.8), metal, false)
+        _make_environment_box(barracks, "BarracksServiceBox", Vector3(0.55, 0.85, 0.3), Vector3(5.12, 1.1, 1.5), metal, false)
+        _make_environment_box(barracks, "BarracksExternalPipe", Vector3(0.12, 2.7, 0.12), Vector3(5.12, 1.55, -2.5), metal, false)
+
+    var checkpoint := get_node_or_null("WestCheckpoint") as Node3D
+    if is_instance_valid(checkpoint):
+        _make_environment_box(checkpoint, "CheckpointPowerCabinet", Vector3(0.65, 1.1, 0.4), Vector3(4.3, 1.2, 2.0), metal, false)
+        _make_environment_box(checkpoint, "CheckpointWarningStripe", Vector3(0.9, 0.18, 0.05), Vector3(4.3, 1.45, 1.78), warning, false)
+
+    var outpost := get_node_or_null("EastRuinedOutpost") as Node3D
+    if is_instance_valid(outpost):
+        _make_environment_box(outpost, "OutpostDamagedAC", Vector3(1.2, 0.65, 0.8), Vector3(-3.0, 2.7, -2.8), metal, false)
+        _make_environment_box(outpost, "OutpostBrokenPanel", Vector3(0.75, 0.5, 0.08), Vector3(5.12, 1.65, 1.4), faded_paint, false)
+
+    # A communications mast and compact floodlights make the command compound read as a base.
+    var mast := Node3D.new()
+    mast.name = "CommandRadioMast"
+    mast.position = Vector3(-24.5, 0, -23.5)
+    add_child(mast)
+    _make_environment_box(mast, "MastPole", Vector3(0.16, 8.5, 0.16), Vector3(0, 4.25, 0), metal, false)
+    _make_environment_box(mast, "MastCrossbar", Vector3(2.4, 0.12, 0.12), Vector3(0, 7.2, 0), metal, false)
+    for antenna_side in [-1.0, 1.0]:
+        _make_environment_box(mast, "MastAntenna", Vector3(0.07, 1.5, 0.07), Vector3(antenna_side * 0.75, 8.0, 0), metal, false)
+
+    for light_position in [Vector3(-14.0, 4.2, -8.0), Vector3(14.0, 4.2, -8.0), Vector3(-14.0, 4.2, 18.0), Vector3(14.0, 4.2, 18.0)]:
+        var floodlight := SpotLight3D.new()
+        floodlight.position = light_position
+        floodlight.rotation_degrees = Vector3(-65, 0, 0)
+        floodlight.light_energy = 0.45
+        floodlight.spot_range = 13.0
+        floodlight.spot_angle = 48.0
+        add_child(floodlight)
 
 func _create_defensive_positions():
     var tower_material := StandardMaterial3D.new()
