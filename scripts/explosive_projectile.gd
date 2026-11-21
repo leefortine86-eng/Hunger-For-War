@@ -75,9 +75,6 @@ func _physics_process(delta: float) -> void:
     if velocity.length_squared() > 0.01:
         look_at(global_position + velocity.normalized(), Vector3.UP)
     if not hit.is_empty():
-        var collider = hit.get("collider")
-        if is_instance_valid(collider) and collider.has_method("take_damage"):
-            collider.take_damage(direct_damage)
         _explode(hit.get("position", global_position))
 
 func _explode(point: Vector3) -> void:
