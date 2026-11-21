@@ -1,10 +1,10 @@
 # HUNGER FOR WAR
 
-An original modern military first-person shooter being developed in Godot, with Android as the first target and PC support planned.
+An original modern military first-person shooter being developed in Godot, with Android and PC development targets and a future PlayStation 5 port as a long-term goal.
 
 ## Development direction
 
-The goal is a polished, tactical FPS with high-quality 3D presentation and mobile-friendly controls. The game will use original assets and systems while taking broad inspiration from modern military shooters.
+The goal is a polished, controller-first modern military FPS with high-quality 3D presentation. WARDOGS-style FPS combat and Arma Reforger-inspired military realism guide the experience, while all game systems, assets, maps, and presentation remain original. Android and PC are the current development targets; the project should be structured with a future PS5 port in mind.
 
 ## Feature roadmap
 
@@ -32,15 +32,13 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 
 ### Enemies and AI
 - [x] Basic enemy soldier prototype
-- [x] Basic procedural walk-cycle animation for friendly and enemy soldiers
+- [x] Basic procedural walk-cycle animation for enemy soldiers
 - [x] First-pass distinct faction uniforms: woodland-green allies with blue ID markings and tan-grey hostiles with red ID markings
 - [x] First-pass modern soldier equipment: helmet rails/NVG mounts, eye protection, headsets, plate-carrier pouches, radios, knee pads, gloves, boots, and class-neutral rifle accessories
 - [x] Subdued woodland camouflage panels on friendly uniforms and distinct hostile tan/grey kit
 - [x] Procedural shader-based woodland and dusty camouflage patterns on uniform surfaces
 - [ ] Authored high-resolution character textures, higher-detail character meshes, and animation blending
 - [x] Ranged enemy attacks with line-of-sight checks and distance keeping
-- [x] Friendly three-person fireteam that follows the player and engages visible enemies
-- [x] Basic fireteam orders: follow, hold position, and advance to a point ahead of the player
 - [x] Enemies seek nearby defensive cover after taking damage
 - [x] Basic coordinated enemy flanking: hostile soldiers choose alternating lateral approach positions when operating as a squad
 - [ ] Advanced enemy awareness, obstacle-aware flanking, suppression, and squad tactics
@@ -65,17 +63,20 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Mission objective HUD and capture progress
 - [ ] Combat indicators and expanded HUD
 - [ ] Android performance and touch-layout optimization
+- [x] Initial gamepad input map for twin-stick movement/look, triggers, and face/shoulder buttons
+- [ ] Controller HUD navigation and remappable console-style controls
 - [ ] PC controls and compatibility pass
+- [ ] PS5 porting assessment (requires Sony developer access and an approved porting path)
 
 ## Current development milestone
 
-Core controls, a selectable multi-class arsenal, procedural weapon silhouettes, aiming, recoil, movement sway, reload motion, muzzle flash, ranged enemy combat, and sequential capture objectives are now in the project. A three-person friendly fireteam now follows the player in formation and provides supporting fire against visible enemies. The current catalog contains all 38 WARDOGS roster entries and the remaining unique portable weapons from the Arma Reforger base-game roster. Weapon stats are original prototype tuning values, not copied game balance. Rocket launchers and grenade launchers now fire physical projectiles with different speeds and trajectories, impact/fuse detonation, area damage, and a short explosion visual. Weapon attachments now have a mobile attachment panel, per-weapon saved loadouts, visible procedural attachment models, extended-magazine capacity, optic range bonuses, and grip recoil reductions. Suppressors reduce muzzle flash. Next development should add more class-specific firing behavior and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
+Core controls, a selectable multi-class arsenal, procedural weapon silhouettes, aiming, recoil, movement sway, reload motion, muzzle flash, ranged enemy combat, and sequential capture objectives are now in the project. The game is focused on the player's first-person combat experience; friendly fireteam followers and command orders have been removed. The current catalog contains all 38 WARDOGS roster entries and the remaining unique portable weapons from the Arma Reforger base-game roster. Weapon stats are original prototype tuning values, not copied game balance. Rocket launchers and grenade launchers now fire physical projectiles with different speeds and trajectories, impact/fuse detonation, area damage, and a short explosion visual. Weapon attachments now have a mobile attachment panel, per-weapon saved loadouts, visible procedural attachment models, extended-magazine capacity, optic range bonuses, and grip recoil reductions. Suppressors reduce muzzle flash. Next development should add more class-specific firing behavior and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
 
 
 The settlement battlefield now has defensive observation towers, extra firing bays, a checkpoint canopy, roof ladder and ventilation props, subtle distance fog, and a lightweight wreck ember/smoke effect. The ladders are currently visual-only and are not climbable. The settlement battlefield also has additional terrain dressing: perimeter pine trees that frame concealed flanking routes, rock clusters, raised drainage banks, faded road markings, and supply props near the compounds. The next map is planned as a separate woodland military installation with its own layout, buildings, defensive positions, and capture objectives; it will be added after the settlement map is completed.
 
 
-Faction visuals now distinguish friendly and hostile soldiers at a glance: friendly fireteam members wear woodland-green kit with blue identification panels and arm bands; hostile soldiers wear dusty tan/grey kit with red identification markings. The settlement compounds also gained external air-conditioning units, power cabinets, cable ducts, a command radio mast, and low-intensity floodlights. These are procedural prototype details and have not yet been performance-tested on Android.
+Faction visuals now distinguish hostile soldiers at a glance: friendly fireteam members wear woodland-green kit with blue identification panels and arm bands; hostile soldiers wear dusty tan/grey kit with red identification markings. The settlement compounds also gained external air-conditioning units, power cabinets, cable ducts, a command radio mast, and low-intensity floodlights. These are procedural prototype details and have not yet been performance-tested on Android.
 
 
 Enemy combat now has a first tactical movement pass: when multiple hostiles are active, they alternate lateral approach positions instead of all advancing along the same direct line. This is lightweight steering rather than full navigation; obstacle-aware pathfinding, suppression behavior, and more advanced squad coordination remain future work. This change has not yet been tested in Godot or on Android.\n\nThe latest realism pass adds first-pass modern infantry kit to both factions: helmet accessory rails and NVG mounts, eye protection, headsets, plate-carrier magazine/utility pouches, radio antennas, knee protection, gloves, boots, and more complete rifle silhouettes. Friendly uniforms include muted woodland camouflage panels; hostile uniforms retain a separate dusty tan/grey palette and red faction identifiers. The settlement now also includes modular blast-wall and jersey-barrier positions, a camouflaged equipment staging shade, a field generator, and a tactical communications mast. These remain procedural low-poly prototypes; detailed scanned assets, texture maps, animation blending, and Android performance validation are still future work.
@@ -113,10 +114,11 @@ The visual-development pass now moves beyond single flat material colors: friend
 - This is an intermediate articulated rig using attached primitive meshes, not yet a weighted skinned character mesh or a full AnimationTree/AnimationPlayer clip library. The new rig has not been executed in Godot in this environment, so editor/runtime compatibility and attachment alignment still need validation.
 
 
-## Fireteam command system
-- Added mobile HUD buttons for FOLLOW, HOLD, and ADVANCE orders.
-- FOLLOW restores the existing player-relative formation.
-- HOLD tells each friendly soldier to stay at their current position while continuing to engage enemies in range.
-- ADVANCE sends the fireteam toward a point 14 metres ahead of the player, retaining the existing support-fire behavior.
-- Desktop keyboard shortcuts: F = follow, H = hold, G = advance.
-- This is a first command layer; individual soldier selection, map-click waypoints, squad formations, and obstacle-aware navigation remain future work. The commands have not yet been tested in Godot or on Android.
+
+
+## Controller-first and future console direction
+- Added an initial Godot gamepad input map: left stick movement, right stick camera look, left trigger aim, right trigger fire, face buttons for reload/jump/crouch, left-stick click for sprint, and shoulder buttons for weapon cycling.
+- Preserved the existing Android touch controls and keyboard/mouse controls while adding controller input.
+- Removed the friendly fireteam follower system, command buttons, squad HUD, and associated spawn script so the game remains a direct first-person military shooter.
+- Controller input is an early foundation, not a finished console interface. Controller navigation for menus, remapping, vibration tuning, accessibility options, and platform-specific integration remain future work.
+- PS5 is a long-term target. A release would require Sony developer approval/access and a supported Godot console porting arrangement; this repository change does not make a PS5 build or certify compatibility.
