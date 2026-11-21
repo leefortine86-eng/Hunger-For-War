@@ -7,7 +7,7 @@
 - Existing weapon, AI, and soldier animation scripts remain independent.
 
 ## Rendering targets
-The current project remains on Compatibility for this first safe refactor. Do not switch the whole project to Forward+ until a desktop-only profile and an Android Mobile profile have been tested on target devices. Godot project rendering method selection is a project-level setting; the mobile override is not a universal guarantee that every export will select the desired renderer.
+The project is configured for Forward+ as the desktop default and Mobile as the mobile renderer override. Confirm the actual renderer selected in each export preset and test on target devices before release. Keep Compatibility as a fallback profile for devices that cannot run the Mobile renderer reliably.
 
 Recommended desktop Forward+ profile: directional shadows with PSSM, contact shadows where supported, SSAO, SSIL, SSR, glow, tonemapping/color adjustment, and volumetric fog. Enable effects selectively and profile GPU cost.
 
