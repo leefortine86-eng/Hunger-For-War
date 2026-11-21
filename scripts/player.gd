@@ -38,11 +38,13 @@ var hit_marker_timer: float = 0.0
 var hit_marker_kill: bool = false
 @export var controller_look_speed: float = 2.4
 var mobile_crouch: bool = false
+var mobile_prone: bool = false
 var mobile_jump_requested: bool = false
 var jump_key_was_down: bool = false
 var body_collision: CollisionShape3D
 var sprint_button: Button
 var crouch_button: Button
+var prone_button: Button
 var jump_button: Button
 var aim_button: Button
 var aiming: bool = false
@@ -174,6 +176,16 @@ func _create_hud():
     jump_button.pressed.connect(_on_jump_pressed)
     canvas.add_child(jump_button)
 
+    prone_button = Button.new()
+    prone_button.name = "ProneButton"
+    prone_button.text = "PRONE"
+    prone_button.position = Vector2(screen_size.x - 400, screen_size.y - 112)
+    prone_button.size = Vector2(112, 58)
+    prone_button.toggle_mode = true
+    prone_button.add_theme_font_size_override("font_size", 17)
+    prone_button.toggled.connect(_on_prone_toggled)
+    canvas.add_child(prone_button)
+
     aim_button = Button.new()
     aim_button.name = "AimButton"
     aim_button.text = "AIM"
@@ -284,7 +296,7 @@ func _create_hud():
 func _refresh_control_presentation():
     last_gamepad_connected = Input.get_connected_joypads().size() > 0
     var show_touch_controls := DisplayServer.is_touchscreen_available() and not last_gamepad_connected
-    var touch_controls = [touch_overlay, fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button]
+    var touch_controls = [touch_overlay, fire_button, reload_button, sprint_button, crouch_button, prone_button, jump_button, aim_button, weapon_prev_button, weapon_next_button]
     for control in touch_controls:
         if is_instance_valid(control):
             control.visible = show_touch_controls
@@ -338,6 +350,17 @@ func _on_sprint_toggled(enabled: bool):
 
 func _on_crouch_toggled(enabled: bool):
     mobile_crouch = enabled
+    if enabled:
+        mobile_prone = false
+        if is_instance_valid(prone_button):
+            prone_button.button_pressed = false
+
+func _on_prone_toggled(enabled: bool):
+    mobile_prone = enabled
+    if enabled:
+        mobile_crouch = false
+        if is_instance_valid(crouch_button):
+            crouch_button.button_pressed = false
 
 func _on_jump_pressed():
     mobile_jump_requested = true
@@ -400,7 +423,7 @@ func _input(event):
             _rotate_camera(event.relative, touch_sensitivity)
 
 func _is_touch_ui(position: Vector2) -> bool:
-    var controls = [fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select, attachment_toggle, attachment_panel]
+    var controls = [fire_button, reload_button, sprint_button, crouch_button, prone_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select, attachment_toggle, attachment_panel]
     for control in controls:
         if is_instance_valid(control) and Rect2(control.position, control.size).has_point(position):
             return true
@@ -497,9 +520,12 @@ func _physics_process(delta):
     var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
     var sprinting := Input.is_key_pressed(KEY_SHIFT) or Input.is_action_pressed("sprint") or mobile_sprint
+    var prone := Input.is_key_pressed(KEY_Z) or mobile_prone
     var crouching := Input.is_key_pressed(KEY_CTRL) or Input.is_action_pressed("crouch") or mobile_crouch
     var current_speed := move_speed
-    if crouching:
+    if prone:
+        current_speed = move_speed * 0.20
+    elif crouching:
         current_speed = move_speed * 0.45
     elif sprinting:
         current_speed = move_speed * 1.55
@@ -508,12 +534,12 @@ func _physics_process(delta):
     velocity.z = direction.z * current_speed
 
     var jump_key_down := Input.is_key_pressed(KEY_SPACE) or Input.is_action_pressed("jump")
-    if jump_key_down and not jump_key_was_down and is_on_floor() and not crouching:
+    if jump_key_down and not jump_key_was_down and is_on_floor() and not crouching and not prone:
         velocity.y = 6.0
     jump_key_was_down = jump_key_down
 
     if mobile_jump_requested:
-        if is_on_floor() and not crouching:
+        if is_on_floor() and not crouching and not prone:
             velocity.y = 6.0
         mobile_jump_requested = false
 
@@ -524,17 +550,19 @@ func _physics_process(delta):
 
     var capsule := body_collision.shape as CapsuleShape3D
     if capsule:
-        var target_height := 1.2 if crouching else 1.8
+        var target_height := 0.65 if prone else (1.2 if crouching else 1.8)
         capsule.height = move_toward(capsule.height, target_height, 3.0 * delta)
         body_collision.position.y = capsule.height * 0.5
 
-    var target_camera_height := 0.35 if crouching else 0.65
-    camera.position.y = move_toward(camera.position.y, target_camera_height, 2.5 * delta)
+    var target_camera_height := 0.48 if prone else (1.05 if crouching else 1.55)
+    camera.position.y = move_toward(camera.position.y, target_camera_height, 3.0 * delta)
 
     if is_instance_valid(sprint_button):
         sprint_button.text = "SPRINT ON" if mobile_sprint else "SPRINT"
     if is_instance_valid(crouch_button):
         crouch_button.text = "STAND" if mobile_crouch else "CROUCH"
+    if is_instance_valid(prone_button):
+        prone_button.text = "GET UP" if mobile_prone else "PRONE"
 
     move_and_slide()
 
