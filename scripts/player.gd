@@ -423,10 +423,10 @@ func _input(event):
         elif event.index == look_touch_id:
             _rotate_camera(event.relative, touch_sensitivity)
 
-func _is_touch_ui(position: Vector2) -> bool:
+func _is_touch_ui(touch_position: Vector2) -> bool:
     var controls = [fire_button, reload_button, sprint_button, crouch_button, prone_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select, attachment_toggle, attachment_panel]
     for control in controls:
-        if is_instance_valid(control) and Rect2(control.position, control.size).has_point(position):
+        if is_instance_valid(control) and Rect2(control.position, control.size).has_point(touch_position):
             return true
     return false
 
