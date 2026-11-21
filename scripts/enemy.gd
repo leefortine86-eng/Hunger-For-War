@@ -390,12 +390,14 @@ func _animate_soldier(delta: float):
     var amount := minf(speed / maxf(move_speed, 0.01), 1.0)
     pose_rig.set_locomotion(amount, walk_cycle)
 
-func take_damage(amount: float):
-    health -= amount
+func take_damage(amount: float) -> bool:
+    health = maxf(health - amount, 0.0)
     _find_cover_position()
     print("Enemy hit! Health: ", health)
     if health <= 0.0:
         die()
+        return true
+    return false
 
 func die():
     print("Enemy eliminated!")
