@@ -294,7 +294,7 @@ func _create_battlefield_cover():
     _make_cover("BrokenWallRight", Vector3(0.7, 1.8, 5.0), Vector3(12.0, 0.9, -17.0), concrete)
 
 
-func _make_environment_box(parent: Node3D, object_name: String, size: Vector3, local_position: Vector3, material: Material, collision_enabled: bool = true):
+func _make_environment_box(parent: Node3D, object_name: String, size: Vector3, local_position: Vector3, material: Material, collision_enabled: bool = true) -> Node3D:
     var holder: Node3D
     if collision_enabled:
         var body := StaticBody3D.new()
