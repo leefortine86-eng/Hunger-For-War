@@ -387,13 +387,8 @@ func _animate_soldier(delta: float):
         walk_cycle += delta * speed * 2.6
     else:
         walk_cycle = lerpf(walk_cycle, 0.0, minf(delta * 3.0, 1.0))
-    var swing := sin(walk_cycle) * minf(speed / move_speed, 1.0) * 0.38
-    for i in range(animated_arms.size()):
-        var arm = animated_arms[i]
-        var leg = animated_legs[i]
-        # The pose rig owns the legs while crouched; otherwise preserve the walk cycle.
-        if pose_rig.pose != "crouch_fire":
-            leg.rotation.x = lerpf(leg.rotation.x, -swing if i == 0 else swing, minf(delta * 8.0, 1.0))
+    var amount := minf(speed / maxf(move_speed, 0.01), 1.0)
+    pose_rig.set_locomotion(amount, walk_cycle)
 
 func take_damage(amount: float):
     health -= amount
