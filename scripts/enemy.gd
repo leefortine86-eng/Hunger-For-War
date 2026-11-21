@@ -103,10 +103,21 @@ func _build_soldier_appearance():
     var hostile_red := Color(0.62, 0.075, 0.045)
     var helmet_tan := Color(0.36, 0.34, 0.27)
 
-    $Body.mesh = CapsuleMesh.new()
+    var torso := CapsuleMesh.new()
+    torso.radius = 0.29
+    torso.height = 1.16
+    $Body.mesh = torso
+    $Body.position = Vector3(0, 1.08, 0)
     $Body.material_override = _camouflage_material(uniform, Color(0.25, 0.25, 0.21), Color(0.53, 0.48, 0.38))
-    $Head.mesh = SphereMesh.new()
+    var head_mesh := SphereMesh.new()
+    head_mesh.radius = 0.18
+    head_mesh.height = 0.36
+    $Head.mesh = head_mesh
+    $Head.position = Vector3(0, 1.80, 0)
     $Head.material_override = _material(skin)
+    _add_capsule_part("Neck", 0.105, 0.22, Vector3(0, 1.67, 0), skin)
+    _add_box_part("CombatBelt", Vector3(0.62, 0.13, 0.34), Vector3(0, 0.70, -0.01), dark_gear)
+    _add_box_part("Pelvis", Vector3(0.48, 0.28, 0.34), Vector3(0, 0.55, 0.01), uniform)
 
     _add_box_part("TacticalVest", Vector3(0.72, 0.62, 0.34), Vector3(0, 1.02, -0.04), armor)
     _add_box_part("ChestPlate", Vector3(0.48, 0.32, 0.12), Vector3(0, 1.12, -0.235), dark_gear)
@@ -136,10 +147,13 @@ func _build_soldier_appearance():
         var upper_arm = _add_capsule_part("UpperArm", 0.135, 0.58, Vector3(side * 0.48, 1.12, 0), uniform)
         upper_arm.material_override = _camouflage_material(uniform, Color(0.25, 0.25, 0.21), Color(0.53, 0.48, 0.38))
         animated_arms.append(upper_arm)
-        _add_capsule_part("Forearm", 0.12, 0.55, Vector3(side * 0.48, 0.72, -0.04), armor)
-        var thigh = _add_capsule_part("Thigh", 0.19, 0.72, Vector3(side * 0.20, 0.38, 0), uniform)
+        _add_capsule_part("Forearm", 0.105, 0.48, Vector3(side * 0.48, 0.72, -0.04), uniform)
+        _add_capsule_part("GlovedHand", 0.085, 0.18, Vector3(side * 0.48, 0.47, -0.11), dark_gear)
+        var thigh = _add_capsule_part("Thigh", 0.155, 0.68, Vector3(side * 0.20, 0.39, 0), uniform)
         animated_legs.append(thigh)
-        _add_capsule_part("Boot", 0.13, 0.30, Vector3(side * 0.20, 0.08, -0.08), dark_gear)
+        _add_capsule_part("LowerLeg", 0.125, 0.48, Vector3(side * 0.20, 0.16, 0.015), uniform)
+        _add_box_part("BootSole", Vector3(0.23, 0.07, 0.37), Vector3(side * 0.20, 0.045, -0.10), Color(0.035, 0.04, 0.035))
+        _add_box_part("CombatBoot", Vector3(0.22, 0.17, 0.34), Vector3(side * 0.20, 0.13, -0.08), dark_gear)
         _add_box_part("ShoulderPad", Vector3(0.32, 0.20, 0.34), Vector3(side * 0.46, 1.42, 0), armor)
         _add_box_part("SleeveCamouflagePanel", Vector3(0.20, 0.24, 0.30), Vector3(side * 0.49, 1.23, 0.01), uniform)
         _add_box_part("KneePad", Vector3(0.31, 0.25, 0.16), Vector3(side * 0.20, 0.35, -0.14), dark_gear)
