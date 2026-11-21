@@ -36,9 +36,9 @@ func _ready():
     squad_slot = get_tree().get_nodes_in_group("enemies").size()
     _build_soldier_appearance()
     _build_enemy_rifle()
-    pose_rig = preload("res://scripts/soldier_pose_rig.gd").new()
+    pose_rig = preload("res://scripts/soldier_skeleton_rig.gd").new()
     add_child(pose_rig)
-    pose_rig.configure(animated_arms, animated_forearms, animated_hands, animated_legs, rifle, $Body, $Head, "rifle")
+    pose_rig.configure(self, animated_arms, animated_forearms, animated_hands, animated_legs, rifle, "rifle")
 
 func _camouflage_material(base: Color, dark_patch: Color, light_patch: Color) -> ShaderMaterial:
     var shader := Shader.new()
