@@ -168,8 +168,17 @@ func _build_soldier():
         animated_forearms.append(forearm_part)
         var hand_mesh := BoxMesh.new()
         hand_mesh.size = Vector3(0.15, 0.13, 0.18)
-        var hand_part = _part("WeaponGripHand", hand_mesh, Vector3(side * 0.10, 1.02, -0.68), dark)
+        var hand_z := -0.70 if side < 0.0 else -0.39
+        var hand_part = _part("WeaponGripHand", hand_mesh, Vector3(side * 0.10, 1.02, hand_z), dark)
         animated_hands.append(hand_part)
+        for finger_index in range(4):
+            var finger_mesh := BoxMesh.new()
+            finger_mesh.size = Vector3(0.027, 0.045, 0.105)
+            var finger_x := side * 0.10 + (float(finger_index) - 1.5) * 0.035
+            _part("GloveFinger", finger_mesh, Vector3(finger_x, 0.99 - float(finger_index) * 0.012, hand_z - 0.075), dark)
+        var thumb_mesh := BoxMesh.new()
+        thumb_mesh.size = Vector3(0.045, 0.055, 0.12)
+        _part("GloveThumb", thumb_mesh, Vector3(side * 0.18, 1.03, hand_z + 0.025), dark)
         var band_mesh := BoxMesh.new()
         band_mesh.size = Vector3(0.29, 0.13, 0.34)
         _part("FriendlyBlueArmBand", band_mesh, Vector3(side * 0.40, 1.36, -0.16), friendly_blue)
