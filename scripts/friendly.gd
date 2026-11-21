@@ -22,6 +22,8 @@ var animated_legs: Array = []
 var pose_rig: Node
 var simulated_magazine: int = 8
 var reload_pose_timer: float = 0.0
+var squad_order: String = "follow"
+var squad_order_position := Vector3.ZERO
 
 func _ready():
     add_to_group("friendlies")
@@ -274,6 +276,16 @@ func _fire_at(target: Node3D):
     if not hit.is_empty() and hit.get("collider") == target:
         target.call("take_damage", 12.0)
 
+func set_squad_order(order: String, target_position: Vector3 = Vector3.ZERO):
+    if order not in ["follow", "hold", "advance"]:
+        return
+    squad_order = order
+    if order == "hold":
+        squad_order_position = global_position
+    elif order == "advance":
+        squad_order_position = target_position
+    print("Fireteam order: ", squad_order)
+
 func _physics_process(delta):
     attack_timer = maxf(attack_timer - delta, 0.0)
     if flash_timer > 0.0:
@@ -293,6 +305,10 @@ func _physics_process(delta):
         return
 
     var desired_position := player.global_position + player.global_basis * formation_offset
+    if squad_order == "hold":
+        desired_position = global_position
+    elif squad_order == "advance":
+        desired_position = squad_order_position + formation_offset
     var to_formation := desired_position - global_position
     to_formation.y = 0.0
     var enemy := _nearest_enemy()
