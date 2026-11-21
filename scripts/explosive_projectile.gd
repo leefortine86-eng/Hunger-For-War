@@ -102,7 +102,7 @@ func _apply_blast_damage(point: Vector3) -> void:
         var target = hit.get("collider")
         if not is_instance_valid(target) or not target.has_method("take_damage"):
             continue
-        var instance_id := target.get_instance_id()
+        var instance_id: int = target.get_instance_id()
         if damaged.has(instance_id):
             continue
         damaged[instance_id] = true
