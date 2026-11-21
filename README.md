@@ -15,20 +15,20 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 - [x] Crouch controls for keyboard and touch
 - [x] Jump controls for keyboard and touch
 - [ ] Reliable movement and collision testing on Android
-- [ ] Weapon aiming / aim-down-sights
+- [x] Aim-down-sights controls and zoomed camera view
 - [ ] Player movement and weapon animations
 
 ### Weapons and combat
 - [x] Basic hitscan weapon and magazine / reserve ammunition
 - [x] Reloading
-- [ ] Aim-down-sights, recoil, muzzle flash, and firing feedback
+- [x] First-person rifle prototype, recoil, muzzle flash, and firing feedback
 - [ ] Additional weapon types and weapon selection
 - [ ] Improved hit effects and combat feedback
 
 ### Enemies and AI
 - [x] Basic enemy soldier prototype
 - [ ] Improved soldier models, materials, and animations
-- [ ] Enemy awareness, cover use, and tactical movement
+- [x] Ranged enemy attacks with line-of-sight checks and distance keeping\n- [ ] Enemy awareness, cover use, and tactical movement
 - [ ] Enemy return fire and squad behavior
 
 ### Battlefield and presentation
@@ -45,4 +45,4 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 
 ## Current development milestone
 
-Build the core player experience first: movement, sprinting, crouching, jumping, aiming, and weapon feel. Then improve enemy combat behavior and expand the battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
+Core controls, a procedural first-person rifle, aiming, recoil, muzzle flash, and a first pass of ranged enemy combat are now in the project. Next development should add cover-aware enemy AI, better player/weapon animations, mission objectives, and a larger designed battlefield. Features are marked complete only when implemented; Android testing remains outstanding.
