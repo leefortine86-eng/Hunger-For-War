@@ -181,7 +181,9 @@ func _process(delta: float) -> void:
                     shoulder_pitch = -0.04
                 if dead:
                     shoulder_pitch = 0.55
-                offset = Quaternion.from_euler(Vector3(shoulder_pitch - swing * 0.12, 0.0, shoulder_roll))
+                # Keep the rifle-bearing arms stable during locomotion; swinging them
+                # independently makes the weapon float away from the hands.
+                offset = Quaternion.from_euler(Vector3(shoulder_pitch, 0.0, shoulder_roll))
             "forearm":
                 # Both elbows tuck inward to support the rifle; the left forearm
                 # reaches farther toward the handguard than the firing arm.
