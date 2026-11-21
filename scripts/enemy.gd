@@ -22,7 +22,13 @@ var flank_refresh_timer: float = 0.0
 var squad_slot: int = 0
 var walk_cycle: float = 0.0
 var animated_arms: Array = []
+var animated_forearms: Array = []
+var animated_hands: Array = []
 var animated_legs: Array = []
+var pose_rig: Node
+var rifle: MeshInstance3D
+var simulated_magazine: int = 8
+var reload_pose_timer: float = 0.0
 
 func _ready():
     health = max_health
@@ -30,6 +36,9 @@ func _ready():
     squad_slot = get_tree().get_nodes_in_group("enemies").size()
     _build_soldier_appearance()
     _build_enemy_rifle()
+    pose_rig = preload("res://scripts/soldier_pose_rig.gd").new()
+    add_child(pose_rig)
+    pose_rig.configure(animated_arms, animated_forearms, animated_hands, animated_legs, rifle, $Body, $Head, "rifle")
 
 func _camouflage_material(base: Color, dark_patch: Color, light_patch: Color) -> ShaderMaterial:
     var shader := Shader.new()
@@ -152,7 +161,9 @@ func _build_soldier_appearance():
         var forearm = _add_capsule_part("Forearm", 0.105, 0.48, Vector3(side * 0.16, 1.12, -0.47), uniform)
         forearm.rotation.x = -0.82
         forearm.rotation.z = side * 0.24
-        _add_capsule_part("GlovedHand", 0.085, 0.18, Vector3(side * 0.10, 1.02, -0.68), dark_gear)
+        animated_forearms.append(forearm)
+        var hand = _add_capsule_part("GlovedHand", 0.085, 0.18, Vector3(side * 0.10, 1.02, -0.68), dark_gear)
+        animated_hands.append(hand)
         var thigh = _add_capsule_part("Thigh", 0.155, 0.68, Vector3(side * 0.20, 0.39, 0), uniform)
         animated_legs.append(thigh)
         _add_capsule_part("LowerLeg", 0.125, 0.48, Vector3(side * 0.20, 0.16, 0.015), uniform)
@@ -166,7 +177,7 @@ func _build_soldier_appearance():
 
 
 func _build_enemy_rifle():
-    var rifle := MeshInstance3D.new()
+    rifle = MeshInstance3D.new()
     rifle.name = "EnemyRifle"
     var mesh := BoxMesh.new()
     mesh.size = Vector3(0.10, 0.10, 0.78)
@@ -196,8 +207,9 @@ func _has_line_of_sight(target_position: Vector3) -> bool:
     return hit.is_empty() or hit.get("collider") == player
 
 func _fire_at_player():
-    if not is_instance_valid(player):
+    if not is_instance_valid(player) or reload_pose_timer > 0.0 or simulated_magazine <= 0:
         return
+    simulated_magazine -= 1
     var aim_point = player.global_position + Vector3(0, 0.8, 0)
     if not _has_line_of_sight(aim_point):
         return
@@ -282,6 +294,20 @@ func _physics_process(delta):
     if distance > 0.1:
         look_at(Vector3(player.global_position.x, global_position.y, player.global_position.z), Vector3.UP)
 
+    if reload_pose_timer > 0.0:
+        reload_pose_timer = maxf(reload_pose_timer - delta, 0.0)
+        pose_rig.set_pose("reload")
+        if reload_pose_timer <= 0.0:
+            simulated_magazine = 8
+    elif has_cover_target and distance <= fire_range:
+        pose_rig.set_pose("crouch_fire")
+    elif distance < 9.0:
+        pose_rig.set_pose("hip_fire")
+    elif distance <= fire_range:
+        pose_rig.set_pose("aim")
+    elif Vector2(velocity.x, velocity.z).length() > 0.2:
+        pose_rig.set_pose("move")
+
     if has_cover_target and cover_hold_timer > 0.0:
         var to_cover := cover_target - global_position
         to_cover.y = 0.0
@@ -337,8 +363,12 @@ func _physics_process(delta):
         velocity.x = move_toward(velocity.x, 0.0, move_speed * delta * 4.0)
         velocity.z = move_toward(velocity.z, 0.0, move_speed * delta * 4.0)
 
-    if distance <= fire_range and attack_timer <= 0.0:
-        _fire_at_player()
+    if distance <= fire_range and attack_timer <= 0.0 and reload_pose_timer <= 0.0:
+        if simulated_magazine <= 0:
+            reload_pose_timer = 2.1
+            pose_rig.set_pose("reload")
+        else:
+            _fire_at_player()
         attack_timer = attack_cooldown
 
     move_and_slide()
