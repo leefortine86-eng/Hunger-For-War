@@ -30,6 +30,8 @@ var reload_button_rect := Rect2()
 var mobile_sprint: bool = false
 var mobile_aiming: bool = false
 var controller_firing: bool = false
+var last_gamepad_connected: bool = false
+var controller_hint_label: Label
 @export var controller_look_speed: float = 2.4
 var mobile_crouch: bool = false
 var mobile_jump_requested: bool = false
@@ -56,6 +58,7 @@ func _ready():
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     _create_mobile_controls()
     _create_hud()
+    _refresh_control_presentation()
 
 func _create_mobile_controls():
     var canvas := CanvasLayer.new()
@@ -251,6 +254,26 @@ func _create_hud():
     crosshair_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
     canvas.add_child(crosshair_label)
 
+    controller_hint_label = Label.new()
+    controller_hint_label.name = "ControllerHint"
+    controller_hint_label.position = Vector2(0, screen_size.y - 38)
+    controller_hint_label.size = Vector2(screen_size.x, 30)
+    controller_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    controller_hint_label.add_theme_font_size_override("font_size", 15)
+    controller_hint_label.add_theme_color_override("font_color", Color(0.82, 0.88, 0.82, 0.9))
+    canvas.add_child(controller_hint_label)
+
+func _refresh_control_presentation():
+    last_gamepad_connected = Input.get_connected_joypads().size() > 0
+    var show_touch_controls := DisplayServer.is_touchscreen_available() and not last_gamepad_connected
+    var touch_controls = [touch_overlay, fire_button, reload_button, sprint_button, crouch_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select, attachment_toggle, attachment_panel]
+    for control in touch_controls:
+        if is_instance_valid(control):
+            control.visible = show_touch_controls
+    if is_instance_valid(controller_hint_label):
+        controller_hint_label.visible = last_gamepad_connected
+        controller_hint_label.text = "LEFT STICK MOVE   RIGHT STICK LOOK   LT AIM   RT FIRE   X RELOAD   LB/RB WEAPONS"
+
 func _toggle_attachment_panel():
     attachment_panel.visible = not attachment_panel.visible
     if attachment_panel.visible:
@@ -388,12 +411,15 @@ func _unhandled_input(event):
             weapon.set_aiming(aiming)
 
 func _process(delta):
+    var gamepad_connected := Input.get_connected_joypads().size() > 0
+    if gamepad_connected != last_gamepad_connected:
+        _refresh_control_presentation()
     var look_input := Vector2(
         Input.get_action_strength("look_right") - Input.get_action_strength("look_left"),
         Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
     )
     if look_input.length() > 0.16:
-        _rotate_camera(look_input * controller_look_speed * delta, 1.0)
+        _rotate_camera(look_input * controller_look_speed * (0.55 if aiming else 1.0) * delta, 1.0)
     var wants_aim := mobile_aiming or Input.is_action_pressed("aim")
     if wants_aim != aiming:
         aiming = wants_aim
