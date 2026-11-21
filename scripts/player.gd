@@ -33,6 +33,9 @@ var mouse_aiming: bool = false
 var controller_firing: bool = false
 var last_gamepad_connected: bool = false
 var controller_hint_label: Label
+var hit_marker_label: Label
+var hit_marker_timer: float = 0.0
+var hit_marker_kill: bool = false
 @export var controller_look_speed: float = 2.4
 var mobile_crouch: bool = false
 var mobile_jump_requested: bool = false
@@ -59,6 +62,8 @@ func _ready():
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     _create_mobile_controls()
     _create_hud()
+    if weapon.has_signal("hit_confirmed"):
+        weapon.hit_confirmed.connect(_on_hit_confirmed)
     _refresh_control_presentation()
 
 func _create_mobile_controls():
@@ -255,6 +260,18 @@ func _create_hud():
     crosshair_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
     canvas.add_child(crosshair_label)
 
+    hit_marker_label = Label.new()
+    hit_marker_label.name = "HitMarker"
+    hit_marker_label.text = "×"
+    hit_marker_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+    hit_marker_label.position = Vector2(-13, -23)
+    hit_marker_label.size = Vector2(26, 30)
+    hit_marker_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    hit_marker_label.add_theme_font_size_override("font_size", 30)
+    hit_marker_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.72, 1.0))
+    hit_marker_label.visible = false
+    canvas.add_child(hit_marker_label)
+
     controller_hint_label = Label.new()
     controller_hint_label.name = "ControllerHint"
     controller_hint_label.position = Vector2(0, screen_size.y - 38)
@@ -305,6 +322,16 @@ func _on_attachment_selected(index: int, slot: String):
     var selector: OptionButton = attachment_selectors[slot]
     weapon.set_attachment(slot, str(selector.get_item_metadata(index)))
     _refresh_attachment_selectors()
+
+func _on_hit_confirmed(killed: bool):
+    hit_marker_kill = killed
+    hit_marker_timer = 0.48 if killed else 0.20
+    if is_instance_valid(hit_marker_label):
+        hit_marker_label.text = "✕" if killed else "×"
+        hit_marker_label.add_theme_color_override("font_color", Color(1.0, 0.36, 0.24, 1.0) if killed else Color(1.0, 0.94, 0.76, 1.0))
+        hit_marker_label.add_theme_font_size_override("font_size", 34 if killed else 30)
+        hit_marker_label.visible = true
+        hit_marker_label.modulate.a = 1.0
 
 func _on_sprint_toggled(enabled: bool):
     mobile_sprint = enabled
@@ -415,6 +442,11 @@ func _unhandled_input(event):
             mouse_aiming = event.pressed
 
 func _process(delta):
+    if hit_marker_timer > 0.0:
+        hit_marker_timer = maxf(hit_marker_timer - delta, 0.0)
+        if is_instance_valid(hit_marker_label):
+            hit_marker_label.visible = hit_marker_timer > 0.0
+            hit_marker_label.modulate.a = clampf(hit_marker_timer / (0.48 if hit_marker_kill else 0.20), 0.0, 1.0)
     var gamepad_connected := Input.get_connected_joypads().size() > 0
     if gamepad_connected != last_gamepad_connected:
         _refresh_control_presentation()
