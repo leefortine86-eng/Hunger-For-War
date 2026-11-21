@@ -28,18 +28,22 @@ The goal is a polished, tactical FPS with high-quality 3D presentation and mobil
 ### Enemies and AI
 - [x] Basic enemy soldier prototype
 - [ ] Improved soldier models, materials, and animations
-- [x] Ranged enemy attacks with line-of-sight checks and distance keeping\n- [x] Friendly three-person fireteam that follows the player and engages visible enemies\n- [ ] Enemy awareness, cover use, and tactical movement
+- [x] Ranged enemy attacks with line-of-sight checks and distance keeping
+- [x] Friendly three-person fireteam that follows the player and engages visible enemies
+- [ ] Enemy awareness, cover use, and tactical movement
 - [ ] Enemy return fire and squad behavior
 
 ### Battlefield and presentation
-- [x] Prototype ground, lighting, cover, and test enemies\n- [x] First capture-zone objective with contested-state logic
+- [x] Prototype ground, lighting, cover, and test enemies
+- [x] First capture-zone objective with contested-state logic
 - [ ] Detailed terrain, military structures, and destructible-looking set dressing
 - [ ] Vehicles and larger battlefield spaces
 - [ ] Improved lighting, atmosphere, sound, and visual effects
 
 ### Interface and release
 - [x] Basic health and ammunition display
-- [x] Mission objective HUD and capture progress\n- [ ] Combat indicators and expanded HUD
+- [x] Mission objective HUD and capture progress
+- [ ] Combat indicators and expanded HUD
 - [ ] Android performance and touch-layout optimization
 - [ ] PC controls and compatibility pass
 
