@@ -73,8 +73,8 @@ func set_aiming(enabled: bool):
 func _process(delta):
     if is_instance_valid(weapon_model):
         var target_position = weapon_aim_position if aiming else weapon_home_position
+        target_position.y -= recoil_amount
         weapon_model.position = weapon_model.position.lerp(target_position, min(delta * 12.0, 1.0))
-        weapon_model.position.y -= recoil_amount
         weapon_model.rotation.x = lerp(weapon_model.rotation.x, 0.0, min(delta * 10.0, 1.0))
     recoil_amount = move_toward(recoil_amount, 0.0, delta * 0.8)
 
