@@ -144,11 +144,15 @@ func _build_soldier_appearance():
     _add_box_part("TourniquetPouch", Vector3(0.17, 0.18, 0.14), Vector3(-0.36, 1.38, -0.10), hostile_red)
 
     for side in [-1.0, 1.0]:
-        var upper_arm = _add_capsule_part("UpperArm", 0.135, 0.58, Vector3(side * 0.48, 1.12, 0), uniform)
+        var upper_arm = _add_capsule_part("UpperArm", 0.125, 0.52, Vector3(side * 0.35, 1.34, -0.14), uniform)
+        upper_arm.rotation.x = -0.72
+        upper_arm.rotation.z = side * 0.32
         upper_arm.material_override = _camouflage_material(uniform, Color(0.25, 0.25, 0.21), Color(0.53, 0.48, 0.38))
         animated_arms.append(upper_arm)
-        _add_capsule_part("Forearm", 0.105, 0.48, Vector3(side * 0.48, 0.72, -0.04), uniform)
-        _add_capsule_part("GlovedHand", 0.085, 0.18, Vector3(side * 0.48, 0.47, -0.11), dark_gear)
+        var forearm = _add_capsule_part("Forearm", 0.105, 0.48, Vector3(side * 0.16, 1.12, -0.47), uniform)
+        forearm.rotation.x = -0.82
+        forearm.rotation.z = side * 0.24
+        _add_capsule_part("GlovedHand", 0.085, 0.18, Vector3(side * 0.10, 1.02, -0.68), dark_gear)
         var thigh = _add_capsule_part("Thigh", 0.155, 0.68, Vector3(side * 0.20, 0.39, 0), uniform)
         animated_legs.append(thigh)
         _add_capsule_part("LowerLeg", 0.125, 0.48, Vector3(side * 0.20, 0.16, 0.015), uniform)
@@ -350,7 +354,7 @@ func _animate_soldier(delta: float):
     for i in range(animated_arms.size()):
         var arm = animated_arms[i]
         var leg = animated_legs[i]
-        arm.rotation.x = lerpf(arm.rotation.x, swing if i == 0 else -swing, minf(delta * 8.0, 1.0))
+        # Keep the upper arms in a stable shoulder-ready weapon hold while legs animate.
         leg.rotation.x = lerpf(leg.rotation.x, -swing if i == 0 else swing, minf(delta * 8.0, 1.0))
 
 func take_damage(amount: float):
