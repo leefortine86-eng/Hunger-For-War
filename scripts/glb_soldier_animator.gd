@@ -63,40 +63,40 @@ func _bind_skeleton() -> void:
     if is_instance_valid(pending_weapon):
         _attach_weapon_now(pending_weapon)
 
-func _classify_bone(name: String) -> String:
-    if name.contains("thigh") or name.contains("upleg") or name.contains("upper_leg"):
+func _classify_bone(bone_name: String) -> String:
+    if bone_name.contains("thigh") or bone_name.contains("upleg") or bone_name.contains("upper_leg"):
         return "thigh"
-    if name.contains("calf") or name.contains("lowerleg") or name.contains("lower_leg") or name.contains("shin"):
+    if bone_name.contains("calf") or bone_name.contains("lowerleg") or bone_name.contains("lower_leg") or bone_name.contains("shin"):
         return "calf"
-    if name.contains("foot") or name.contains("ankle"):
+    if bone_name.contains("foot") or bone_name.contains("ankle"):
         return "foot"
-    if name.contains("forearm") or name.contains("lowerarm") or name.contains("lower_arm"):
+    if bone_name.contains("forearm") or bone_name.contains("lowerarm") or bone_name.contains("lower_arm"):
         return "forearm"
-    if name.contains("upperarm") or name.contains("upper_arm") or name.contains("shoulder") or name.contains("arm_l") or name.contains("arm_r") or name.contains("leftarm") or name.contains("rightarm"):
+    if bone_name.contains("upperarm") or bone_name.contains("upper_arm") or bone_name.contains("shoulder") or bone_name.contains("arm_l") or bone_name.contains("arm_r") or bone_name.contains("leftarm") or bone_name.contains("rightarm"):
         return "arm"
-    if name.contains("hand"):
+    if bone_name.contains("hand"):
         return "hand"
-    if name.contains("pelvis") or name == "hips" or name == "hip":
+    if bone_name.contains("pelvis") or bone_name == "hips" or bone_name == "hip":
         return "pelvis"
-    if name.contains("spine") or name.contains("chest"):
+    if bone_name.contains("spine") or bone_name.contains("chest"):
         return "spine"
-    if name.contains("neck") or name == "head":
+    if bone_name.contains("neck") or bone_name == "head":
         return "head"
     return ""
 
-func _bone_side(name: String) -> float:
+func _bone_side(bone_name: String) -> float:
     # Support both descriptive names (LeftArm) and common Bip01_L_Arm rigs.
-    if name.contains("left") or name.contains("_l_") or name.ends_with("_l") or name.ends_with(".l"):
+    if bone_name.contains("left") or bone_name.contains("_l_") or bone_name.ends_with("_l") or bone_name.ends_with(".l"):
         return -1.0
-    if name.contains("right") or name.contains("_r_") or name.ends_with("_r") or name.ends_with(".r"):
+    if bone_name.contains("right") or bone_name.contains("_r_") or bone_name.ends_with("_r") or bone_name.ends_with(".r"):
         return 1.0
     return 0.0
 
-func _is_right_hand(name: String) -> bool:
-    return name.contains("righthand") or name.contains("right_hand") or name.contains("_r_hand") or name.ends_with("hand_r") or name.ends_with("hand.r") or name == "hand.r"
+func _is_right_hand(bone_name: String) -> bool:
+    return bone_name.contains("righthand") or bone_name.contains("right_hand") or bone_name.contains("_r_hand") or bone_name.ends_with("hand_r") or bone_name.ends_with("hand.r") or bone_name == "hand.r"
 
-func _is_left_hand(name: String) -> bool:
-    return name.contains("lefthand") or name.contains("left_hand") or name.contains("_l_hand") or name.ends_with("hand_l") or name.ends_with("hand.l") or name == "hand.l"
+func _is_left_hand(bone_name: String) -> bool:
+    return bone_name.contains("lefthand") or bone_name.contains("left_hand") or bone_name.contains("_l_hand") or bone_name.ends_with("hand_l") or bone_name.ends_with("hand.l") or bone_name == "hand.l"
 
 func attach_weapon_to_hand(weapon: Node3D) -> void:
     if not is_instance_valid(weapon):
@@ -115,7 +115,7 @@ func _attach_weapon_now(weapon: Node3D) -> void:
     if is_instance_valid(weapon_attachment):
         weapon_attachment.queue_free()
     weapon_attachment = BoneAttachment3D.new()
-    weapon_attachment.name = "RightHandWeaponAttachment"
+    weapon_attachment.bone_name = "RightHandWeaponAttachment"
     weapon_attachment.bone_name = right_hand_bone
     skeleton.add_child(weapon_attachment)
     var old_parent := weapon.get_parent()
@@ -123,7 +123,7 @@ func _attach_weapon_now(weapon: Node3D) -> void:
         old_parent.remove_child(weapon)
     weapon_attachment.add_child(weapon)
     weapon.global_transform = saved_transform
-    weapon.name = "HandMountedRifle"
+    weapon.bone_name = "HandMountedRifle"
     pending_weapon = null
     print("GLB soldier rifle attached to ", right_hand_bone, ". Left-hand support pose is procedural.")
 

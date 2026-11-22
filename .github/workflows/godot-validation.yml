@@ -2,6 +2,14 @@ name: Godot Headless Validation
 
 on:
   push:
+    branches: [main, "feature/**"]
+    paths:
+      - "**.gd"
+      - "**.tscn"
+      - "**.tres"
+      - "project.godot"
+      - ".github/workflows/godot-validation.yml"
+  pull_request:
     branches: [main]
     paths:
       - "**.gd"

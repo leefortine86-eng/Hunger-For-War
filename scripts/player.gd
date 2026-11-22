@@ -14,6 +14,7 @@ var staging_credits_label: Label
 var staging_weapon_select: OptionButton
 var staging_armor_button: Button
 var gravity: float = 20.0
+@onready var controller: TacticalPlayerController = $Controller
 var mobile_move := Vector2.ZERO
 var joystick_touch_id := -1
 var look_touch_id := -1
@@ -588,10 +589,10 @@ func _input(event):
         elif event.index == look_touch_id:
             _rotate_camera(event.relative, touch_sensitivity)
 
-func _is_touch_ui(position: Vector2) -> bool:
+func _is_touch_ui(touch_position: Vector2) -> bool:
     var controls = [fire_button, reload_button, sprint_button, crouch_button, prone_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select, attachment_toggle, attachment_panel]
     for control in controls:
-        if is_instance_valid(control) and Rect2(control.position, control.size).has_point(position):
+        if is_instance_valid(control) and Rect2(control.position, control.size).has_point(touch_position):
             return true
     return false
 
@@ -604,6 +605,7 @@ func _update_joystick(touch_position: Vector2):
 
 func _rotate_camera(relative_motion: Vector2, sensitivity: float):
     rotate_y(-relative_motion.x * sensitivity)
+    camera.feed_look_motion(relative_motion * sensitivity)
     camera.rotate_x(-relative_motion.y * sensitivity)
     camera.rotation.x = clamp(camera.rotation.x, -1.5, 1.5)
 
@@ -686,60 +688,21 @@ func _process(delta):
     if is_instance_valid(reload_button):
         reload_button.disabled = weapon.reloading or weapon.ammo_in_magazine == weapon.magazine_size or weapon.reserve_ammo <= 0
     if is_instance_valid(camera):
-        var target_fov := 48.0 if aiming else 75.0
-        camera.fov = move_toward(camera.fov, target_fov, 100.0 * get_process_delta_time())
+        camera.set_aiming(aiming)
     if is_instance_valid(crosshair_label):
         crosshair_label.visible = not aiming
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
     var input_dir: Vector2 = (Input.get_vector("move_left", "move_right", "move_forward", "move_back") + mobile_move).limit_length(1.0)
-    var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-
     var sprinting := Input.is_key_pressed(KEY_SHIFT) or Input.is_action_pressed("sprint") or mobile_sprint
     var prone := Input.is_key_pressed(KEY_Z) or mobile_prone
     var crouching := Input.is_key_pressed(KEY_CTRL) or Input.is_action_pressed("crouch") or mobile_crouch
-    var current_speed := move_speed
-    if prone:
-        current_speed = move_speed * 0.20
-    elif crouching:
-        current_speed = move_speed * 0.45
-    elif sprinting:
-        current_speed = move_speed * 1.55
-
-    var target_horizontal := Vector3(direction.x * current_speed, 0.0, direction.z * current_speed)
-    var horizontal := Vector3(velocity.x, 0.0, velocity.z)
-    var acceleration := 18.0 if is_on_floor() else 6.0
-    if input_dir.length() < 0.05:
-        acceleration = 25.0 if is_on_floor() else 3.0
-    horizontal = horizontal.move_toward(target_horizontal, acceleration * delta)
-    velocity.x = horizontal.x
-    velocity.z = horizontal.z
-
     var jump_key_down := Input.is_key_pressed(KEY_SPACE) or Input.is_action_pressed("jump")
-    if jump_key_down and not jump_key_was_down and is_on_floor() and not crouching and not prone:
-        velocity.y = 6.0
+    var jump_requested := (jump_key_down and not jump_key_was_down) or mobile_jump_requested
     jump_key_was_down = jump_key_down
+    mobile_jump_requested = false
 
-    if mobile_jump_requested:
-        if is_on_floor() and not crouching and not prone:
-            velocity.y = 6.0
-        mobile_jump_requested = false
-
-    if not is_on_floor():
-        velocity.y -= gravity * delta
-    elif velocity.y < 0.0:
-        velocity.y = 0.0
-
-    # Keep the camera at a fixed height for each stance. The movement stick
-    # only changes horizontal velocity; looking is handled by the right side.
-    var capsule := body_collision.shape as CapsuleShape3D
-    if capsule:
-        var target_height := 0.65 if prone else (1.2 if crouching else 1.8)
-        capsule.height = move_toward(capsule.height, target_height, 3.0 * delta)
-        body_collision.position.y = capsule.height * 0.5
-
-    var target_camera_height := 0.48 if prone else (1.05 if crouching else 1.55)
-    camera.position = Vector3(0.0, target_camera_height, 0.0)
+    controller.physics_step(delta, input_dir, sprinting, crouching, prone, jump_requested)
 
     if is_instance_valid(sprint_button):
         sprint_button.text = "SPRINT ON" if mobile_sprint else "SPRINT"
@@ -747,8 +710,6 @@ func _physics_process(delta):
         crouch_button.text = "STAND" if mobile_crouch else "CROUCH"
     if is_instance_valid(prone_button):
         prone_button.text = "GET UP" if mobile_prone else "PRONE"
-
-    move_and_slide()
 
 func take_damage(amount: float):
     var remaining_damage := amount
