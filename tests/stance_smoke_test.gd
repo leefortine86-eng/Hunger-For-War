@@ -98,6 +98,7 @@ func _run_tests() -> void:
 	ceiling_shape.shape = ceiling_box
 	ceiling_body.add_child(ceiling_shape)
 	ceiling_body.position.y = 1.35
+	await physics_frame # Let PhysicsServer register the newly added ceiling collider.
 
 	controller.call("physics_step", 0.5, Vector2.ZERO, false, false, false, false)
 	_expect(capsule.height <= safe_crouch_height + 0.01, "ceiling blocks unsafe stand-up collision expansion")
