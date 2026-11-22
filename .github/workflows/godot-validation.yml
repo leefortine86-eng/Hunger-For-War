@@ -37,6 +37,7 @@ jobs:
       - name: Run prone, crouch, stand, and camera smoke tests
         run: godot --headless --path . --script res://tests/stance_smoke_test.gd
       - name: Spawn player, attach weapon, and simulate movement and aiming
+        shell: bash
         run: |
           set -o pipefail
           godot --headless --path . res://tests/player_load_automation.tscn 2>&1 | tee /tmp/player-load.log
