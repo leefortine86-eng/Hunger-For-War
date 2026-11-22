@@ -29,7 +29,7 @@ func _run_tests() -> void:
 
 	var capsule_shape := CapsuleShape3D.new()
 	capsule_shape.radius = 0.4
-	capsule_shape.height = 1.8
+	capsule.height = 1.8
 	var collision := CollisionShape3D.new()
 	collision.name = "CollisionShape3D"
 	collision.shape = capsule_shape
@@ -46,31 +46,31 @@ func _run_tests() -> void:
 	camera.set_script(PLAYER_CAMERA)
 	player.add_child(camera)
 
-	var controller := Node.new()
+	var controller: Node = PLAYER_CONTROLLER.new()
 	controller.name = "Controller"
-	controller.set_script(PLAYER_CONTROLLER)
 	player.add_child(controller)
 
 	await process_frame
 	await physics_frame
 	await process_frame
 
-	_expect(controller.is_ready_for_gameplay(), "controller initializes with required components")
-	_expect(is_equal_approx(capsule_shape.height, 1.8), "initial standing capsule height is 1.8 m")
+	var capsule: CapsuleShape3D = collision.shape as CapsuleShape3D
+	_expect(bool(controller.call("is_ready_for_gameplay")), "controller initializes with required components")
+	_expect(is_equal_approx(capsule.height, 1.8), "initial standing capsule height is 1.8 m")
 
-	controller.physics_step(0.5, Vector2.ZERO, false, false, true, false)
+	controller.call("physics_step", 0.5, Vector2.ZERO, false, false, true, false)
 	_expect(capsule_shape.height >= 0.8, "prone capsule respects the 0.8 m diameter minimum")
 	_expect(capsule_shape.height <= 0.81, "prone capsule settles at the legal minimum")
 	_expect(is_equal_approx(collision.position.y, capsule_shape.height * 0.5), "prone collision stays grounded at the feet")
-	_expect(is_equal_approx(camera.target_height, camera.prone_height), "camera follows the actual prone collision stance")
+	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("prone_height"))), "camera follows the actual prone collision stance")
 
 	controller.physics_step(0.5, Vector2.ZERO, false, true, false, false)
 	_expect(capsule_shape.height > 0.8 and capsule_shape.height <= 1.21, "prone-to-crouch transition reaches crouch height")
-	_expect(is_equal_approx(camera.target_height, camera.crouching_height), "camera follows crouch collision height")
+	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("crouching_height"))), "camera follows crouch collision height")
 
 	controller.physics_step(0.5, Vector2.ZERO, false, false, false, false)
 	_expect(capsule_shape.height >= 1.79, "crouch-to-stand transition reaches standing height")
-	_expect(is_equal_approx(camera.target_height, camera.standing_height), "camera follows standing collision height")
+	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("standing_height"))), "camera follows standing collision height")
 
 	# Lower a ceiling over the player. A requested stand-up transition must not
 	# enlarge the capsule into the obstruction.
