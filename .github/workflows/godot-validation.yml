@@ -2,11 +2,12 @@ name: Godot Headless Validation
 
 on:
   push:
-    branches: [main, "feature/**"]
+    branches: [main, "feature/**", "fix/**"]
     paths:
       - "**.gd"
       - "**.tscn"
       - "**.tres"
+      - "**.glb"
       - "project.godot"
       - ".github/workflows/godot-validation.yml"
   pull_request:
@@ -15,19 +16,21 @@ on:
       - "**.gd"
       - "**.tscn"
       - "**.tres"
+      - "**.glb"
       - "project.godot"
-      - ".github/workflows/godot-validation.yml"
   workflow_dispatch:
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     container:
-      image: barichello/godot-ci:4.4
+      image: barichello/godot-ci:4.7.2
     steps:
       - name: Check out project
         uses: actions/checkout@v4
-      - name: Import project and parse scripts
+      - name: Import assets and parse all project scripts
         run: godot --headless --editor --path . --quit
+      - name: Run prone, crouch, stand, and camera smoke tests
+        run: godot --headless --path . --script res://tests/stance_smoke_test.gd
       - name: Launch main scene headlessly
         run: godot --headless --path . --quit-after 120
