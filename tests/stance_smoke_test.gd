@@ -84,8 +84,11 @@ func _run_tests() -> void:
 	camera.call("_process", 1.0)
 	_expect(is_equal_approx(camera.position.y, float(camera.get("standing_height"))), "camera physically reaches standing eye height")
 
-	# Add a low ceiling. A requested stand-up transition must not enlarge
-	# the capsule into the obstruction.
+	# Enter crouch first, then place a low ceiling just above the crouched capsule.
+	controller.call("physics_step", 0.5, Vector2.ZERO, false, true, false, false)
+	var safe_crouch_height: float = capsule.height
+	var safe_body_position: Vector3 = player.global_position
+
 	var ceiling_body := StaticBody3D.new()
 	ceiling_body.name = "TestCeiling"
 	world.add_child(ceiling_body)
@@ -96,11 +99,10 @@ func _run_tests() -> void:
 	ceiling_body.add_child(ceiling_shape)
 	ceiling_body.position.y = 1.35
 
-	controller.call("physics_step", 0.5, Vector2.ZERO, false, true, false, false)
-	var safe_crouch_height: float = capsule.height
 	controller.call("physics_step", 0.5, Vector2.ZERO, false, false, false, false)
 	_expect(capsule.height <= safe_crouch_height + 0.01, "ceiling blocks unsafe stand-up collision expansion")
 	_expect(is_equal_approx(collision.position.y, capsule.height * 0.5), "collision remains centered after blocked transition")
+	_expect(player.global_position.distance_to(safe_body_position) < 0.05, "blocked stance transition does not push player through the floor")
 	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("crouching_height"))), "camera remains at the safe crouched stance")
 	camera.call("_process", 1.0)
 	_expect(is_equal_approx(camera.position.y, float(camera.get("crouching_height"))), "camera stays at safe crouched eye height under the ceiling")
