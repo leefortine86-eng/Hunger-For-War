@@ -7,7 +7,6 @@ extends CharacterBody3D
 
 var health: float = 100.0
 var armor: float = 0.0
-var staging_credits: int = 2500
 var staging_panel: PanelContainer
 var staging_status_label: Label
 var staging_credits_label: Label
@@ -68,6 +67,7 @@ var attachment_selectors: Dictionary = {}
 func _ready():
     add_to_group("player")
     health = max_health
+    GameSession.restore_player_state(self)
     body_collision = $CollisionShape3D
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     _create_mobile_controls()
@@ -76,6 +76,9 @@ func _ready():
         weapon.hit_confirmed.connect(_on_hit_confirmed)
     _refresh_control_presentation()
     _create_staging_ui()
+
+func _exit_tree() -> void:
+    GameSession.store_player_state(self)
 
 func _create_mobile_controls():
     var canvas := CanvasLayer.new()
@@ -402,7 +405,7 @@ func _create_staging_ui() -> void:
 
 func _refresh_staging_ui() -> void:
     if is_instance_valid(staging_credits_label):
-        staging_credits_label.text = "AVAILABLE CREDITS: %d" % staging_credits
+        staging_credits_label.text = "AVAILABLE CREDITS: %d" % GameSession.credits
     if is_instance_valid(staging_armor_button):
         staging_armor_button.text = "BODY ARMOR  •  EQUIPPED" if armor > 0.0 else "BUY BODY ARMOR  •  500 CREDITS"
 
@@ -426,10 +429,10 @@ func _purchase_staging_weapon() -> void:
     elif weapon_class.contains("pistol") or weapon_class.contains("smg"):
         price = 600
     if weapon_id != weapon.current_weapon_id:
-        if staging_credits < price:
+        if GameSession.credits < price:
             staging_status_label.text = "Not enough credits. This weapon costs %d." % price
             return
-        staging_credits -= price
+        GameSession.spend_credits(price)
     weapon.equip_weapon_by_id(weapon_id)
     staging_status_label.text = "%s equipped." % weapon.current_weapon_name
     _refresh_staging_ui()
@@ -438,19 +441,19 @@ func _purchase_staging_armor() -> void:
     if armor > 0.0:
         staging_status_label.text = "Body armor is already equipped."
         return
-    if staging_credits < 500:
+    if GameSession.credits < 500:
         staging_status_label.text = "Not enough credits for body armor."
         return
-    staging_credits -= 500
+    GameSession.spend_credits(500)
     armor = 50.0
     staging_status_label.text = "Body armor equipped: 50 protection."
     _refresh_staging_ui()
 
 func _purchase_staging_ammo() -> void:
-    if staging_credits < 250:
+    if GameSession.credits < 250:
         staging_status_label.text = "Not enough credits for ammunition."
         return
-    staging_credits -= 250
+    GameSession.spend_credits(250)
     weapon.reserve_ammo += 60
     staging_status_label.text = "Ammunition purchased: +60 rounds."
     _refresh_staging_ui()
