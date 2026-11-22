@@ -26,10 +26,14 @@ jobs:
     container:
       image: barichello/godot-ci:4.7.2
     steps:
+      - name: Install system font support
+        run: apt-get update && apt-get install -y fontconfig
       - name: Check out project
         uses: actions/checkout@v4
-      - name: Import assets and parse all project scripts
+      - name: Import assets and initialize Godot project
         run: godot --headless --editor --path . --quit
+      - name: Parse every GDScript file
+        run: godot --headless --path . --script res://tests/parse_all_scripts.gd
       - name: Run prone, crouch, stand, and camera smoke tests
         run: godot --headless --path . --script res://tests/stance_smoke_test.gd
       - name: Launch main scene headlessly
