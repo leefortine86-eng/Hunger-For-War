@@ -1,10 +1,10 @@
-extends SceneTree
+extends Node
 
 const PLAYER_SCENE: PackedScene = preload("res://scenes/player.tscn")
 const SOLDIER_SCENE: PackedScene = preload("res://assets/characters/Military_Male_03.glb")
 const SOLDIER_ANIMATOR_SCRIPT: Script = preload("res://scripts/glb_soldier_animator.gd")
 
-func _initialize() -> void:
+func _ready() -> void:
 	call_deferred("_run_automation")
 
 func _run_automation() -> void:
@@ -19,7 +19,7 @@ func _run_automation() -> void:
 	floor_collision.shape = floor_shape
 	floor_body.add_child(floor_collision)
 	floor_body.position = Vector3(0.0, -0.5, 0.0)
-	root.add_child(floor_body)
+	get_tree().root.add_child(floor_body)
 
 	var player := PLAYER_SCENE.instantiate() as CharacterBody3D
 	if player == null:
@@ -27,7 +27,7 @@ func _run_automation() -> void:
 		return
 	player.name = "AutomationPlayer"
 	player.position = Vector3(0.0, 0.05, 0.0)
-	root.add_child(player)
+	get_tree().root.add_child(player)
 	await process_frame
 	await physics_frame
 
@@ -110,8 +110,8 @@ func _run_automation() -> void:
 
 	print("PLAYER LOAD TEST: 180 physics frames of movement and aim transitions passed")
 	print("PLAYER LOAD TEST: PASS")
-	quit(0)
+	get_tree().quit(0)
 
 func _fail(message: String) -> void:
 	push_error("PLAYER LOAD TEST FAILED: " + message)
-	quit(1)
+	get_tree().quit(1)
