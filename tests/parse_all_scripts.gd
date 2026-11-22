@@ -1,47 +1,33 @@
 extends SceneTree
 
-const SCRIPT_PATHS: Array[String] = [
-	"res://scripts/ally.gd",
-	"res://scripts/enemy.gd",
-	"res://scripts/explosive_projectile.gd",
-	"res://scripts/game/game_session.gd",
-	"res://scripts/glb_soldier_animator.gd",
-	"res://scripts/main.gd",
-	"res://scripts/player.gd",
-	"res://scripts/player_camera_rig.gd",
-	"res://scripts/player_controller.gd",
-	"res://scripts/player_movement.gd",
-	"res://scripts/soldier_pose_rig.gd",
-	"res://scripts/soldier_skeleton_rig.gd",
-	"res://scripts/weapon.gd",
-	"res://scripts/weapon_catalog.gd",
-	"res://tests/parse_all_scripts.gd",
-	"res://tests/stance_smoke_test.gd"
-]
-
 func _initialize() -> void:
-	call_deferred("_run")
+	var own_path: String = get_script().resource_path
+	var broken: int = 0
+	var total: int = 0
 
-func _run() -> void:
-	var errors: Array[String] = []
-	for script_path in SCRIPT_PATHS:
-		var resource: Resource = ResourceLoader.load(
-			script_path,
-			"GDScript",
-			ResourceLoader.CACHE_MODE_IGNORE
-		)
-		if resource == null or not (resource is GDScript):
-			errors.append("%s: failed to compile or load" % script_path)
+	for script_path in _gd_files("res://"):
+		if script_path == own_path:
 			continue
-		var script := resource as GDScript
-		if not script.can_instantiate():
-			errors.append("%s: script cannot instantiate" % script_path)
+		total += 1
+		var script := load(script_path) as Script
+		if script == null or not script.can_instantiate():
+			broken += 1
+			printerr("BROKEN: ", script_path)
 
-	if errors.is_empty():
-		print("GDSCRIPT_PARSE_TEST: PASS (", SCRIPT_PATHS.size(), " scripts checked)")
-		quit(0)
-	else:
-		for message in errors:
-			push_error(message)
-		push_error("GDSCRIPT_PARSE_TEST: ", errors.size(), " failures across ", SCRIPT_PATHS.size(), " scripts")
-		quit(1)
+	print("GDSCRIPT_PARSE_TEST: checked ", total, " scripts; broken: ", broken)
+	quit(1 if broken > 0 else 0)
+
+func _gd_files(directory_path: String) -> PackedStringArray:
+	var paths := PackedStringArray()
+	if FileAccess.file_exists(directory_path.path_join(".gdignore")):
+		return paths
+
+	for file_name in DirAccess.get_files_at(directory_path):
+		if file_name.get_extension() == "gd":
+			paths.append(directory_path.path_join(file_name))
+
+	for subdirectory in DirAccess.get_directories_at(directory_path):
+		if not subdirectory.begins_with("."):
+			paths.append_array(_gd_files(directory_path.path_join(subdirectory)))
+
+	return paths
