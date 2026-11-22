@@ -5,6 +5,10 @@ config_version=5
 config/name="HUNGER FOR WAR"
 run/main_scene="res://scenes/main.tscn"
 
+[autoload]
+
+GameSession="*res://scripts/game/game_session.gd"
+
 [input]
 
 move_forward={
