@@ -37,7 +37,13 @@ jobs:
       - name: Run prone, crouch, stand, and camera smoke tests
         run: godot --headless --path . --script res://tests/stance_smoke_test.gd
       - name: Spawn player, attach weapon, and simulate movement and aiming
-        run: godot --headless --path . res://tests/player_load_automation.tscn
+        run: |
+          set -o pipefail
+          godot --headless --path . res://tests/player_load_automation.tscn 2>&1 | tee /tmp/player-load.log
+          if grep -E 'SCRIPT ERROR:|Parse Error:|ERROR:' /tmp/player-load.log; then
+            echo 'Player automation reported Godot script/runtime errors.'
+            exit 1
+          fi
       - name: Launch main scene headlessly and reject runtime script errors
         shell: bash
         run: |
