@@ -80,8 +80,8 @@ func physics_step(
 
 	# Drive camera stance from the collision shape that actually fits,
 	# rather than from the requested input. This prevents camera/stance drift.
-	var prone_threshold: float = 0.5 * (0.85 + 1.2)
-	var crouch_threshold: float = 0.5 * (1.2 + 1.8)
+	var prone_threshold: float = 0.5 * (_movement.prone_height + _movement.crouching_height)
+	var crouch_threshold: float = 0.5 * (_movement.crouching_height + _movement.standing_height)
 	var actual_prone: bool = capsule.height < prone_threshold
 	var actual_crouching: bool = (
 		not actual_prone and capsule.height < crouch_threshold
