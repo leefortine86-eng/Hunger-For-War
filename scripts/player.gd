@@ -19,7 +19,10 @@ var joystick_touch_id := -1
 var look_touch_id := -1
 var joystick_center := Vector2.ZERO
 var joystick_home_center := Vector2.ZERO
+var look_joystick_center := Vector2.ZERO
+var look_joystick_home_center := Vector2.ZERO
 var joystick_radius: float = 58.0
+var look_joystick_radius: float = 58.0
 
 @onready var camera = $Camera3D
 @onready var weapon = $Camera3D/Weapon
@@ -28,6 +31,8 @@ var joystick_radius: float = 58.0
 var touch_overlay: Control
 var joystick_base: Panel
 var joystick_knob: Panel
+var look_joystick_base: Panel
+var look_joystick_knob: Panel
 var health_label: Label
 var ammo_label: Label
 var fire_button: Button
@@ -117,6 +122,24 @@ func _create_mobile_controls():
     knob_style.set_corner_radius_all(29)
     joystick_knob.add_theme_stylebox_override("panel", knob_style)
     touch_overlay.add_child(joystick_knob)
+
+    look_joystick_base = Panel.new()
+    look_joystick_base.name = "LookJoystickBase"
+    look_joystick_base.position = Vector2(screen_size.x - 176, screen_size.y - 184)
+    look_joystick_base.size = Vector2(144, 144)
+    look_joystick_base.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    look_joystick_base.add_theme_stylebox_override("panel", base_style)
+    touch_overlay.add_child(look_joystick_base)
+    look_joystick_home_center = look_joystick_base.position + look_joystick_base.size / 2.0
+    look_joystick_center = look_joystick_home_center
+
+    look_joystick_knob = Panel.new()
+    look_joystick_knob.name = "LookJoystickKnob"
+    look_joystick_knob.position = look_joystick_center - Vector2(29, 29)
+    look_joystick_knob.size = Vector2(58, 58)
+    look_joystick_knob.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    look_joystick_knob.add_theme_stylebox_override("panel", knob_style)
+    touch_overlay.add_child(look_joystick_knob)
 
 func _create_hud():
     var canvas := get_node("MobileControlsLayer")
@@ -235,45 +258,7 @@ func _create_hud():
     weapon_next_button.pressed.connect(_on_next_weapon)
     canvas.add_child(weapon_next_button)
 
-    weapon_select = OptionButton.new()
-    weapon_select.name = "WeaponArsenal"
-    weapon_select.position = Vector2(screen_size.x - 300, 88)
-    weapon_select.size = Vector2(280, 44)
-    weapon_select.add_theme_font_size_override("font_size", 15)
-    for item in weapon.weapon_list:
-        weapon_select.add_item("%s  |  %s" % [item.get("name", "Weapon"), item.get("class", "Class")])
-        weapon_select.set_item_metadata(weapon_select.get_item_count() - 1, item.get("id", ""))
-    weapon_select.item_selected.connect(_on_weapon_selected)
-    canvas.add_child(weapon_select)
     weapon.weapon_changed.connect(_on_weapon_changed)
-    weapon_select.select(weapon.current_index)
-
-    attachment_toggle = Button.new()
-    attachment_toggle.name = "AttachmentToggle"
-    attachment_toggle.text = "ATTACHMENTS"
-    attachment_toggle.position = Vector2(screen_size.x - 300, 140)
-    attachment_toggle.size = Vector2(280, 38)
-    attachment_toggle.pressed.connect(_toggle_attachment_panel)
-    canvas.add_child(attachment_toggle)
-
-    attachment_panel = PanelContainer.new()
-    attachment_panel.name = "AttachmentPanel"
-    attachment_panel.position = Vector2(screen_size.x - 300, 184)
-    attachment_panel.size = Vector2(280, 226)
-    attachment_panel.visible = false
-    canvas.add_child(attachment_panel)
-    var attachment_column := VBoxContainer.new()
-    attachment_column.add_theme_constant_override("separation", 4)
-    attachment_panel.add_child(attachment_column)
-    for slot in ["optic", "muzzle", "underbarrel", "utility", "magazine"]:
-        var selector := OptionButton.new()
-        selector.name = "Attachment_" + slot
-        selector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-        selector.add_theme_font_size_override("font_size", 14)
-        selector.item_selected.connect(_on_attachment_selected.bind(slot))
-        attachment_column.add_child(selector)
-        attachment_selectors[slot] = selector
-    _refresh_attachment_selectors()
 
     crosshair_label = Label.new()
     crosshair_label.name = "Crosshair"
@@ -470,10 +455,6 @@ func _refresh_control_presentation():
     for control in touch_controls:
         if is_instance_valid(control):
             control.visible = show_touch_controls
-    var arsenal_controls = [weapon_select, attachment_toggle, attachment_panel]
-    for control in arsenal_controls:
-        if is_instance_valid(control):
-            control.visible = not last_gamepad_connected
     if is_instance_valid(controller_hint_label):
         controller_hint_label.visible = last_gamepad_connected
         controller_hint_label.text = "LEFT STICK MOVE   RIGHT STICK LOOK   LT AIM   RT FIRE   FACE BUTTONS   LB/RB WEAPONS"
@@ -555,9 +536,7 @@ func _on_weapon_selected(index: int):
     weapon.equip_weapon_by_id(str(selected_id))
 
 func _on_weapon_changed(_weapon_name: String, _weapon_class: String):
-    if is_instance_valid(weapon_select):
-        weapon_select.select(weapon.current_index)
-    _refresh_attachment_selectors()
+    pass
 
 func _on_reload_pressed():
     weapon.reload()
@@ -574,8 +553,9 @@ func _input(event):
                 joystick_center = event.position
                 joystick_base.position = joystick_center - joystick_base.size / 2.0
                 _update_joystick(event.position)
-            elif event.position.x >= screen_size.x * 0.5 and look_touch_id == -1:
+            elif event.position.x >= screen_size.x * 0.5 and look_touch_id == -1 and look_joystick_base.get_global_rect().has_point(event.position):
                 look_touch_id = event.index
+                _update_look_joystick(event.position)
         else:
             if event.index == joystick_touch_id:
                 joystick_touch_id = -1
@@ -585,15 +565,18 @@ func _input(event):
                 joystick_knob.position = joystick_center - joystick_knob.size / 2.0
             if event.index == look_touch_id:
                 look_touch_id = -1
+                look_joystick_center = look_joystick_home_center
+                look_joystick_knob.position = look_joystick_center - look_joystick_knob.size / 2.0
 
     elif event is InputEventScreenDrag:
         if event.index == joystick_touch_id:
             _update_joystick(event.position)
         elif event.index == look_touch_id:
+            _update_look_joystick(event.position)
             _rotate_camera(event.relative, touch_sensitivity)
 
 func _is_touch_ui(touch_position: Vector2) -> bool:
-    var controls = [fire_button, reload_button, sprint_button, crouch_button, prone_button, jump_button, aim_button, weapon_prev_button, weapon_next_button, weapon_select, attachment_toggle, attachment_panel]
+    var controls = [fire_button, reload_button, sprint_button, crouch_button, prone_button, jump_button, aim_button, weapon_prev_button, weapon_next_button]
     for control in controls:
         if is_instance_valid(control) and Rect2(control.position, control.size).has_point(touch_position):
             return true
@@ -605,6 +588,12 @@ func _update_joystick(touch_position: Vector2):
         offset = offset.normalized() * joystick_radius
     mobile_move = offset / joystick_radius
     joystick_knob.position = joystick_center + offset - joystick_knob.size / 2.0
+
+func _update_look_joystick(touch_position: Vector2) -> void:
+    var offset: Vector2 = touch_position - look_joystick_center
+    if offset.length() > look_joystick_radius:
+        offset = offset.normalized() * look_joystick_radius
+    look_joystick_knob.position = look_joystick_center + offset - look_joystick_knob.size / 2.0
 
 func _rotate_camera(relative_motion: Vector2, sensitivity: float):
     rotate_y(-relative_motion.x * sensitivity)
