@@ -263,7 +263,7 @@ func _make_cover(cover_name: String, cover_size: Vector3, cover_position: Vector
 
     var mesh_instance := MeshInstance3D.new()
     var mesh := BoxMesh.new()
-    mesh.size = size
+    mesh.size = cover_size
     mesh_instance.mesh = mesh
     var material := StandardMaterial3D.new()
     material.albedo_color = color
@@ -273,7 +273,7 @@ func _make_cover(cover_name: String, cover_size: Vector3, cover_position: Vector
 
     var collision := CollisionShape3D.new()
     var shape := BoxShape3D.new()
-    shape.size = size
+    shape.size = cover_size
     collision.shape = shape
     cover.add_child(collision)
 
