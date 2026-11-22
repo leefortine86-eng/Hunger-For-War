@@ -21,9 +21,8 @@ func _run() -> void:
 			continue
 
 		var script := resource as GDScript
-		var reload_error: Error = script.reload()
-		if reload_error != OK:
-			_errors.append("%s: GDScript reload returned %s" % [script_path, error_string(reload_error)])
+		if not script.can_instantiate():
+			_errors.append("%s: GDScript cannot instantiate (parse or compile failure)" % script_path)
 
 	if _errors.is_empty():
 		print("GDSCRIPT_PARSE_TEST: PASS (", _script_paths.size(), " scripts checked)")
