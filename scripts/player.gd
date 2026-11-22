@@ -34,6 +34,9 @@ var joystick_knob: Panel
 var look_joystick_base: Panel
 var look_joystick_knob: Panel
 var health_label: Label
+var armor_label: Label
+var health_bar: ProgressBar
+var armor_bar: ProgressBar
 var ammo_label: Label
 var fire_button: Button
 var reload_button: Button
@@ -147,16 +150,54 @@ func _create_hud():
 
     health_label = Label.new()
     health_label.name = "HealthLabel"
-    health_label.position = Vector2(24, 20)
-    health_label.add_theme_font_size_override("font_size", 25)
-    health_label.add_theme_color_override("font_color", Color(0.85, 1.0, 0.85))
+    health_label.position = Vector2(24, 18)
+    health_label.add_theme_font_size_override("font_size", 18)
+    health_label.add_theme_color_override("font_color", Color(0.88, 0.96, 0.88))
     canvas.add_child(health_label)
+
+    health_bar = ProgressBar.new()
+    health_bar.name = "HealthBar"
+    health_bar.position = Vector2(24, 48)
+    health_bar.size = Vector2(190, 13)
+    health_bar.max_value = max_health
+    health_bar.show_percentage = false
+    var health_fill := StyleBoxFlat.new()
+    health_fill.bg_color = Color(0.30, 0.72, 0.38, 1.0)
+    health_bar.add_theme_stylebox_override("fill", health_fill)
+    var bar_bg := StyleBoxFlat.new()
+    bar_bg.bg_color = Color(0.05, 0.08, 0.07, 0.82)
+    bar_bg.set_border_width_all(1)
+    bar_bg.border_color = Color(0.62, 0.70, 0.62, 0.7)
+    health_bar.add_theme_stylebox_override("background", bar_bg)
+    canvas.add_child(health_bar)
+
+    armor_label = Label.new()
+    armor_label.name = "ArmorLabel"
+    armor_label.position = Vector2(24, 65)
+    armor_label.add_theme_font_size_override("font_size", 15)
+    armor_label.add_theme_color_override("font_color", Color(0.68, 0.82, 0.96))
+    canvas.add_child(armor_label)
+
+    armor_bar = ProgressBar.new()
+    armor_bar.name = "ArmorBar"
+    armor_bar.position = Vector2(24, 87)
+    armor_bar.size = Vector2(190, 9)
+    armor_bar.max_value = 100.0
+    armor_bar.show_percentage = false
+    var armor_fill := StyleBoxFlat.new()
+    armor_fill.bg_color = Color(0.28, 0.56, 0.82, 1.0)
+    armor_bar.add_theme_stylebox_override("fill", armor_fill)
+    armor_bar.add_theme_stylebox_override("background", bar_bg)
+    canvas.add_child(armor_bar)
 
     ammo_label = Label.new()
     ammo_label.name = "AmmoLabel"
-    ammo_label.position = Vector2(24, 54)
-    ammo_label.add_theme_font_size_override("font_size", 23)
-    ammo_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.65))
+    ammo_label.position = Vector2(screen_size.x - 245, screen_size.y - 86)
+    ammo_label.size = Vector2(220, 58)
+    ammo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+    ammo_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+    ammo_label.add_theme_font_size_override("font_size", 26)
+    ammo_label.add_theme_color_override("font_color", Color(0.96, 0.91, 0.72))
     canvas.add_child(ammo_label)
 
     fire_button = Button.new()
@@ -670,9 +711,15 @@ func _process(delta):
         mobile_jump_requested = true
 
     if is_instance_valid(health_label):
-        health_label.text = "HEALTH: %d" % int(health)
+        health_label.text = "VITALS  %03d%%" % int(health)
+    if is_instance_valid(health_bar):
+        health_bar.value = clampf(health, 0.0, max_health)
+    if is_instance_valid(armor_label):
+        armor_label.text = "ARMOR  %03d%%" % int(armor)
+    if is_instance_valid(armor_bar):
+        armor_bar.value = clampf(armor, 0.0, 100.0)
     if is_instance_valid(ammo_label) and is_instance_valid(weapon):
-        ammo_label.text = "AMMO: %d / %d" % [weapon.ammo_in_magazine, weapon.reserve_ammo]
+        ammo_label.text = "%02d  /  %03d\n%s" % [weapon.ammo_in_magazine, weapon.reserve_ammo, "RELOADING" if weapon.reloading else weapon.fire_mode]
     if is_instance_valid(weapon_label) and is_instance_valid(weapon):
         weapon_label.text = "%s\\n%s | %s" % [weapon.current_weapon_name, weapon.caliber, weapon.fire_mode]
     if is_instance_valid(fire_button):
