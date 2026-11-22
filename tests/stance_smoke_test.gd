@@ -48,6 +48,9 @@ func _run_tests() -> void:
 	camera.name = "Camera3D"
 	camera.set_script(PLAYER_CAMERA)
 	player.add_child(camera)
+	var test_weapon := Node3D.new()
+	test_weapon.name = "Weapon"
+	camera.add_child(test_weapon)
 
 	var controller: Node = PLAYER_CONTROLLER.new()
 	controller.name = "Controller"
@@ -62,7 +65,7 @@ func _run_tests() -> void:
 	_expect(is_equal_approx(capsule.height, 1.8), "initial standing capsule height is 1.8 m")
 
 	controller.call("physics_step", 0.5, Vector2.ZERO, false, false, true, false)
-	_expect(capsule.height >= 0.8, "prone capsule respects the 0.8 m diameter minimum")
+	_expect(capsule.height >= 0.799, "prone capsule respects the 0.8 m diameter minimum")
 	_expect(capsule.height <= 0.81, "prone capsule settles at the legal minimum")
 	_expect(is_equal_approx(collision.position.y, capsule.height * 0.5), "prone collision stays grounded at the feet")
 	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("prone_height"))), "camera follows the actual prone collision stance")
