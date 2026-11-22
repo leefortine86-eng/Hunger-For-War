@@ -4,6 +4,9 @@ const PLAYER_MOVEMENT = preload("res://scripts/player_movement.gd")
 const PLAYER_CONTROLLER = preload("res://scripts/player_controller.gd")
 const PLAYER_CAMERA = preload("res://scripts/player_camera_rig.gd")
 
+var _checks: int = 0
+var _failures: int = 0
+
 func _initialize() -> void:
 	call_deferred("_run_tests")
 
@@ -27,12 +30,12 @@ func _run_tests() -> void:
 	player.collision_mask = 1
 	world.add_child(player)
 
-	var capsule_shape := CapsuleShape3D.new()
-	capsule_shape.radius = 0.4
-	capsule.height = 1.8
+	var initial_capsule := CapsuleShape3D.new()
+	initial_capsule.radius = 0.4
+	initial_capsule.height = 1.8
 	var collision := CollisionShape3D.new()
 	collision.name = "CollisionShape3D"
-	collision.shape = capsule_shape
+	collision.shape = initial_capsule
 	collision.position.y = 0.9
 	player.add_child(collision)
 
@@ -59,21 +62,21 @@ func _run_tests() -> void:
 	_expect(is_equal_approx(capsule.height, 1.8), "initial standing capsule height is 1.8 m")
 
 	controller.call("physics_step", 0.5, Vector2.ZERO, false, false, true, false)
-	_expect(capsule_shape.height >= 0.8, "prone capsule respects the 0.8 m diameter minimum")
-	_expect(capsule_shape.height <= 0.81, "prone capsule settles at the legal minimum")
-	_expect(is_equal_approx(collision.position.y, capsule_shape.height * 0.5), "prone collision stays grounded at the feet")
+	_expect(capsule.height >= 0.8, "prone capsule respects the 0.8 m diameter minimum")
+	_expect(capsule.height <= 0.81, "prone capsule settles at the legal minimum")
+	_expect(is_equal_approx(collision.position.y, capsule.height * 0.5), "prone collision stays grounded at the feet")
 	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("prone_height"))), "camera follows the actual prone collision stance")
 
-	controller.physics_step(0.5, Vector2.ZERO, false, true, false, false)
-	_expect(capsule_shape.height > 0.8 and capsule_shape.height <= 1.21, "prone-to-crouch transition reaches crouch height")
+	controller.call("physics_step", 0.5, Vector2.ZERO, false, true, false, false)
+	_expect(capsule.height > 0.8 and capsule.height <= 1.21, "prone-to-crouch transition reaches crouch height")
 	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("crouching_height"))), "camera follows crouch collision height")
 
-	controller.physics_step(0.5, Vector2.ZERO, false, false, false, false)
-	_expect(capsule_shape.height >= 1.79, "crouch-to-stand transition reaches standing height")
+	controller.call("physics_step", 0.5, Vector2.ZERO, false, false, false, false)
+	_expect(capsule.height >= 1.79, "crouch-to-stand transition reaches standing height")
 	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("standing_height"))), "camera follows standing collision height")
 
-	# Lower a ceiling over the player. A requested stand-up transition must not
-	# enlarge the capsule into the obstruction.
+	# Add a low ceiling. A requested stand-up transition must not enlarge
+	# the capsule into the obstruction.
 	var ceiling_body := StaticBody3D.new()
 	ceiling_body.name = "TestCeiling"
 	world.add_child(ceiling_body)
@@ -84,12 +87,12 @@ func _run_tests() -> void:
 	ceiling_body.add_child(ceiling_shape)
 	ceiling_body.position.y = 1.35
 
-	controller.physics_step(0.5, Vector2.ZERO, false, true, false, false)
-	var safe_crouch_height: float = capsule_shape.height
-	controller.physics_step(0.5, Vector2.ZERO, false, false, false, false)
-	_expect(capsule_shape.height <= safe_crouch_height + 0.01, "ceiling blocks unsafe stand-up collision expansion")
-	_expect(is_equal_approx(collision.position.y, capsule_shape.height * 0.5), "collision remains centered after blocked transition")
-	_expect(is_equal_approx(camera.target_height, camera.crouching_height), "camera remains at the safe crouched stance")
+	controller.call("physics_step", 0.5, Vector2.ZERO, false, true, false, false)
+	var safe_crouch_height: float = capsule.height
+	controller.call("physics_step", 0.5, Vector2.ZERO, false, false, false, false)
+	_expect(capsule.height <= safe_crouch_height + 0.01, "ceiling blocks unsafe stand-up collision expansion")
+	_expect(is_equal_approx(collision.position.y, capsule.height * 0.5), "collision remains centered after blocked transition")
+	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("crouching_height"))), "camera remains at the safe crouched stance")
 
 	if _failures == 0:
 		print("STANCE_SMOKE_TEST: PASS (", _checks, " checks)")
@@ -97,9 +100,6 @@ func _run_tests() -> void:
 	else:
 		push_error("STANCE_SMOKE_TEST: ", _failures, " of ", _checks, " checks failed")
 		quit(1)
-
-var _checks: int = 0
-var _failures: int = 0
 
 func _expect(condition: bool, description: String) -> void:
 	_checks += 1
