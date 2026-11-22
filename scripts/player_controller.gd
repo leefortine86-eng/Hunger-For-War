@@ -55,13 +55,33 @@ func physics_step(
 	var normalized_input: Vector2 = input_direction.limit_length(1.0)
 	var capsule: CapsuleShape3D = _collision.shape as CapsuleShape3D
 	var previous_height: float = capsule.height
+	var safe_wants_crouch: bool = wants_crouch
+	var safe_wants_prone: bool = wants_prone
+
+	# Check the requested full stance before Movement calls move_and_slide().
+	# This prevents a ceiling collision from pushing the body downward before
+	# the controller has a chance to reject an unsafe capsule expansion.
+	var requested_height: float = _movement.standing_height
+	if wants_prone:
+		requested_height = _movement.prone_height
+	elif wants_crouch:
+		requested_height = _movement.crouching_height
+
+	if requested_height > capsule.height + 0.001:
+		if not _can_fit_capsule_height(requested_height):
+			if _can_fit_capsule_height(_movement.crouching_height):
+				safe_wants_crouch = true
+				safe_wants_prone = false
+			else:
+				safe_wants_crouch = false
+				safe_wants_prone = true
 
 	_movement.physics_step(
 		delta,
 		normalized_input,
 		wants_sprint,
-		wants_crouch,
-		wants_prone,
+		safe_wants_crouch,
+		safe_wants_prone,
 		jump_requested
 	)
 
