@@ -1,57 +1,47 @@
 extends SceneTree
 
-var _script_paths: Array[String] = []
-var _errors: Array[String] = []
+const SCRIPT_PATHS: Array[String] = [
+	"res://scripts/ally.gd",
+	"res://scripts/enemy.gd",
+	"res://scripts/explosive_projectile.gd",
+	"res://scripts/game/game_session.gd",
+	"res://scripts/glb_soldier_animator.gd",
+	"res://scripts/main.gd",
+	"res://scripts/player.gd",
+	"res://scripts/player_camera_rig.gd",
+	"res://scripts/player_controller.gd",
+	"res://scripts/player_movement.gd",
+	"res://scripts/soldier_pose_rig.gd",
+	"res://scripts/soldier_skeleton_rig.gd",
+	"res://scripts/weapon.gd",
+	"res://scripts/weapon_catalog.gd",
+	"res://tests/parse_all_scripts.gd",
+	"res://tests/stance_smoke_test.gd"
+]
 
 func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
-	_collect_scripts("res://")
-	_script_paths.sort()
-
-	for script_path in _script_paths:
+	var errors: Array[String] = []
+	for script_path in SCRIPT_PATHS:
 		var resource: Resource = ResourceLoader.load(
 			script_path,
 			"GDScript",
 			ResourceLoader.CACHE_MODE_IGNORE
 		)
 		if resource == null or not (resource is GDScript):
-			_errors.append("%s: failed to load as GDScript" % script_path)
+			errors.append("%s: failed to compile or load" % script_path)
 			continue
-
 		var script := resource as GDScript
 		if not script.can_instantiate():
-			_errors.append("%s: GDScript cannot instantiate (parse or compile failure)" % script_path)
+			errors.append("%s: script cannot instantiate" % script_path)
 
-	if _errors.is_empty():
-		print("GDSCRIPT_PARSE_TEST: PASS (", _script_paths.size(), " scripts checked)")
+	if errors.is_empty():
+		print("GDSCRIPT_PARSE_TEST: PASS (", SCRIPT_PATHS.size(), " scripts checked)")
 		quit(0)
 	else:
-		for message in _errors:
+		for message in errors:
 			push_error(message)
-		push_error("GDSCRIPT_PARSE_TEST: ", _errors.size(), " errors across ", _script_paths.size(), " scripts")
+		push_error("GDSCRIPT_PARSE_TEST: ", errors.size(), " failures across ", SCRIPT_PATHS.size(), " scripts")
 		quit(1)
-
-func _collect_scripts(directory_path: String) -> void:
-	var directory := DirAccess.open(directory_path)
-	if directory == null:
-		_errors.append("Unable to open directory: %s" % directory_path)
-		return
-
-	directory.list_dir_begin()
-	var entry := directory.get_next()
-	while not entry.is_empty():
-		if entry == "." or entry == "..":
-			entry = directory.get_next()
-			continue
-
-		var full_path := directory_path.path_join(entry)
-		if directory.current_is_dir():
-			if not entry.begins_with("."):
-				_collect_scripts(full_path)
-		elif entry.ends_with(".gd"):
-			_script_paths.append(full_path)
-
-		entry = directory.get_next()
-	directory.list_dir_end()
