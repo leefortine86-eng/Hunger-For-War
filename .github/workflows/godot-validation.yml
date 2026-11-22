@@ -36,5 +36,12 @@ jobs:
         run: godot --headless --path . --script res://tests/parse_all_scripts.gd
       - name: Run prone, crouch, stand, and camera smoke tests
         run: godot --headless --path . --script res://tests/stance_smoke_test.gd
-      - name: Launch main scene headlessly
-        run: godot --headless --path . --quit-after 120
+      - name: Launch main scene headlessly and reject runtime script errors
+        shell: bash
+        run: |
+          set -o pipefail
+          godot --headless --path . --quit-after 120 2>&1 | tee /tmp/godot-runtime.log
+          if grep -E 'SCRIPT ERROR:|Parse Error:' /tmp/godot-runtime.log; then
+            echo 'Godot runtime reported script errors.'
+            exit 1
+          fi
