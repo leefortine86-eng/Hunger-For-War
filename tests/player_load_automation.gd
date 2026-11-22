@@ -28,8 +28,8 @@ func _run_automation() -> void:
 	player.name = "AutomationPlayer"
 	player.position = Vector3(0.0, 0.05, 0.0)
 	get_tree().root.add_child(player)
-	await process_frame
-	await physics_frame
+	await get_tree().process_frame
+	await get_tree().physics_frame
 
 	var controller := player.get_node_or_null("Controller") as TacticalPlayerController
 	var camera := player.get_node_or_null("Camera3D") as PlayerCameraRig
@@ -53,8 +53,8 @@ func _run_automation() -> void:
 	animator.name = "GLBSoldierAnimator"
 	animator.set_script(SOLDIER_ANIMATOR_SCRIPT)
 	soldier.add_child(animator)
-	await process_frame
-	await process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
 
 	if not is_instance_valid(animator.get("skeleton")):
 		_fail("Animator did not bind a Skeleton3D from the imported soldier.")
@@ -65,8 +65,8 @@ func _run_automation() -> void:
 
 	# Equip the player's real weapon node to the imported rig's right-hand bone.
 	animator.call("attach_weapon_to_hand", weapon)
-	await process_frame
-	await process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
 	var attachment := animator.get("weapon_attachment") as BoneAttachment3D
 	if attachment == null:
 		_fail("Weapon attachment node was not created.")
@@ -94,9 +94,9 @@ func _run_automation() -> void:
 			false,
 			false
 		)
-		await physics_frame
+		await get_tree().physics_frame
 		if frame_index % 30 == 0:
-			await process_frame
+			await get_tree().process_frame
 
 	if player.global_position.distance_to(initial_position) < 0.1:
 		_fail("Movement simulation did not move the player.")
