@@ -46,15 +46,15 @@ func _add_bone(bone_name: String, parent_name: String, local_position: Vector3) 
     return index
 
 func _build_bones(soldier: Node3D, arms: Array, forearms: Array, hands: Array, legs: Array) -> void:
-    var body: Node3D = soldier.get_node_or_null("Body")
-    var head: Node3D = soldier.get_node_or_null("Head")
+    var _body: Node3D = soldier.get_node_or_null("Body")
+    var _head: Node3D = soldier.get_node_or_null("Head")
     _add_bone("root", "", Vector3.ZERO)
     _add_bone("pelvis", "root", Vector3(0, 0.55, 0))
     _add_bone("spine", "pelvis", Vector3(0, 0.49, 0))
     _add_bone("neck", "spine", Vector3(0, 0.54, 0))
     _add_bone("head", "neck", Vector3(0, 0.22, 0))
     for i in range(arms.size()):
-        var side := -1.0 if i == 0 else 1.0
+        var _side := -1.0 if i == 0 else 1.0
         var upper_name := "upper_arm_" + str(i)
         var fore_name := "forearm_" + str(i)
         var hand_name := "hand_" + str(i)
@@ -113,7 +113,7 @@ func _build_pose_targets() -> void:
     target_positions.clear()
     var upper := Vector3(-0.18, 0.0, 0.24)
     var fore := Vector3(-0.20, 0.0, 0.16)
-    var rifle_balance := Vector3.ZERO
+    var _rifle_balance := Vector3.ZERO
     match pose:
         "aim":
             upper = Vector3(-0.34, 0.0, 0.19)

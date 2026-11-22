@@ -6,6 +6,13 @@ extends CharacterBody3D
 @export var max_health: float = 100.0
 
 var health: float = 100.0
+var armor: float = 0.0
+var staging_credits: int = 2500
+var staging_panel: PanelContainer
+var staging_status_label: Label
+var staging_credits_label: Label
+var staging_weapon_select: OptionButton
+var staging_armor_button: Button
 var gravity: float = 20.0
 @onready var controller: TacticalPlayerController = $Controller
 var mobile_move := Vector2.ZERO
@@ -68,6 +75,7 @@ func _ready():
     if weapon.has_signal("hit_confirmed"):
         weapon.hit_confirmed.connect(_on_hit_confirmed)
     _refresh_control_presentation()
+    _create_staging_ui()
 
 func _create_mobile_controls():
     var canvas := CanvasLayer.new()
@@ -294,6 +302,164 @@ func _create_hud():
     controller_hint_label.add_theme_color_override("font_color", Color(0.82, 0.88, 0.82, 0.9))
     canvas.add_child(controller_hint_label)
 
+
+func _create_staging_ui() -> void:
+    var canvas := get_node("MobileControlsLayer") as CanvasLayer
+    var overlay := ColorRect.new()
+    overlay.name = "StagingBackdrop"
+    overlay.color = Color(0.025, 0.035, 0.04, 0.96)
+    overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+    overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+    canvas.add_child(overlay)
+
+    staging_panel = PanelContainer.new()
+    staging_panel.name = "PreBattleStaging"
+    var screen_size := get_viewport().get_visible_rect().size
+    var panel_size := Vector2(minf(screen_size.x - 24.0, 620.0), minf(screen_size.y - 24.0, 520.0))
+    staging_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+    staging_panel.position = -panel_size * 0.5
+    staging_panel.size = panel_size
+    staging_panel.custom_minimum_size = panel_size
+    staging_panel.process_mode = Node.PROCESS_MODE_ALWAYS
+    overlay.add_child(staging_panel)
+
+    var scroll := ScrollContainer.new()
+    scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+    scroll.custom_minimum_size = Vector2(0.0, panel_size.y - 20.0)
+    staging_panel.add_child(scroll)
+
+    var column := VBoxContainer.new()
+    column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    column.add_theme_constant_override("separation", 8)
+    scroll.add_child(column)
+
+    var title := Label.new()
+    title.text = "HUNGER FOR WAR  |  PRE-DEPLOYMENT"
+    title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    title.add_theme_font_size_override("font_size", 23)
+    column.add_child(title)
+
+    var briefing := Label.new()
+    briefing.text = "FIELD STAGING  •  SELECT YOUR WEAPON AND EQUIPMENT"
+    briefing.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    briefing.add_theme_font_size_override("font_size", 14)
+    column.add_child(briefing)
+
+    staging_credits_label = Label.new()
+    staging_credits_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    staging_credits_label.add_theme_font_size_override("font_size", 19)
+    column.add_child(staging_credits_label)
+
+    staging_weapon_select = OptionButton.new()
+    staging_weapon_select.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    staging_weapon_select.add_theme_font_size_override("font_size", 16)
+    for item in weapon.weapon_list:
+        staging_weapon_select.add_item("%s  |  %s" % [item.get("name", "Weapon"), item.get("class", "Class")])
+        staging_weapon_select.set_item_metadata(staging_weapon_select.get_item_count() - 1, item.get("id", ""))
+    var selected := 0
+    for i in range(staging_weapon_select.item_count):
+        if str(staging_weapon_select.get_item_metadata(i)) == weapon.current_weapon_id:
+            selected = i
+            break
+    staging_weapon_select.select(selected)
+    column.add_child(staging_weapon_select)
+
+    var buy_weapon := Button.new()
+    buy_weapon.text = "PURCHASE / EQUIP SELECTED WEAPON"
+    buy_weapon.custom_minimum_size.y = 48
+    buy_weapon.pressed.connect(_purchase_staging_weapon)
+    column.add_child(buy_weapon)
+
+    staging_armor_button = Button.new()
+    staging_armor_button.text = "BUY BODY ARMOR  •  500 CREDITS"
+    staging_armor_button.custom_minimum_size.y = 44
+    staging_armor_button.pressed.connect(_purchase_staging_armor)
+    column.add_child(staging_armor_button)
+
+    var ammo_button := Button.new()
+    ammo_button.text = "BUY AMMUNITION  •  250 CREDITS"
+    ammo_button.custom_minimum_size.y = 44
+    ammo_button.pressed.connect(_purchase_staging_ammo)
+    column.add_child(ammo_button)
+
+    staging_status_label = Label.new()
+    staging_status_label.text = "Choose your loadout. The battlefield is paused until deployment."
+    staging_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    staging_status_label.custom_minimum_size.y = 48
+    column.add_child(staging_status_label)
+
+    var deploy := Button.new()
+    deploy.text = "DEPLOY TO BATTLE"
+    deploy.custom_minimum_size.y = 58
+    deploy.add_theme_font_size_override("font_size", 21)
+    deploy.pressed.connect(_deploy_from_staging)
+    column.add_child(deploy)
+
+    _refresh_staging_ui()
+    get_tree().paused = true
+
+func _refresh_staging_ui() -> void:
+    if is_instance_valid(staging_credits_label):
+        staging_credits_label.text = "AVAILABLE CREDITS: %d" % staging_credits
+    if is_instance_valid(staging_armor_button):
+        staging_armor_button.text = "BODY ARMOR  •  EQUIPPED" if armor > 0.0 else "BUY BODY ARMOR  •  500 CREDITS"
+
+func _purchase_staging_weapon() -> void:
+    if not is_instance_valid(staging_weapon_select):
+        return
+    var weapon_id := str(staging_weapon_select.get_item_metadata(staging_weapon_select.selected))
+    var selected_item: Dictionary = {}
+    for entry in weapon.weapon_list:
+        if str(entry.get("id", "")) == weapon_id:
+            selected_item = entry
+            break
+    if selected_item.is_empty():
+        return
+    var weapon_class := str(selected_item.get("class", "")).to_lower()
+    var price := 900
+    if weapon_class.contains("sniper") or weapon_class.contains("machine gun"):
+        price = 1500
+    elif weapon_class.contains("launcher"):
+        price = 1800
+    elif weapon_class.contains("pistol") or weapon_class.contains("smg"):
+        price = 600
+    if weapon_id != weapon.current_weapon_id:
+        if staging_credits < price:
+            staging_status_label.text = "Not enough credits. This weapon costs %d." % price
+            return
+        staging_credits -= price
+    weapon.equip_weapon_by_id(weapon_id)
+    staging_status_label.text = "%s equipped." % weapon.current_weapon_name
+    _refresh_staging_ui()
+
+func _purchase_staging_armor() -> void:
+    if armor > 0.0:
+        staging_status_label.text = "Body armor is already equipped."
+        return
+    if staging_credits < 500:
+        staging_status_label.text = "Not enough credits for body armor."
+        return
+    staging_credits -= 500
+    armor = 50.0
+    staging_status_label.text = "Body armor equipped: 50 protection."
+    _refresh_staging_ui()
+
+func _purchase_staging_ammo() -> void:
+    if staging_credits < 250:
+        staging_status_label.text = "Not enough credits for ammunition."
+        return
+    staging_credits -= 250
+    weapon.reserve_ammo += 60
+    staging_status_label.text = "Ammunition purchased: +60 rounds."
+    _refresh_staging_ui()
+
+func _deploy_from_staging() -> void:
+    if is_instance_valid(staging_panel):
+        staging_panel.get_parent().queue_free()
+    get_tree().paused = false
+
 func _refresh_control_presentation():
     last_gamepad_connected = Input.get_connected_joypads().size() > 0
     var show_touch_controls := DisplayServer.is_touchscreen_available() and not last_gamepad_connected
@@ -475,17 +641,27 @@ func _process(delta):
     var gamepad_connected := Input.get_connected_joypads().size() > 0
     if gamepad_connected != last_gamepad_connected:
         _refresh_control_presentation()
-    var look_input := Vector2(
-        Input.get_action_strength("look_right") - Input.get_action_strength("look_left"),
-        Input.get_action_strength("look_down") - Input.get_action_strength("look_up")
-    )
-    if look_input.length() > 0.16:
+    var look_input := Vector2.ZERO
+    for device_id in Input.get_connected_joypads():
+        var stick := Vector2(
+            Input.get_joy_axis(device_id, JOY_AXIS_RIGHT_X),
+            Input.get_joy_axis(device_id, JOY_AXIS_RIGHT_Y)
+        )
+        if stick.length() > 0.18:
+            var strength := clampf((stick.length() - 0.18) / 0.82, 0.0, 1.0)
+            look_input = stick.normalized() * pow(strength, 1.25)
+            break
+    if look_input.length() > 0.01:
         _rotate_camera(look_input * controller_look_speed * (0.55 if aiming else 1.0) * delta, 1.0)
     var wants_aim := mobile_aiming or mouse_aiming or Input.is_action_pressed("aim")
     if wants_aim != aiming:
         aiming = wants_aim
         weapon.set_aiming(aiming)
-    var wants_fire := Input.is_action_pressed("fire")
+    var wants_fire := false
+    for device_id in Input.get_connected_joypads():
+        if Input.get_joy_axis(device_id, JOY_AXIS_TRIGGER_RIGHT) > 0.65:
+            wants_fire = true
+            break
     if wants_fire != controller_firing:
         controller_firing = wants_fire
         if controller_firing:
@@ -536,7 +712,12 @@ func _physics_process(delta: float) -> void:
         prone_button.text = "GET UP" if mobile_prone else "PRONE"
 
 func take_damage(amount: float):
-    health = max(health - amount, 0.0)
+    var remaining_damage := amount
+    if armor > 0.0:
+        var absorbed := minf(armor, remaining_damage * 0.65)
+        armor -= absorbed
+        remaining_damage -= absorbed
+    health = maxf(health - remaining_damage, 0.0)
     print("Player health: ", health, "/", max_health)
     if health <= 0.0:
         _die()
