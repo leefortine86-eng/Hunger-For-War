@@ -32,8 +32,10 @@ var reload_remaining: float = 0.0
 var fire_cooldown: float = 0.0
 var bob_time: float = 0.0
 var reload_visual: float = 0.0
-var weapon_home_position := Vector3(0.28, -0.25, -0.55)
-var weapon_aim_position := Vector3(0.0, -0.16, -0.42)
+# First-person weapon rests low-right with the muzzle clear of the center sightline.
+var weapon_home_position := Vector3(0.34, -0.24, -0.62)
+# Aiming brings the sight line close to screen center without clipping the camera.
+var weapon_aim_position := Vector3(0.035, -0.19, -0.50)
 var muzzle_light: OmniLight3D
 var weapon_model: Node3D
 var attachment_loadouts: Dictionary = {}
@@ -251,7 +253,7 @@ func _build_weapon_model():
     muzzle_flash_mesh.visible = false
     weapon_model.add_child(muzzle_flash_mesh)
 
-    weapon_model.position = weapon_home_position + Vector3(0.22, -0.28, 0)
+    weapon_model.position = weapon_home_position
 
 func get_attachment_options(slot: String) -> Array:
     var profile := str(current_weapon.get("profile", "rifle"))
