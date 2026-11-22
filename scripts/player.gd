@@ -301,6 +301,15 @@ func _create_hud():
     weapon_next_button.pressed.connect(_on_next_weapon)
     canvas.add_child(weapon_next_button)
 
+    _style_mobile_button(fire_button, Color(0.78, 0.30, 0.22))
+    _style_mobile_button(aim_button, Color(0.28, 0.62, 0.72))
+    _style_mobile_button(reload_button, Color(0.66, 0.60, 0.34))
+    _style_mobile_button(jump_button, Color(0.48, 0.58, 0.42))
+    _style_mobile_button(sprint_button, Color(0.48, 0.58, 0.42))
+    _style_mobile_button(crouch_button, Color(0.48, 0.58, 0.42))
+    _style_mobile_button(prone_button, Color(0.48, 0.58, 0.42))
+    _style_mobile_button(weapon_prev_button, Color(0.48, 0.58, 0.42))
+    _style_mobile_button(weapon_next_button, Color(0.48, 0.58, 0.42))
     weapon.weapon_changed.connect(_on_weapon_changed)
 
     crosshair_label = Label.new()
@@ -332,6 +341,30 @@ func _create_hud():
     controller_hint_label.add_theme_font_size_override("font_size", 15)
     controller_hint_label.add_theme_color_override("font_color", Color(0.82, 0.88, 0.82, 0.9))
     canvas.add_child(controller_hint_label)
+
+
+func _style_mobile_button(button: Button, accent: Color) -> void:
+    var normal := StyleBoxFlat.new()
+    normal.bg_color = Color(0.045, 0.065, 0.06, 0.88)
+    normal.border_color = accent
+    normal.set_border_width_all(2)
+    normal.set_corner_radius_all(8)
+    normal.content_margin_left = 5.0
+    normal.content_margin_right = 5.0
+    normal.content_margin_top = 4.0
+    normal.content_margin_bottom = 4.0
+    var hover := normal.duplicate() as StyleBoxFlat
+    hover.bg_color = Color(0.13, 0.17, 0.14, 0.96)
+    var pressed := normal.duplicate() as StyleBoxFlat
+    pressed.bg_color = accent.darkened(0.62)
+    button.add_theme_stylebox_override("normal", normal)
+    button.add_theme_stylebox_override("hover", hover)
+    button.add_theme_stylebox_override("pressed", pressed)
+    button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+    button.add_theme_color_override("font_color", Color(0.92, 0.95, 0.88))
+    button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 0.94))
+    button.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 1.0))
+    button.add_theme_color_override("font_disabled_color", Color(0.48, 0.52, 0.48))
 
 
 func _layout_mobile_controls() -> void:
