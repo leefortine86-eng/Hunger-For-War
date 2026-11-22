@@ -66,14 +66,20 @@ func _run_tests() -> void:
 	_expect(capsule.height <= 0.81, "prone capsule settles at the legal minimum")
 	_expect(is_equal_approx(collision.position.y, capsule.height * 0.5), "prone collision stays grounded at the feet")
 	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("prone_height"))), "camera follows the actual prone collision stance")
+	camera.call("_process", 1.0)
+	_expect(is_equal_approx(camera.position.y, float(camera.get("prone_height"))), "camera physically reaches prone eye height")
 
 	controller.call("physics_step", 0.5, Vector2.ZERO, false, true, false, false)
 	_expect(capsule.height > 0.8 and capsule.height <= 1.21, "prone-to-crouch transition reaches crouch height")
 	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("crouching_height"))), "camera follows crouch collision height")
+	camera.call("_process", 1.0)
+	_expect(is_equal_approx(camera.position.y, float(camera.get("crouching_height"))), "camera physically reaches crouched eye height")
 
 	controller.call("physics_step", 0.5, Vector2.ZERO, false, false, false, false)
 	_expect(capsule.height >= 1.79, "crouch-to-stand transition reaches standing height")
 	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("standing_height"))), "camera follows standing collision height")
+	camera.call("_process", 1.0)
+	_expect(is_equal_approx(camera.position.y, float(camera.get("standing_height"))), "camera physically reaches standing eye height")
 
 	# Add a low ceiling. A requested stand-up transition must not enlarge
 	# the capsule into the obstruction.
@@ -93,6 +99,8 @@ func _run_tests() -> void:
 	_expect(capsule.height <= safe_crouch_height + 0.01, "ceiling blocks unsafe stand-up collision expansion")
 	_expect(is_equal_approx(collision.position.y, capsule.height * 0.5), "collision remains centered after blocked transition")
 	_expect(is_equal_approx(float(camera.get("target_height")), float(camera.get("crouching_height"))), "camera remains at the safe crouched stance")
+	camera.call("_process", 1.0)
+	_expect(is_equal_approx(camera.position.y, float(camera.get("crouching_height"))), "camera stays at safe crouched eye height under the ceiling")
 
 	if _failures == 0:
 		print("STANCE_SMOKE_TEST: PASS (", _checks, " checks)")
