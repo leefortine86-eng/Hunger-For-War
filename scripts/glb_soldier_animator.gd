@@ -115,7 +115,6 @@ func _attach_weapon_now(weapon: Node3D) -> void:
     if is_instance_valid(weapon_attachment):
         weapon_attachment.queue_free()
     weapon_attachment = BoneAttachment3D.new()
-    weapon_attachment.bone_name = "RightHandWeaponAttachment"
     weapon_attachment.bone_name = right_hand_bone
     skeleton.add_child(weapon_attachment)
     var old_parent := weapon.get_parent()
@@ -123,7 +122,6 @@ func _attach_weapon_now(weapon: Node3D) -> void:
         old_parent.remove_child(weapon)
     weapon_attachment.add_child(weapon)
     weapon.global_transform = saved_transform
-    weapon.bone_name = "HandMountedRifle"
     pending_weapon = null
     print("GLB soldier rifle attached to ", right_hand_bone, ". Left-hand support pose is procedural.")
 
