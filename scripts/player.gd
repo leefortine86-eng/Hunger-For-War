@@ -80,6 +80,8 @@ func _ready():
     Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
     _create_mobile_controls()
     _create_hud()
+    _layout_mobile_controls()
+    get_viewport().size_changed.connect(_layout_mobile_controls)
     if weapon.has_signal("hit_confirmed"):
         weapon.hit_confirmed.connect(_on_hit_confirmed)
     _refresh_control_presentation()
@@ -330,6 +332,76 @@ func _create_hud():
     controller_hint_label.add_theme_font_size_override("font_size", 15)
     controller_hint_label.add_theme_color_override("font_color", Color(0.82, 0.88, 0.82, 0.9))
     canvas.add_child(controller_hint_label)
+
+
+func _layout_mobile_controls() -> void:
+    if not is_instance_valid(touch_overlay):
+        return
+    var screen_size := get_viewport().get_visible_rect().size
+    var scale_factor := clampf(minf(screen_size.x / 844.0, screen_size.y / 390.0), 0.72, 1.0)
+    var edge := 18.0 * scale_factor
+    var stick_size := 136.0 * scale_factor
+    var knob_size := 56.0 * scale_factor
+    var stick_y := screen_size.y - stick_size - 22.0 * scale_factor
+
+    joystick_base.size = Vector2.ONE * stick_size
+    joystick_base.position = Vector2(edge, stick_y)
+    joystick_center = joystick_base.position + joystick_base.size * 0.5
+    joystick_home_center = joystick_center
+    joystick_knob.size = Vector2.ONE * knob_size
+    joystick_knob.position = joystick_center - joystick_knob.size * 0.5
+    joystick_radius = stick_size * 0.40
+
+    look_joystick_base.size = Vector2.ONE * stick_size
+    look_joystick_base.position = Vector2(screen_size.x - stick_size - 246.0 * scale_factor, stick_y)
+    look_joystick_home_center = look_joystick_base.position + look_joystick_base.size * 0.5
+    look_joystick_center = look_joystick_home_center
+    look_joystick_knob.size = Vector2.ONE * knob_size
+    look_joystick_knob.position = look_joystick_center - look_joystick_knob.size * 0.5
+    look_joystick_radius = stick_size * 0.40
+
+    var action_x := screen_size.x - 104.0 * scale_factor
+    var action_w := 88.0 * scale_factor
+    var action_h := 56.0 * scale_factor
+    aim_button.position = Vector2(action_x, screen_size.y - 4.0 * action_h - 28.0 * scale_factor)
+    aim_button.size = Vector2(action_w, action_h)
+    jump_button.position = Vector2(action_x, screen_size.y - 3.0 * action_h - 20.0 * scale_factor)
+    jump_button.size = Vector2(action_w, action_h)
+    fire_button.position = Vector2(action_x, screen_size.y - 2.0 * action_h - 12.0 * scale_factor)
+    fire_button.size = Vector2(action_w, action_h)
+    reload_button.position = Vector2(action_x, screen_size.y - action_h - 8.0 * scale_factor)
+    reload_button.size = Vector2(action_w, action_h * 0.78)
+
+    var utility_x := screen_size.x - 374.0 * scale_factor
+    var utility_w := 94.0 * scale_factor
+    var utility_h := 44.0 * scale_factor
+    sprint_button.position = Vector2(utility_x, screen_size.y - 2.0 * utility_h - 20.0 * scale_factor)
+    sprint_button.size = Vector2(utility_w, utility_h)
+    crouch_button.position = Vector2(utility_x + utility_w + 8.0 * scale_factor, screen_size.y - 2.0 * utility_h - 20.0 * scale_factor)
+    crouch_button.size = Vector2(utility_w, utility_h)
+    prone_button.position = Vector2(utility_x, screen_size.y - utility_h - 12.0 * scale_factor)
+    prone_button.size = Vector2(utility_w, utility_h)
+    weapon_prev_button.position = Vector2(utility_x + utility_w + 8.0 * scale_factor, screen_size.y - utility_h - 12.0 * scale_factor)
+    weapon_prev_button.size = Vector2(utility_w * 0.52, utility_h)
+    weapon_next_button.position = Vector2(weapon_prev_button.position.x + weapon_prev_button.size.x + 6.0 * scale_factor, screen_size.y - utility_h - 12.0 * scale_factor)
+    weapon_next_button.size = Vector2(utility_w * 0.52, utility_h)
+
+    ammo_label.position = Vector2(screen_size.x - 250.0 * scale_factor, screen_size.y - 72.0 * scale_factor)
+    ammo_label.size = Vector2(138.0 * scale_factor, 56.0 * scale_factor)
+    ammo_label.add_theme_font_size_override("font_size", int(22.0 * scale_factor))
+    weapon_label.position = Vector2(screen_size.x - 300.0 * scale_factor, 20.0 * scale_factor)
+    weapon_label.size = Vector2(280.0 * scale_factor, 52.0 * scale_factor)
+    weapon_label.add_theme_font_size_override("font_size", int(15.0 * scale_factor))
+    health_label.position = Vector2(20.0 * scale_factor, 16.0 * scale_factor)
+    health_bar.position = Vector2(20.0 * scale_factor, 44.0 * scale_factor)
+    health_bar.size = Vector2(176.0 * scale_factor, 12.0 * scale_factor)
+    armor_label.position = Vector2(20.0 * scale_factor, 62.0 * scale_factor)
+    armor_bar.position = Vector2(20.0 * scale_factor, 84.0 * scale_factor)
+    armor_bar.size = Vector2(176.0 * scale_factor, 8.0 * scale_factor)
+    controller_hint_label.position = Vector2(0.0, screen_size.y - 30.0 * scale_factor)
+    controller_hint_label.size = Vector2(screen_size.x, 24.0 * scale_factor)
+    fire_button_rect = Rect2(fire_button.position, fire_button.size)
+    reload_button_rect = Rect2(reload_button.position, reload_button.size)
 
 
 func _create_staging_ui() -> void:
