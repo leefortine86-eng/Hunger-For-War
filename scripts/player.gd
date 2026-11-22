@@ -372,7 +372,7 @@ func _layout_mobile_controls() -> void:
     reload_button.position = Vector2(action_x, screen_size.y - action_h - 8.0 * scale_factor)
     reload_button.size = Vector2(action_w, action_h * 0.78)
 
-    var utility_x := screen_size.x - 374.0 * scale_factor
+    var utility_x := screen_size.x * 0.25
     var utility_w := 94.0 * scale_factor
     var utility_h := 44.0 * scale_factor
     sprint_button.position = Vector2(utility_x, screen_size.y - 2.0 * utility_h - 20.0 * scale_factor)
@@ -386,7 +386,7 @@ func _layout_mobile_controls() -> void:
     weapon_next_button.position = Vector2(weapon_prev_button.position.x + weapon_prev_button.size.x + 6.0 * scale_factor, screen_size.y - utility_h - 12.0 * scale_factor)
     weapon_next_button.size = Vector2(utility_w * 0.52, utility_h)
 
-    ammo_label.position = Vector2(screen_size.x - 250.0 * scale_factor, screen_size.y - 72.0 * scale_factor)
+    ammo_label.position = Vector2(screen_size.x - 250.0 * scale_factor, 78.0 * scale_factor)
     ammo_label.size = Vector2(138.0 * scale_factor, 56.0 * scale_factor)
     ammo_label.add_theme_font_size_override("font_size", int(22.0 * scale_factor))
     weapon_label.position = Vector2(screen_size.x - 300.0 * scale_factor, 20.0 * scale_factor)
