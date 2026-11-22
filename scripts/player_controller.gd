@@ -120,8 +120,15 @@ func _can_fit_capsule_height(target_height: float) -> bool:
 		return false
 
 	var test_capsule := current_capsule.duplicate() as CapsuleShape3D
+	var requested_headroom: float = maxf(stance_clearance_margin, 0.0)
+	# Lift the query capsule slightly off the floor while preserving its top
+	# height. Shape queries can otherwise count normal floor contact as overlap.
+	var floor_clearance: float = minf(
+		0.05,
+		maxf(target_height - test_capsule.radius * 2.0, 0.0)
+	)
 	test_capsule.height = maxf(
-		target_height + maxf(stance_clearance_margin, 0.0),
+		target_height + requested_headroom - floor_clearance,
 		test_capsule.radius * 2.0
 	)
 
@@ -130,7 +137,7 @@ func _can_fit_capsule_height(target_height: float) -> bool:
 	query.transform = _collision.global_transform
 	query.transform.origin = _body.global_position + Vector3(
 		0.0,
-		test_capsule.height * 0.5,
+		floor_clearance + test_capsule.height * 0.5,
 		0.0
 	)
 	query.collision_mask = _body.collision_mask
