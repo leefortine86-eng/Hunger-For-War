@@ -100,7 +100,10 @@ func _can_fit_capsule_height(target_height: float) -> bool:
 		return false
 
 	var test_capsule := current_capsule.duplicate() as CapsuleShape3D
-	test_capsule.height = maxf(target_height, test_capsule.radius * 2.0)
+	test_capsule.height = maxf(
+		target_height + maxf(stance_clearance_margin, 0.0),
+		test_capsule.radius * 2.0
+	)
 
 	var query := PhysicsShapeQueryParameters3D.new()
 	query.shape = test_capsule
@@ -114,7 +117,9 @@ func _can_fit_capsule_height(target_height: float) -> bool:
 	query.exclude = [_body.get_rid()]
 	query.collide_with_bodies = true
 	query.collide_with_areas = false
-	query.margin = maxf(stance_clearance_margin, 0.001)
+	# Extra headroom is built into test_capsule.height above. Keep query margin
+	# at zero so a capsule resting on the floor is not reported as overlapping it.
+	query.margin = 0.0
 
 	var space_state: PhysicsDirectSpaceState3D = (
 		_body.get_world_3d().direct_space_state
