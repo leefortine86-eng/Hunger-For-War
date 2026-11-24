@@ -26,6 +26,7 @@ var _look_motion := Vector2.ZERO
 var _horizontal_speed: float = 0.0
 var _fatigue: float = 0.0
 var _bob_time: float = 0.0
+var _recoil_return: float = 0.0
 
 func _ready() -> void:
 	_weapon = get_node_or_null(weapon_path) as Node3D
@@ -48,11 +49,20 @@ func set_aiming(enabled: bool) -> void:
 func feed_look_motion(relative_motion: Vector2) -> void:
     _look_motion += relative_motion
 
+func add_recoil(amount: float) -> void:
+    var kick := maxf(amount, 0.0)
+    rotation.x = clampf(rotation.x - kick, -1.50, 1.50)
+    _recoil_return += kick
+
 func set_motion_state(horizontal_speed: float, fatigue_ratio: float) -> void:
     _horizontal_speed = horizontal_speed
     _fatigue = clampf(fatigue_ratio, 0.0, 1.0)
 
 func _process(delta: float) -> void:
+    if _recoil_return > 0.0:
+        var recovered := minf(_recoil_return, 1.8 * delta)
+        rotation.x = minf(rotation.x + recovered, 1.50)
+        _recoil_return -= recovered
     position.y = move_toward(position.y, target_height, stance_smoothing * delta)
     var target_fov := aimed_fov if aiming else hip_fov
     fov = move_toward(fov, target_fov, fov_smoothing * delta)
