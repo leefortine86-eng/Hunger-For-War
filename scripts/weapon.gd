@@ -48,6 +48,7 @@ var laser_equipped: bool = false
 
 signal weapon_changed(weapon_name: String, weapon_class: String)
 signal hit_confirmed(killed: bool)
+signal weapon_fired(recoil_strength: float)
 
 func _ready():
     weapon_list = WEAPON_CATALOG.get_weapons()
@@ -412,6 +413,7 @@ func _fire_once(raycast: RayCast3D):
     elif attachments.get("underbarrel", "none") == "angled_grip":
         recoil_scale *= 0.88
     recoil_amount = (0.075 if aiming else 0.12) * recoil_scale
+    weapon_fired.emit(recoil_amount)
     if is_instance_valid(weapon_model):
         weapon_model.rotation.x = -0.035 if aiming else -0.065
     if is_instance_valid(muzzle_light):
