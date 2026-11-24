@@ -74,6 +74,8 @@ func _ready():
     _create_hud()
     if weapon.has_signal("hit_confirmed"):
         weapon.hit_confirmed.connect(_on_hit_confirmed)
+    if weapon.has_signal("weapon_fired"):
+        weapon.weapon_fired.connect(_on_weapon_fired)
     _refresh_control_presentation()
     _create_staging_ui()
 
@@ -502,6 +504,10 @@ func _on_attachment_selected(index: int, slot: String):
     weapon.set_attachment(slot, str(selector.get_item_metadata(index)))
     _refresh_attachment_selectors()
 
+func _on_weapon_fired(recoil_strength: float) -> void:
+    if is_instance_valid(camera) and camera.has_method("add_recoil"):
+        camera.add_recoil(recoil_strength)
+
 func _on_hit_confirmed(killed: bool):
     hit_marker_kill = killed
     hit_marker_timer = 0.48 if killed else 0.20
@@ -682,7 +688,7 @@ func _process(delta):
     if is_instance_valid(ammo_label) and is_instance_valid(weapon):
         ammo_label.text = "AMMO: %d / %d" % [weapon.ammo_in_magazine, weapon.reserve_ammo]
     if is_instance_valid(weapon_label) and is_instance_valid(weapon):
-        weapon_label.text = "%s\\n%s | %s" % [weapon.current_weapon_name, weapon.caliber, weapon.fire_mode]
+        weapon_label.text = "%s\n%s | %s" % [weapon.current_weapon_name, weapon.caliber, weapon.fire_mode]
     if is_instance_valid(fire_button):
         fire_button.disabled = weapon.reloading
     if is_instance_valid(reload_button):
